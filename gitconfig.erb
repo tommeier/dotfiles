@@ -1,12 +1,34 @@
 [user]
-	name = <%= print("Your Name: "); STDOUT.flush; STDIN.gets.chomp %>
-	email = <%= print("Your Email: "); STDOUT.flush; STDIN.gets.chomp %>
+	name = Tom Meier
+	email = tom@venombytes.com
 [alias]
+	st = status
+	ci = commit
+	br = branch
 	co = checkout
+	df = diff
+	lg = log -p
+	df = !git diff | mate
+	edit-unmerged = "!f() { git ls-files --unmerged | cut -f2 | sort -u ; }; mate `f`"
+	add-unmerged = "!f() { git ls-files --unmerged | cut -f2 | sort -u ; }; git add `f`"
+	edit-modified = "!f() { git ls-files --modified | cut -f2 | sort -u ; }; mate `f`"
 [color]
-	diff = auto
-	status = auto
-	branch = auto
+    branch = auto
+    diff = auto
+    status = auto
+  [color "branch"]
+    current = yellow reverse
+    local = yellow
+    remote = green
+  [color "diff"]
+    meta = yellow bold
+    frag = magenta bold
+    old = red bold
+    new = green bold
+  [color "status"]
+    added = yellow
+    changed = green
+    untracked = cyan
 [core]
 	excludesfile = <%= ENV['HOME'] %>/.gitignore
 	editor = mate_wait
@@ -16,5 +38,4 @@
 [format]
 	pretty = %C(yellow)%h%Creset %s %C(red)(%an, %cr)%Creset
 [github]
-	user = <%= print("GitHub Username: "); STDOUT.flush; STDIN.gets.chomp %>
-	token = <%= print("GitHub API Token: "); STDOUT.flush; STDIN.gets.chomp %>
+	user = tommeier
