@@ -1,3 +1,5 @@
+#If you want more project root directories : Update /bash/completion_scripts/project_completion
+#TODO : Make this a bash variable that can be used in project_completion script
 # changing directory to root projects directory
 function d { cd ~/Development/Projects/$1; }
 
