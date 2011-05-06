@@ -1,0 +1,27 @@
+--type-add=ruby=.haml,.rake,.rsel,.builder
+--type-add=html=.html.erb,.html.haml,.html,.erb
+--type-add=js=.js.erb,.js
+--type-add=css=.sass
+--type-add=csv=.csv
+--type-add=yml=.yml
+--type-add=sass=.sass
+--type-add=md=.md,.markdown
+--type-set=cucumber=.feature
+
+--ignore-dir=bootstrap
+--ignore-dir=coverage
+--ignore-dir=vendor
+--ignore-dir=log
+--ignore-dir=tmp
+
+--sort-files
+--color
+
+#Follow symlinks
+--follow
+
+# groups the results by file
+--group
+
+# only show one line of output context around the results
+# --context=1
