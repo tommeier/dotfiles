@@ -1,4 +1,15 @@
-.DS_Store
 .svn
 *~
 .*.swp
+.bundle
+.DS_Store
+config/database.yml
+coverage
+coverage.data
+db/*.sqlite3
+log/*.log
+rerun.txt
+tmp/**/*
+tmp/restart.txt
+vendor/bundle
+
