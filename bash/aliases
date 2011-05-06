@@ -2,7 +2,15 @@
 #TODO : Make this a bash variable that can be used in project_completion script
 # changing directory to root projects directory
 # And edit 'completions' to set default command
-function p { cd ~/Development/Projects/$1; }
+
+#TODO : Work out a better fallback than this hack for multiple folders
+function p {
+if [ -d ~/Development/Projects/$1 ]; then
+  cd ~/Development/Projects/$1;
+else
+  cd ~/Development/Projects/Clear/$1;
+fi
+}
 
 #System commands
 alias cls='tput clear'
