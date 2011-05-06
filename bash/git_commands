@@ -1,0 +1,106 @@
+
+#Git Helpers (#TODO : Parameterize this)
+alias git_commits_in_dates_with_author='git log --pretty=format:"%h%x09%an%x09%ad%x09%s" --date=local --before="Nov 01 2009" --after="Jul 1 2009" > git_output.txt'
+alias git_commits_in_dates_without_author='git log --pretty=format:"%h%x09%ad%x09%s" --date=local --before="Nov 01 2009" --after="Jul 1 2009" > git_output.txt'
+alias git_commits_in_dates_with_name_and_date='git log --pretty=format:"%ad%x09%s" --date=local --before="Nov 01 2009" --after="Jul 1 2009" > git_output.txt'
+alias gita='git archive --format=zip master > $1'
+
+##########################
+#Display                 #
+##########################
+function parse_git_branch {
+  git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e "s/* \(.*\)/\1$(parse_git_dirty)/"
+}
+
+function parse_git_dirty {
+  [[ $(git status 2> /dev/null | tail -n1) != "nothing to commit (working directory clean)" ]] && echo "(☠)"
+}
+
+#Display custom dirty git branch items
+export PS1='\[\033[01;32m\]\w $(git branch &>/dev/null; if [ $? -eq 0 ]; then echo "\[\033[01;34m\]$(parse_git_branch)"; fi) \$ \[\033[00m\]'
+
+
+##########################
+# Analysis               #
+##########################
+function analyse_remote_branches {
+  printf "\n\n== Loading remote branches..\n"
+  git gc --prune=now
+  git remote prune origin
+  git for-each-ref --shell --format="%(refname)" refs/remotes/origin | \
+  while read branch
+  do
+    branch_name=${branch/refs\/remotes\/origin\//}
+    printf "\nRemote Branch : ${branch_name}\n"
+    result=`git log master..origin/${branch_name//\'/} --pretty=format:" -------> %h | %ar | %an | %s" --abbrev-commit --date-order --decorate -n 4`
+    if [ "$result" == "" ]; then
+      echo " <--> Commits all  merged in master"
+    else
+      echo " --> Commits not in master : "
+      #echo "${result}"
+      printf "$result\n"
+    fi
+    echo "---"
+
+  done
+
+}
+
+#Thanks to Nathan DeVries
+#https://gist.github.com/190002
+function clear_gitignored_files {
+  cat .gitignore | egrep -v "^#|^$" | while read line; do
+  if [ -s "$line" ]; then
+  OLD_IFS=$IFS; IFS=""
+      for ignored_file in $( git ls-files "$line" ); do
+  git rm --cached "$ignored_file"
+      done
+  IFS=$OLD_IFS
+    fi
+  done
+}
+
+##########################
+# Destructive            #
+##########################
+
+function delete_all_local_tags {
+  git-for-each-ref --shell --format="%(refname)" refs/tags | \
+  while read tag
+  do
+          tag_name=${tag/refs\/tags\//}
+  				git tag ${tag_name//\'/} -d
+  done
+}
+
+function delete_all_local_branches {
+  printf "\n\n\n\n== Would you like to delete ALL local branches? \nTHIS ACTION CANNOT BE UNDONE WITHOUT A WIZARDS HAT\nPlease select option (or any key to skip):\n"
+  echo "1) Delete all - (git branch branch_name -D)"
+  echo "-) Skip"
+  read -n1 -s -r -t30 INPUT
+  case "$INPUT" in
+  "1")
+  echo "== Deleting ALL local branches (please wait)..."
+  #'refs/remotes/origin' --> Cannot do remotes yet... run git gc --prune=now before updating list
+  local_branches=('refs/heads' )
+  for branch_repo in ${local_branches[@]}
+  do
+    git for-each-ref --shell --format="%(refname)" $branch_repo | \
+    while read branch
+    do
+
+            branch_name=${branch/$branch_repo\//}
+
+            if [ $branch_name != "'master'" -a $branch_name != "'dev'" ]; then
+              git branch ${branch_name//\'/} -D
+              echo "${branch_name} deleted."
+
+            else
+            	echo "--> ${branch_name//\'/} skipped..."
+            fi
+    done
+  done;;
+  *)
+  echo "== Delete skipped." ;;
+  esac
+}

@@ -1,2 +1,12 @@
-export PATH="~/bin:~/.bin:/usr/local/homebrew/bin:/usr/local/bin:/usr/local/sbin:/usr/local/mysql/bin:/usr/local/git/bin:$PATH"
+#Build path params
+ORIGINAL_PATH=$PATH
+export PATH=~/bin
+export PATH=$PATH:/usr/local/sbin
+export PATH=$PATH:/usr/local/bin:/usr/bin
+export PATH=$PATH:/usr/local/mysql/bin
+export PATH=$PATH:/Users/ozmeier/Development/Projects/homebrew/bin
+export PATH=$PATH:/sbin
+export PATH=$PATH:$ORIGINAL_PATH
+
+
 export MANPATH="/usr/local/man:/usr/local/mysql/man:/usr/local/git/man:$MANPATH"

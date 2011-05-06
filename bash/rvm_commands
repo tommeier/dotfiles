@@ -1,0 +1,124 @@
+#Standard RVM load script command
+[[ -s "$HOME/.rvm/scripts/rvm" ]] && . "$HOME/.rvm/scripts/rvm"  # This loads RVM into a shell session.
+
+
+#Clean out old ruby (NUKE SYSTEM RUBY)
+#sudo rm -rf /usr/local/lib/ruby
+#ruby -e "old_ruby_execs = \`egrep 'rubygems|bin/ruby|env ruby' /usr/local/bin/*\`; require 'pp'; pp old_ruby_execs.split(\"\n\").collect{|line| line.split(':').first}.uniq"
+#sudo echo; ruby -e "old_ruby_execs = \`egrep 'rubygems|bin/ruby|env ruby' /usr/local/bin/*\`; old_ruby_execs.split(\"\n\").collect{|line| line.split(':').first}.uniq.each { |exec| p 'removing ' + exec; \`sudo rm #{exec}\`}"
+#sudo rm /usr/local/bin/ruby
+
+
+#Set system wide install permissions : sudo chmod -R g+w /usr/local/rvm
+function install_rvm {
+  #Instructions : http://rvm.beginrescueend.com/rvm/install/
+  echo "===> Installing RVM >>"
+  bash < <( curl http://rvm.beginrescueend.com/releases/rvm-install-head )
+
+  #Reload shell
+  . ~/.rvm/scripts/rvm
+
+  result=`type rvm | head -1`
+  echo "===> Result of testing RVM : '$result'"
+  if [ "$result" == "rvm is a function" ]; then
+    echo '===> RVM system install successful.'
+  else
+    echo '===> Error - Installation not successful, RVM should be a function not a binary - See http://rvm.beginrescueend.com/rvm/install/ for more info'
+    return
+  fi
+
+  if ! grep -q 'rvm_archflags="-arch x86_64"' "$HOME/.rvmrc" ; then
+    echo "===> Adding arch_flags for 64 bit on .RVMRC"
+    echo  'rvm_archflags="-arch x86_64"' >> "$HOME/.rvmrc"
+  fi
+
+  . "$HOME/.rvmrc"
+  . ~/.rvm/scripts/rvm
+
+  echo '===> Installing Ruby 1.8.7'
+  rvm install 1.8.7
+
+  echo '===> Setting default to 1.8.7'
+  rvm --default use 1.8.7
+
+
+  current_user=`whoami`
+  echo "===> Fixing permissions and ensuring $current_user has access"
+  chown -R $current_user ~/.rvm
+
+  #Add to bash_profile
+  # if ! grep -q '### Load RVM into a shell session' "${profile_location}" ; then
+  #   echo "Editing ${profile_location} to load RVM on Terminal launch"
+  #   echo  '[[ -s "$HOME/.rvm/scripts/rvm" ]] && . "$HOME/.rvm/scripts/rvm"  ### Load RVM into a shell session' >> "${profile_location}"
+  # fi
+
+  #Reload shell
+  reload
+}
+
+function remove_user_rvm_folders {
+  cd ~
+  cd ..
+  sudo ls
+  for user_folder in *
+  do
+  	echo "User folder : $user_folder"
+  	if [[ -s "$user_folder/.rvm" ]]; then
+  	  echo " --> Found user RVM directory $user_folder/.rvm"
+  	  sudo rm -rf $user_folder/.rvm
+  	  echo " --> Removed"
+  	else
+  	  echo " --> No rvm dir found"
+  	fi
+  done
+  #also remove any .rvmrc in each user directory
+  # - and remove /etc/rvmrc
+
+}
+
+
+function install_system_wide_rvm {
+#  http://rvm.beginrescueend.com/deployment/system-wide/
+  remove_user_rvm_folders
+  sudo su root
+  bash < <( curl -B http://rvm.beginrescueend.com/install/rvm )
+  source '/usr/local/rvm/scripts/rvm'
+
+  #Instead of below, add line to '/etc/bash.bashrc' so all users have access to it
+  #if ONLY .profile exists, append to that, if .bash_profile exists use that
+  #user based part of profile: [[ -s "$HOME/.rvm/scripts/rvm" ]] && . "$HOME/.rvm/scripts/rvm"
+  #system should be :
+    # Update RVM to be used for all users
+  #[[ -s "/usr/local/rvm/scripts/rvm" ]] && . "/usr/local/rvm/scripts/rvm"
+
+
+  #add each user to rvm group
+  #sudo adduser vpsadmin rvm
+  #sudo adduser deployer rvm
+  #sudo adduser hudson rvm
+  #sudo adduser USER GROUP
+
+  #Install ruby enterprise
+  rvm install ree
+  #if there are permission errors, close terminal and reconnect
+  #set rvm default
+  #need to switch to each user to set this default
+  rvm --default use ree
+
+  #Install deps
+  #sudo apt-get install build-essential zlib1g-dev libssl-dev libreadline5-dev
+
+  #remote into server and ensure that user has ssh access
+  #/etc/ssh/sshd_config
+  #add this to .gemrc
+  # ---
+  # :verbose: true
+  # :update_sources: true
+  # :sources:
+  # - http://gems.rubyforge.org/
+  # :backtrace: false
+  # :bulk_threshold: 1000
+  # :benchmark: false
+  # gem: --no-ri --no-rdoc
+
+}

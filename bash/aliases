@@ -1,5 +1,17 @@
-# changing directory to code project
-function c { cd ~/code/$1; }
+# changing directory to root projects directory
+function d { cd ~/Development/Projects/$1; }
 
-# misc
-alias reload='. ~/.bash_profile'
+# changing directory to work projects directory
+function w { cd ~/Development/Projects/Clear/$1; }
+
+#System commands
+alias cls='tput clear'
+alias flushdns='dscacheutil -flushcache'
+alias reload="source ~/.bash_profile"
+alias edit_hostfile="$EDITOR /private/etc/hosts"
+
+#Path helper
+alias find_dead_path_items='echo $PATH |tr ':' '\n' |xargs ls -ld'
+
+#Editor
+alias m="mate ."
