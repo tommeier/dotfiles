@@ -20,10 +20,10 @@ minor fiddling.
 
 == Features
 
-I normally place all of my coding projects in ~/code, so this directory
-can easily be accessed (and tab completed) with the "c" command.
+I place projects in 2 locations that fallback, the script has been hacked to auto complete for both.
+Run any project in those directories with:
 
-  c railsca<tab>
+  p some_proje<tab>
 
 There is also an "h" command which behaves similar, but acts on the
 home path.
