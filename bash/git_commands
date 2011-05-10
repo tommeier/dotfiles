@@ -5,6 +5,32 @@ alias git_commits_in_dates_without_author='git log --pretty=format:"%h%x09%ad%x0
 alias git_commits_in_dates_with_name_and_date='git log --pretty=format:"%ad%x09%s" --date=local --before="Nov 01 2009" --after="Jul 1 2009" > git_output.txt'
 alias gita='git archive --format=zip master > $1'
 
+alias sup='startup'
+function startup {
+#Quick function to start the day and grab the latest info, then rebase your dev branch
+primary=$1
+devbranch=''
+if [ "$primary" == "" ]; then
+        echo "== Defaulting to 'startup master'"; primary='master';
+fi
+if [ "$primary" == "master" ]; then
+        devbranch='dev';
+else
+        devbranch=$primary + '_dev';
+fi
+echo "== Upgrading '$devbranch'"
+echo "-- 1. Checking out '$primary' to latest version..."
+git checkout $primary
+git fetch origin
+git rebase -p origin/$primary
+echo "-- 2. Switching back to '$devbranch'..."
+git checkout $devbranch
+echo "-- 3. Rebasing '$devbranch' to include '$primary'..."
+git rebase $primary
+echo "== All actions completed..."
+}
+
+
 ##########################
 #Display                 #
 ##########################
