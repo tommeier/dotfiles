@@ -1,4 +1,4 @@
-export EDITOR='mate -w'
-export TEXEDIT='mate -w -l %d "%s"'
+export EDITOR='mate'
+export TEXEDIT='mate -l %d "%s"'
 export LESSEDIT='mate -l %lm %f'
 export ARCHFLAGS="-arch x86_64";
