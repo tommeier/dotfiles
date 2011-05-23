@@ -8,6 +8,10 @@ alias mail_attachment="echo -e 'Email attachment of $1' | mutt -s 'Emailing atta
 alias start_nginx="sudo /etc/init.d/nginx start"
 alias stop_nginx="/etc/init.d/nginx stop"
 
+function analyse_ssl_certificate {
+  openssl x509 -noout -text -in $1
+}
+
 function zip_and_mail_attachment {
   zipped="$1.gz"
   gzip --best -f $1 > $zipped
