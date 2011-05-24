@@ -30,10 +30,15 @@ rails server $@
 }
 
 
-#Uninstall crappy old system gems
-function remove_system_gems {
+function delete_gem_list {
   echo "Uninstalling all system gems... This could take a while..."
   for x in `gem list --no-versions`; do gem uninstall $x --all --quiet --ignore-dependencies --user-install --executables; done
+}
+
+#Uninstall crappy old system gems
+function remove_system_gems {
+  delete_gem_list
+
   #TODO : Add check for trailing slash and remove
   system_location=$@
   if [ "$system_location" == "" ]; then
