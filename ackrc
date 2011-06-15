@@ -1,6 +1,6 @@
---type-add=ruby=.haml,.rake,.rsel,.builder,.rb
---type-add=html=.html.erb,.html.haml,.html,.erb
---type-add=js=.js.erb,.js
+--type-add=ruby=.haml,.rake,.rsel,.builder,.rb,.coffee,
+--type-add=html=.html.erb,.html.haml,.html,.erb,
+--type-add=js=.js.erb,.js,
 --type-add=css=.sass
 --type-add=csv=.csv
 --type-add=yml=.yml
