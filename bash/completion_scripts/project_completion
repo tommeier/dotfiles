@@ -2,9 +2,7 @@
 
 class ProjectCompletion
   def initialize(command)
-    puts command.inspect
     @command = command
-    @root_directory = root_directory
   end
 
   def matches
@@ -18,8 +16,10 @@ class ProjectCompletion
   end
 
   def projects
-    puts @root_directory.inspect
-    `ls #{@root_directory}`.split
+    root_projects = `ls ~/Development/Projects/`.split
+    old_projects  = `ls ~/Development/Projects/Clear/`.split
+    work_projects = `ls ~/Development/Projects/Jetstar/`.split
+    (root_projects + work_projects + old_projects)
   end
 end
 
