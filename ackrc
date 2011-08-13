@@ -1,18 +1,42 @@
---type-add=ruby=.haml,.rake,.rsel,.builder,.rb,.coffee,
---type-add=html=.html.erb,.html.haml,.html,.erb,
---type-add=js=.js.erb,.js,
---type-add=css=.css
---type-add=csv=.csv
---type-add=yml=.yml
---type-add=sass=.sass
---type-add=md=.md,.markdown
---type-set=cucumber=.feature
-
+--type-add
+ruby=.haml,.builder,.rake,.rsel,.builder,.rb,.coffee
+--type-add
+css=.sass,.scss,.css
+--type-add
+html=.html.erb,.html.haml,.html,.erb
+--type-add
+js=.js.erb,.js
+--type-set
+markdown=.markdown,.md,.mdown
+--type-set
+actionscript=.as
+--type-set
+cucumber=.feature
+--type-set
+rdoc=.rdoc
+--type-add
+objc=.pch
+--type-set=xcode=.pbxproj,.pbxuser,.perspectivev3
+--type-set=ragel=.rl
+--type-set=nib=.xib
+--type-set=plist=.plist
+--type-set=tmstuff=.tmproj,.tm_build_errors
 --ignore-dir=bootstrap
 --ignore-dir=coverage
 --ignore-dir=vendor
 --ignore-dir=log
 --ignore-dir=tmp
+--ruby
+--css
+--js
+--html
+--csv
+--markdown
+--actionscript
+--objc
+--nonib
+--notmstuff
+--noxcode
 
 --sort-files
 --color
@@ -25,3 +49,6 @@
 
 # only show one line of output context around the results
 # --context=1
+
+
+
