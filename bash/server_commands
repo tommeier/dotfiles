@@ -7,6 +7,7 @@ alias zip_file="gzip --best $1 > $1.gz"
 alias mail_attachment="echo -e 'Email attachment of $1' | mutt -s 'Emailing attachment : $1' -a $1 'tom@venombytes.com'"
 
 function list_largest_files {
+ #note - Ubuntu file name $8, mac osx : $9
  find . -type f -size +10000k -exec ls -lh {} \; | awk '{ print $5 ": " $9 }' | sort -rn
 }
 
