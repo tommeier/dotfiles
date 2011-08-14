@@ -1,6 +1,9 @@
 #!/usr/bin/env ruby
 
 class ProjectCompletion
+  #Edit file with one line per root directory for auto project completion
+  PROJECT_ROOTS_PATH = '~/.dotfiles/bash/completion_scripts/project_completion_roots'
+
   def initialize(command)
     @command = command
   end
@@ -15,11 +18,19 @@ class ProjectCompletion
     @command[/\s(.+?)$/, 1] || ''
   end
 
+  def root_projects_path
+    @path ||= File.expand_path(PROJECT_ROOTS_PATH)
+    @path = File.readlink(path) if File.symlink?(@path)
+    @path
+  end
+
+  def root_projects
+    return [] unless File.exists?(root_projects_path)
+    File.open(root_projects_path, 'r').readlines.collect{|path| path.gsub(/\n\r?/,'').strip }
+  end
+
   def projects
-    root_projects = `ls ~/Development/Projects/`.split
-    old_projects  = `ls ~/Development/Projects/Clear/`.split
-    work_projects = `ls ~/Development/Projects/Jetstar/`.split
-    (root_projects + work_projects + old_projects)
+    root_projects.inject([]) { |result, path| result += `ls #{path}`.split }
   end
 end
 
