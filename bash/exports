@@ -2,3 +2,4 @@ export EDITOR='mate'
 export TEXEDIT='mate -l %d "%s"'
 export LESSEDIT='mate -l %lm %f'
 export ARCHFLAGS="-arch x86_64";
+export CC="/usr/bin/gcc-4.2"
