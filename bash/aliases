@@ -7,9 +7,7 @@ function p {
 		project_file="${line}${1}";
 		if [ -d $project_file ]; then
 			cd $project_file;
-			break
-		else
-			echo 'Doesnt exist'
+			break;
 		fi
 	done < ~/.dotfiles/bash/completion_scripts/project_completion_roots
 }
