@@ -8,6 +8,7 @@ coverage
 coverage.data
 db/*.sqlite3
 log/*.log
+log/*.log.lck
 rerun.txt
 tmp/**/*
 tmp/restart.txt
