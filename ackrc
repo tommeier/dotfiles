@@ -16,6 +16,7 @@ cucumber=.feature
 rdoc=.rdoc
 --type-add
 objc=.pch
+--type-set=search_dump=.nrm,.fnm
 --type-set=xcode=.pbxproj,.pbxuser,.perspectivev3
 --type-set=ragel=.rl
 --type-set=nib=.xib
@@ -36,6 +37,7 @@ objc=.pch
 --nonib
 --notmstuff
 --noxcode
+--nosearch_dump
 
 --sort-files
 --color
