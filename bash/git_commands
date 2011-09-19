@@ -58,7 +58,7 @@ function analyse_remote_branches {
   do
     branch_name=${branch/refs\/remotes\/origin\//}
     printf "\nRemote Branch : ${branch_name}\n"
-    result=`git log master..origin/${branch_name//\'/} --pretty=format:" -------> %h | %ar | %an | %s" --abbrev-commit --date-order --decorate -n 4`
+    result=`git log master..origin/${branch_name//\'/} --pretty=format:" -------> %h | %ar | %an | %s" --abbrev-commit --date-order --decorate -n 8`
     if [ "$result" == "" ]; then
       echo " <--> Commits all  merged in master"
     else
