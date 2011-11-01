@@ -17,7 +17,7 @@ rdoc=.rdoc
 --type-add
 objc=.pch
 --type-set=search_dump=.nrm,.fnm
---type-set=ignore=.pdf
+--type-set=ignore=.pdf,.torrent
 --type-set=xcode=.pbxproj,.pbxuser,.perspectivev3
 --type-set=ragel=.rl
 --type-set=nib=.xib
