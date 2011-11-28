@@ -3,7 +3,7 @@ ruby=.haml,.builder,.rake,.rsel,.builder,.rb,.coffee
 --type-add
 css=.sass,.scss,.css
 --type-add
-html=.html.erb,.html.haml,.html,.erb
+html=.html.erb,.html.haml,.html,.erb,.handlebars
 --type-add
 js=.js.erb,.js
 --type-set
@@ -28,6 +28,7 @@ objc=.pch
 --ignore-dir=vendor
 --ignore-dir=log
 --ignore-dir=tmp
+--ignore-dir=spec/javascripts/generated
 --ruby
 --css
 --js

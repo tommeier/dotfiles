@@ -2,6 +2,7 @@
 alias create_postgres='initdb --encoding=UTF8 /Users/ozmeier/Development/Projects/homebrew/var/postgres'
 alias start_postgres='pg_ctl -D /usr/local/var/postgres -l /usr/local/var/postgres/server.log start'
 alias stop_postgres='pg_ctl -D /usr/local/var/postgres stop -s -m fast'
+alias restart_postgres='stop_postgres; start_postgres'
 
 alias start_mongo='sudo mongod'
 
