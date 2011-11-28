@@ -30,6 +30,10 @@ git rebase $primary
 echo "== All actions completed..."
 }
 
+function git_commits_by_user {
+git log --pretty=format:%an | awk '{ ++c[$0]; } END { for(cc in c) printf "%5d %s\n",c[cc],cc; }'| sort -r
+}
+
 
 ##########################
 #Display                 #
