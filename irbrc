@@ -172,6 +172,3 @@ end
 
 # Show results of all extension-loading
 puts "#{ANSI_SETUP[:GRAY]}~> Console extensions:#{ANSI_SETUP[:RESET]} #{$console_extensions.join(' ')}#{ANSI_SETUP[:RESET]}"
-
-
-load File.dirname(__FILE__) + '/.railsrc' if ($0 == 'irb' && ENV['RAILS_ENV']) || ($0 == 'script/rails' && Rails.env)
