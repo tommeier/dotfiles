@@ -8,6 +8,7 @@
 #sudo rm /usr/local/bin/ruby
 
 alias fix_gem_specifications="perl -p -i -e 's/ 00:00:00.000000000Z//' ~/.rvm/gems/*/specifications/*.gemspec"
+alias debug_bundle="DEBUG_RESOLVER=1 bundle install"
 
 #Set system wide install permissions : sudo chmod -R g+w /usr/local/rvm
 function install_rvm {
