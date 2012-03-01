@@ -3,8 +3,8 @@ alias list_free_space="df -h"
 alias list_folders_by_size="du -h | sort -n"
 alias list_specific_root_folders_by_size="du -ks /folder_name/* | sort -n"
 
-alias list_inodes_ufs="df -F ufs -o i"
-alias list_inodes_ext3="df -F ext3 -o i"
+alias list_inodes_ufs="df -F ufs -i"
+alias list_inodes_ext3="df -F ext3 -i"
 alias list_inodes_from_folder="ls -i /"
 
 alias zip_file="gzip --best $1 > $1.gz"

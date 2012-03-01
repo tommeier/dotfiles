@@ -1,13 +1,13 @@
 #Standard RVM load script command
 [[ -s "$HOME/.rvm/scripts/rvm" ]] && . "$HOME/.rvm/scripts/rvm" # This loads RVM into a shell session.
 
-
 #Clean out old ruby (NUKE SYSTEM RUBY)
 #sudo rm -rf /usr/local/lib/ruby
 #ruby -e "old_ruby_execs = \`egrep 'rubygems|bin/ruby|env ruby' /usr/local/bin/*\`; require 'pp'; pp old_ruby_execs.split(\"\n\").collect{|line| line.split(':').first}.uniq"
 #sudo echo; ruby -e "old_ruby_execs = \`egrep 'rubygems|bin/ruby|env ruby' /usr/local/bin/*\`; old_ruby_execs.split(\"\n\").collect{|line| line.split(':').first}.uniq.each { |exec| p 'removing ' + exec; \`sudo rm #{exec}\`}"
 #sudo rm /usr/local/bin/ruby
 
+alias fix_gem_specifications="perl -p -i -e 's/ 00:00:00.000000000Z//' ~/.rvm/gems/*/specifications/*.gemspec"
 
 #Set system wide install permissions : sudo chmod -R g+w /usr/local/rvm
 function install_rvm {

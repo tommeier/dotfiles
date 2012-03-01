@@ -19,3 +19,5 @@ source ~/Development/Projects/bashscripts/bash-publish_to/bash_publish_to.sh
 if [ -f ~/.localrc ]; then
   source ~/.localrc
 fi
+
+PATH=$PATH:$HOME/.rvm/bin # Add RVM to PATH for scripting
