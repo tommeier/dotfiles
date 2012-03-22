@@ -19,8 +19,12 @@ alias reload="source ~/.bash_profile"
 alias edit_hostfile="$EDITOR /private/etc/hosts"
 alias current_time='echo $(date +%H:%M:%S)'
 
+#User commands
+alias rsync_qnap="/users/tom/Development/Projects/backup/rsync_backup.sh"
+
 #Path helper
 alias find_dead_path_items='echo $PATH |tr ':' '\n' |xargs ls -ld'
 
 #Editor
 alias m="mate ."
+
