@@ -26,5 +26,5 @@ alias rsync_qnap="/users/tom/Development/Projects/backup/rsync_backup.sh"
 alias find_dead_path_items='echo $PATH |tr ':' '\n' |xargs ls -ld'
 
 #Editor
-alias m="mate ."
+alias m=$EDITOR
 

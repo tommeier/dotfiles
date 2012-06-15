@@ -1,5 +1,5 @@
 --type-add
-ruby=.haml,.builder,.rake,.rsel,.builder,.rb,.coffee,
+ruby=.haml,.builder,.rake,.rsel,.builder,.rb,.coffee,.yml,
 --type-add
 css=.sass,.scss,.css,
 --type-add
@@ -30,7 +30,6 @@ objc=.pch,
 --nobinaries
 --ignore-dir=bootstrap
 --ignore-dir=coverage
---ignore-dir=vendor
 --ignore-dir=log
 --ignore-dir=tmp
 --ignore-dir=public
