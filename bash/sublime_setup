@@ -3,4 +3,12 @@ function setup_sublime_text {
   ln -s "/Applications/Sublime Text 2.app/Contents/SharedSupport/bin/subl" ~/bin/subl
 
   export EDITOR='subl -w'
+
+  # {
+  #   // Set to true to removing trailing white space on save
+  #    "trim_trailing_white_space_on_save": true,
+        # "tab_size": 2,
+        # "translate_tabs_to_spaces": true,
+  # }
+
 }
