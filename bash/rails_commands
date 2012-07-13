@@ -8,6 +8,8 @@ alias be="bundle exec"
 alias bec='bundle exec c'
 alias bes='bundle exec s'
 
+alias bump="rm -rfR tmp/cache/ && touch ~/.pow/restart.txt && sudo nginx -s stop && sudo nginx && bundle exec foreman start"
+
 #Gem Helpers
 alias sort_out_gem='gem specification $1 > .specification'
 

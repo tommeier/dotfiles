@@ -11,4 +11,30 @@ function setup_sublime_text {
         # "translate_tabs_to_spaces": true,
   # }
 
+  cd ~/Library/Application\ Support/Sublime\ Text\ 2/Packages
+  git clone git://github.com/jashkenas/coffee-script-tmbundle CoffeeScript
+
+
+#Install the subl command line tool. Assuming ~/bin is in your path:
+#
+#   ln -s "/Applications/Sublime Text 2.app/Contents/SharedSupport/bin/subl" ~/bin/subl
+#It works like mate, but has more options. Check subl --help.
+#
+#Install Package Control. Package Control makes it easy to install/remove/upgrade ST2 packages.
+#
+#Open the ST2 console with Ctrl+` (like Quake). Then paste this Python code from this page and hit enter. Reboot ST2. (You only need to do #this once. From now on you’ll use Package Control to manage ST2 packages.)
+#
+#Install the Soda theme. This dramatically improves the look and feel of the editor. Use Package Control to install the theme:
+#
+#Press ⌘⇧P to open the Command Palette.
+#Select “Package Control: Install Package” and hit Enter.
+#Type “CTags” and hit Enter to install the CTags package.
+#Start with a basic Settings file. You can use mine, which will activate the Soda Light theme. Reboot Sublime Text 2 so the Soda theme #applies correctly. You can browse the default settings that ship with ST2 by choosing “Sublime Text 2” > “Preferences…” > “Settings - #Default” to learn what you can configure.
+#
+#Install more packages. My essentials are SCSS, RSpec, DetectSyntax and Git. DetectSyntax solves the problem of ensuring your RSpec, Rails #and regular Ruby files open in the right mode.
+#
+#Install CTags. CTags let you quickly navigate to code definitons (classes, methods, etc.). First:
+#
+#   $ brew install ctags
+#Then use Package Control to install the ST2 package. Check out the default CTags key bindings to see what you can do.
 }
