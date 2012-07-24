@@ -1,4 +1,4 @@
-export EDITOR='subl'
+export EDITOR='subl --wait'
 
 export TEXEDIT='mate -l %d "%s"'
 export LESSEDIT='mate -l %lm %f'

@@ -10,8 +10,8 @@
 	lg = log -p
 	df = !git diff | subl
   add-unmerged = "!f() { git ls-files --unmerged | cut -f2 | sort -u ; }; git add `f`"
-	edit-unmerged = "!f() { git ls-files --unmerged | cut -f2 | sort -u ; }; subl -W `f`"
-	edit-modified = "!f() { git ls-files --modified | cut -f2 | sort -u ; }; subl -W `f`"
+	edit-unmerged = "!f() { git ls-files --unmerged | cut -f2 | sort -u ; }; subl --wait `f`"
+	edit-modified = "!f() { git ls-files --modified | cut -f2 | sort -u ; }; subl --wait `f`"
 [color]
     branch = auto
     diff = auto
@@ -31,7 +31,7 @@
     untracked = cyan
 [core]
 	excludesfile = <%= ENV['HOME'] %>/.gitignore
-	editor = subl -w
+	editor = subl --wait
 	autocrlf = input
 [apply]
 	whitespace = nowarn
