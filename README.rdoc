@@ -4,14 +4,13 @@ These are config files to set up a system the way I like it.
 
 (With thanks to Ryan Bates on the base project and the yoinked snippets).
 
-I mostly use Textmate and many, many little bash scripts to help me on the way.
+I mostly use Sublime Text and many, many little bash scripts to help me on the way.
 
 == Installation
 
-  git clone git://github.com/tommeier/dotfiles ~/.dotfiles
-  cd ~/.dotfiles
+  git clone git://github.com/tommeier/dotfiles ~/development/projects/personal/dotfiles
+  cd ~/development/projects/personal/dotfiles
   rake install
-
 
 == Environment
 

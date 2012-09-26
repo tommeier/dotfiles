@@ -13,4 +13,3 @@ rerun.txt
 tmp/**/*
 tmp/restart.txt
 vendor/bundle
-

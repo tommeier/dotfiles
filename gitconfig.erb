@@ -1,17 +1,17 @@
 [user]
-	name = Tom Meier
-	email = tom@venombytes.com
+  name = Tom Meier
+  email = tom@venombytes.com
 [alias]
-	st = status
-	ci = commit
-	br = branch
-	co = checkout
-	df = diff
-	lg = log -p
-	df = !git diff | subl
+  st = status
+  ci = commit
+  br = branch
+  co = checkout
+  df = diff
+  lg = log -p
+  df = !git diff | subl
+  edit-unmerged = "!f() { git ls-files --unmerged | cut -f2 | sort -u ; }; mate `f`"
   add-unmerged = "!f() { git ls-files --unmerged | cut -f2 | sort -u ; }; git add `f`"
-	edit-unmerged = "!f() { git ls-files --unmerged | cut -f2 | sort -u ; }; subl --wait `f`"
-	edit-modified = "!f() { git ls-files --modified | cut -f2 | sort -u ; }; subl --wait `f`"
+  edit-modified = "!f() { git ls-files --modified | cut -f2 | sort -u ; }; mate `f`"
 [color]
     branch = auto
     diff = auto
@@ -30,12 +30,15 @@
     changed = green
     untracked = cyan
 [core]
-	excludesfile = <%= ENV['HOME'] %>/.gitignore
-	editor = subl --wait
-	autocrlf = input
+  excludesfile = <%= ENV['HOME'] %>/.gitignore
+  editor = subl --wait
+  autocrlf = input
 [apply]
-	whitespace = nowarn
+  whitespace = nowarn
 [format]
-	pretty = %C(yellow)%h%Creset %s %C(red)(%an, %cr)%Creset
+  pretty = %C(yellow)%h%Creset %s %C(red)(%an, %cr)%Creset
 [github]
-	user = tommeier
+  user = tommeier
+[diff]
+        renamelimit=0
+        rename-threshold=80

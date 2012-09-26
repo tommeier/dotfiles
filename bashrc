@@ -1,14 +1,14 @@
-source ~/.bash/exports
 source ~/.bash/aliases
 source ~/.bash/aliases_script
 source ~/.bash/completions
+source ~/.bash/exports
 source ~/.bash/paths
 source ~/.bash/config
 source ~/.bash/rails_commands
 source ~/.bash/git_commands
 source ~/.bash/server_commands
 source ~/.bash/database_commands
-source ~/.bash/rvm_commands
+#source ~/.bash/rvm_commands
 source ~/.bash/log_commands
 
 #publish_to command for Git - see https://github.com/tommeier/bash-publish_to
@@ -20,4 +20,4 @@ if [ -f ~/.localrc ]; then
   source ~/.localrc
 fi
 
-PATH=$PATH:$HOME/.rvm/bin # Add RVM to PATH for scripting
+
