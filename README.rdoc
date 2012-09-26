@@ -12,6 +12,20 @@ I mostly use Sublime Text and many, many little bash scripts to help me on the w
   cd ~/development/projects/personal/dotfiles
   rake install
 
+== Special Install
+  #TODO : Automate installation into the application_support directory using same install script
+
+  Symlink the Sublime Text 2 plugins and features :
+
+  cd ~/Library/Application\ Support/Sublime\ Text\ 2/
+  rm -rf "Installed Packages"
+  rm -rf "Packages"
+  rm -rf "Pristine Packages"
+
+  ln -sf ~/.application_support/Sublime\ Text\ 2/Installed\ Packages ./Installed\ Packages
+  ln -sf ~/.application_support/Sublime\ Text\ 2/Packages ./Packages
+  ln -sf ~/.application_support/Sublime\ Text\ 2/Pristine\ Packages ./Pristine\ Packages
+
 == Environment
 
 I am running on Mac OS X, but it will likely work on Linux as well with

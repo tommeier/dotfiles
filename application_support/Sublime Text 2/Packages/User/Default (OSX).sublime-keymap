@@ -1,0 +1,4 @@
+[
+{ "keys": ["ctrl+alt+t"], "command": "html_tidy"},
+{ "keys": ["ctrl+k", "ctrl+f"], "command": "indentxml" }
+]

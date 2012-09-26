@@ -1,0 +1,17 @@
+{
+	"auto_upgrade_last_run": 1348639176,
+	"installed_packages":
+	[
+		"Alignment",
+		"BeautifyRuby",
+		"CTags",
+		"Git",
+		"Indent XML",
+		"Package Control",
+		"RSpec",
+		"Sass",
+		"SCSS",
+		"Tag",
+		"Theme - Soda"
+	]
+}
