@@ -2,7 +2,7 @@
 
 class ProjectCompletion
   #Edit file with one line per root directory for auto project completion
-  PROJECT_ROOTS_PATH = '~/.dotfiles/bash/completion_scripts/project_completion_roots'
+  PROJECT_ROOTS_PATH = '~/.bash/completion_scripts/project_completion_roots'
 
   def initialize(command)
     @command = command
