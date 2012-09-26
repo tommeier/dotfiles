@@ -13,7 +13,8 @@ source ~/.bash/log_commands
 
 #publish_to command for Git - see https://github.com/tommeier/bash-publish_to
 #enables any command from a git branch, to go to master, get latest, rebase then push to a selected remote
-source ~/Development/Projects/bashscripts/bash-publish_to/bash_publish_to.sh
+
+source ~/development/scripts/bash-publish_to/bash_publish_to.sh
 
 # use .localrc for settings specific to one system
 if [ -f ~/.localrc ]; then
