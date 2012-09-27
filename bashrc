@@ -8,6 +8,7 @@ source ~/.bash/rails_commands
 source ~/.bash/git_commands
 source ~/.bash/server_commands
 source ~/.bash/database_commands
+source ~/.bash/rbenv_commands
 #source ~/.bash/rvm_commands
 source ~/.bash/log_commands
 
