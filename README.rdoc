@@ -15,24 +15,10 @@ I mostly use Sublime Text and many, many little bash scripts to help me on the w
   rake setup_symlinks
 
 == Special Install
-  #TODO : Automate installation into the application_support directory using same install script
-
-- Sublime Text 2
 - Netnewswire
 - Automatic
 
 - Postgres config?
-
-  Symlink the Sublime Text 2 plugins and features :
-
-  cd ~/Library/Application\ Support/Sublime\ Text\ 2/
-  rm -rf "Installed Packages"
-  rm -rf "Packages"
-  rm -rf "Pristine Packages"
-
-  ln -sf ~/.application_support/Sublime\ Text\ 2/Installed\ Packages ./Installed\ Packages
-  ln -sf ~/.application_support/Sublime\ Text\ 2/Packages ./Packages
-  ln -sf ~/.application_support/Sublime\ Text\ 2/Pristine\ Packages ./Pristine\ Packages
 
 == Environment
 
