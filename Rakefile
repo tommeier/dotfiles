@@ -5,8 +5,9 @@ require 'fileutils'
 desc "install the dot files into user's home directory"
 task :install do
   replace_all = false
+
   Dir['*'].each do |file|
-    next if %w[Rakefile README.rdoc LICENSE].include? file
+    next if %w[Rakefile README.rdoc LICENSE symlinks].include? file
 
     if File.exist?(File.join(ENV['HOME'], ".#{file.sub('.erb', '')}"))
       if File.identical? file, File.join(ENV['HOME'], ".#{file.sub('.erb', '')}")
@@ -50,7 +51,6 @@ def link_file(file)
   end
 end
 
-
 #Symlink each directory in source directory to a target directory
 def symlink_folders(source_directory, target_directory)
 
@@ -80,17 +80,6 @@ task :setup_symlinks do
   #Sublime text 2
   puts "Setting up symlinks..."
 
-
-
   symlink_folders(File.join('symlinks', 'Application Support', 'Sublime Text 2'), '/users/tom/Library/Application Support/Sublime Text 2/')
-
-  # rm -rf "Installed Packages"
-  # rm -rf "Packages"
-  # rm -rf "Pristine Packages"
-
-  # ln -sf ~/.application_support/Sublime\ Text\ 2/Installed\ Packages ./Installed\ Packages
-  # ln -sf ~/.application_support/Sublime\ Text\ 2/Packages ./Packages
-  # ln -sf ~/.application_support/Sublime\ Text\ 2/Pristine\ Packages ./Pristine\ Packages
-
 
 end
