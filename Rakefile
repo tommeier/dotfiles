@@ -1,12 +1,13 @@
 require 'rake'
 require 'erb'
+require 'fileutils'
 
 desc "install the dot files into user's home directory"
 task :install do
   replace_all = false
   Dir['*'].each do |file|
     next if %w[Rakefile README.rdoc LICENSE].include? file
-    
+
     if File.exist?(File.join(ENV['HOME'], ".#{file.sub('.erb', '')}"))
       if File.identical? file, File.join(ENV['HOME'], ".#{file.sub('.erb', '')}")
         puts "identical ~/.#{file.sub('.erb', '')}"
@@ -47,4 +48,49 @@ def link_file(file)
     puts "linking ~/.#{file}"
     system %Q{ln -s "$PWD/#{file}" "$HOME/.#{file}"}
   end
+end
+
+
+#Symlink each directory in source directory to a target directory
+def symlink_folders(source_directory, target_directory)
+
+  puts " -- Generating symlinks for '#{File.basename(source_directory)}'"
+  Dir.glob(File.join(source_directory, '*')).each do |file|
+
+    if File.directory?(file)
+      symlink_source = File.expand_path(file)
+      symlink_target = File.join(target_directory, File.basename(file))
+
+      if File.exists?(symlink_target)
+        puts "     - Removing existing target for '#{File.basename(file)}'."
+        FileUtils.rm_rf(symlink_target)
+      end
+
+      puts " --+ Linking '#{symlink_source}' --> '#{symlink_target}'"
+      system %Q{ln -s "#{symlink_source}" "#{symlink_target}"}
+    end
+  end
+  puts " -- Done."
+
+end
+
+desc "Setup symlinks"
+task :setup_symlinks do
+  #TODO : Automate this for all files/folders present in the app_support directory
+  #Sublime text 2
+  puts "Setting up symlinks..."
+
+
+
+  symlink_folders(File.join('symlinks', 'Application Support', 'Sublime Text 2'), '/users/tom/Library/Application Support/Sublime Text 2/')
+
+  # rm -rf "Installed Packages"
+  # rm -rf "Packages"
+  # rm -rf "Pristine Packages"
+
+  # ln -sf ~/.application_support/Sublime\ Text\ 2/Installed\ Packages ./Installed\ Packages
+  # ln -sf ~/.application_support/Sublime\ Text\ 2/Packages ./Packages
+  # ln -sf ~/.application_support/Sublime\ Text\ 2/Pristine\ Packages ./Pristine\ Packages
+
+
 end
