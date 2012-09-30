@@ -6,9 +6,9 @@ alias restart_postgres='stop_postgres; start_postgres'
 
 alias start_mongo='sudo mongod'
 
-alias edit_elatic_config="mate /usr/local/Cellar/elasticsearch/0.17.5/config/elasticsearch.yml"
-alias start_elastic='elasticsearch -f -D es.config=/usr/local/Cellar/elasticsearch/0.17.5/config/elasticsearch.yml'
-alias stop_elastic='launchctl unload -wF ~/Library/LaunchAgents/org.elasticsearch.plist'
+alias edit_elastic_config="subl /usr/local/Cellar/elasticsearch/0.19.9/config/elasticsearch.yml"
+alias start_elastic='launchctl load -wF ~/Library/LaunchAgents/homebrew.mxcl.elasticsearch.plist'
+alias stop_elastic='launchctl unload -wF ~/Library/LaunchAgents/homebrew.mxcl.elasticsearch.plist'
 
 alias start_redis='redis-server /usr/local/etc/redis.conf'
 alias access_redis='redis-cli'
