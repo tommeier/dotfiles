@@ -15,10 +15,8 @@ I mostly use Sublime Text and many, many little bash scripts to help me on the w
   rake setup_symlinks
 
 == Special Install
-- Netnewswire
-- Automatic
-
-- Postgres config?
+  Don't forget to run `rake setup_symlinks` for configuration after a successful dotfiles install. This will destroy any existing files
+  in the wrong location
 
 == Environment
 

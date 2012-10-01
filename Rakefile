@@ -51,35 +51,42 @@ def link_file(file)
   end
 end
 
-#Symlink each directory in source directory to a target directory
-def symlink_folders(source_directory, target_directory)
+#Symlink each directory/file in source directory to a target directory
+# Caveat - In root directory, it must be *either* a folder or file wanting to be symlinked
+def symlink_collection(source_directory, target_directory)
 
   puts " -- Generating symlinks for '#{File.basename(source_directory)}'"
   Dir.glob(File.join(source_directory, '*')).each do |file|
+    is_directory = File.directory?(file)
 
-    if File.directory?(file)
-      symlink_source = File.expand_path(file)
-      symlink_target = File.join(target_directory, File.basename(file))
+    symlink_source = File.expand_path(file)
+    symlink_target = File.join(target_directory, File.basename(file))
 
-      if File.exists?(symlink_target)
-        puts "     - Removing existing target for '#{File.basename(file)}'."
-        FileUtils.rm_rf(symlink_target)
-      end
-
-      puts " --+ Linking '#{symlink_source}' --> '#{symlink_target}'"
-      system %Q{ln -s "#{symlink_source}" "#{symlink_target}"}
+    if File.exists?(symlink_target)
+      puts "     - Removing existing target for '#{File.basename(file)}'."
+      is_directory ? FileUtils.rm_rf(symlink_target) : FileUtils.rm(symlink_target)
     end
+
+    puts " --+ Linking '#{symlink_source}' --> '#{symlink_target}'"
+    system %Q{ln -s "#{symlink_source}" "#{symlink_target}"}
   end
   puts " -- Done."
+end
 
+def kill_running_process(process_name)
+  pid = `pgrep 'Sublime Text 2'`
+  unless pid.to_s == ''
+    puts " ** Killing running process : '#{process_name}' - #{pid}"
+    Process.kill "USR2", pid.to_i
+  end
 end
 
 desc "Setup symlinks"
 task :setup_symlinks do
-  #TODO : Automate this for all files/folders present in the app_support directory
   #Sublime text 2
   puts "Setting up symlinks..."
 
-  symlink_folders(File.join('symlinks', 'Application Support', 'Sublime Text 2'), '/users/tom/Library/Application Support/Sublime Text 2/')
+  kill_running_process('Sublime Text 2')
+  symlink_collection(File.join('symlinks', 'Application Support', 'Sublime Text 2'), '/users/tom/Library/Application Support/Sublime Text 2/')
 
 end
