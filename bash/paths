@@ -3,8 +3,8 @@ ORIGINAL_PATH=$PATH
 export PATH=~/bin
 export PATH=$PATH:/usr/local/sbin
 export PATH=$PATH:/usr/local/bin:/usr/bin
-export PATH=$PATH:/usr/local/mysql/bin
 export PATH=$PATH:/sbin
+export PATH=$PATH:/usr/local/share/npm/bin
 export PATH=$PATH:$ORIGINAL_PATH
 
 
