@@ -31,6 +31,9 @@ rails server $@
   fi
 }
 
+function fr {
+  bundle exec foreman run $@
+}
 
 function delete_gem_list {
   echo "Uninstalling all system gems... This could take a while..."
