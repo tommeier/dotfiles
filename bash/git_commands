@@ -34,6 +34,14 @@ function git_commits_by_user {
 git log --pretty=format:%an | awk '{ ++c[$0]; } END { for(cc in c) printf "%5d %s\n",c[cc],cc; }'| sort -r
 }
 
+#TODO:
+#Step one:
+#Master
+#git fetch --prune
+#Use Octokit, find all open pull requests Octokit.pull_requests
+#create local branches to test pull requests
+
+
 
 ##########################
 #Display                 #
