@@ -6,7 +6,7 @@ export PATH=$PATH:/usr/local/sbin
 export PATH=$PATH:/usr/local/bin:/usr/bin
 export PATH=$PATH:/sbin
 export PATH=$PATH:/usr/local/share/npm/bin
+export PATH=$PATH:/usr/local/share/python
 export PATH=$PATH:$ORIGINAL_PATH
-
 
 export MANPATH="/usr/local/man:/usr/local/mysql/man:/usr/local/git/man:$MANPATH"

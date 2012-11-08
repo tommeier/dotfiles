@@ -4,8 +4,8 @@ alias git_commits_in_dates_with_author='git log --pretty=format:"%h%x09%an%x09%a
 alias git_commits_in_dates_without_author='git log --pretty=format:"%h%x09%ad%x09%s" --date=local --before="Nov 01 2009" --after="Jul 1 2009" > git_output.txt'
 alias git_commits_in_dates_with_name_and_date='git log --pretty=format:"%ad%x09%s" --date=local --before="Nov 01 2009" --after="Jul 1 2009" > git_output.txt'
 alias gita='git archive --format=zip master > $1'
-
 alias sup='startup'
+
 function startup {
 #Quick function to start the day and grab the latest info, then rebase your dev branch
 primary=$1
