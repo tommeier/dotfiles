@@ -13,6 +13,7 @@
   add-unmerged = "!f() { git ls-files --unmerged | cut -f2 | sort -u ; }; git add `f`"
   edit-modified = "!f() { git ls-files --modified | cut -f2 | sort -u ; }; mate `f`"
 [color]
+    ui = auto
     branch = auto
     diff = auto
     status = auto
@@ -33,6 +34,7 @@
   excludesfile = <%= ENV['HOME'] %>/.gitignore
   editor = subl --wait
   autocrlf = input
+  whitespace = trailing-space,space-before-tab
 [apply]
   whitespace = nowarn
 [format]
@@ -40,5 +42,17 @@
 [github]
   user = tommeier
 [diff]
-        renamelimit=0
-        rename-threshold=80
+  renamelimit=0
+  rename-threshold=80
+  renames = copies
+  mnemonicprefix = true
+[branch]
+  autosetupmerge = true
+[push]
+  default = tracking
+[rerere]
+  enabled = true
+  autoupdate = true
+[merge]
+  stat = true
+
