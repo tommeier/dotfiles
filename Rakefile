@@ -6,6 +6,8 @@ desc "install the dot files into user's home directory"
 task :install do
   replace_all = false
 
+  preload_private_environment
+
   Dir['*'].each do |file|
     next if %w[Rakefile README.rdoc LICENSE symlinks].include? file
 
@@ -78,6 +80,16 @@ def kill_running_process(process_name)
   unless pid.to_s == ''
     puts " ** Killing running process : '#{process_name}' - #{pid}"
     Process.kill "USR2", pid.to_i
+  end
+end
+
+#Babushka loads in one ruby process, this will load any env file previously generated (like in private-dot-files)
+# Search and match on any variable assignment and ensure current ruby process has it loaded
+def preload_private_environment(private_file_location = File.join(ENV['HOME'], '.localrc'))
+  if File.exists?(private_file_location)
+    File.open(private_file_location).read.scan(/^([\w_]+)\=["']?([^"']+)["']?$/) do |key, value|
+      ENV[key] = value
+    end
   end
 end
 

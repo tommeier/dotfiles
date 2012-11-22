@@ -1,6 +1,6 @@
 [user]
   name = Tom Meier
-  email = tom@venombytes.com
+  email = <%= ENV['GITHUB_EMAIL'] %>
 [alias]
   st = status
   ci = commit
@@ -40,7 +40,8 @@
 [format]
   pretty = %C(yellow)%h%Creset %s %C(red)(%an, %cr)%Creset
 [github]
-  user = tommeier
+  user = <%= ENV['GITHUB_USER'] %>
+  token = <%= ENV['GITHUB_TOKEN'] %>
 [diff]
   renamelimit=0
   rename-threshold=80
