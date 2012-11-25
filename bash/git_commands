@@ -7,40 +7,30 @@ alias gita='git archive --format=zip master > $1'
 alias sup='startup'
 
 function startup {
-#Quick function to start the day and grab the latest info, then rebase your dev branch
-primary=$1
-devbranch=''
-if [ "$primary" == "" ]; then
-        echo "== Defaulting to 'startup master'"; primary='master';
-fi
-if [ "$primary" == "master" ]; then
-        devbranch='dev';
-else
-        devbranch=$primary + '_dev';
-fi
-echo "== Upgrading '$devbranch'"
-echo "-- 1. Checking out '$primary' to latest version..."
-git checkout $primary
-git fetch origin
-git rebase -p origin/$primary
-echo "-- 2. Switching back to '$devbranch'..."
-git checkout $devbranch
-echo "-- 3. Rebasing '$devbranch' to include '$primary'..."
-git rebase $primary
-echo "== All actions completed..."
+#Quick function to start the day and grab the latest info, fetch all open pull requests
+echo "==> Fetching & Sweeping GIT"
+git sweep cleanup --force
+#Bug in git-sweep right now...
+git fetch --prune
+echo "==> Fetching any open pull requests"
+#Temporarily use local copy until pull request is brought in
+~/development/projects/current/git-pulls/bin/git-pulls update
+~/development/projects/current/git-pulls/bin/git-pulls checkout --force
+echo "==> Clearing any logs"
+for f in log/*.log
+do
+  if [ -f $f ]; then
+    echo "Nulling ${f}"
+    cat /dev/null > $f
+  fi
+done
+echo "==> Checking GIT, pruning to 2 weeks"
+git gc
 }
 
 function git_commits_by_user {
 git log --pretty=format:%an | awk '{ ++c[$0]; } END { for(cc in c) printf "%5d %s\n",c[cc],cc; }'| sort -r
 }
-
-#TODO:
-#Step one:
-#Master
-#git fetch --prune
-#Use Octokit, find all open pull requests Octokit.pull_requests
-#create local branches to test pull requests
-
 
 
 ##########################
