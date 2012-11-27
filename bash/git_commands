@@ -6,16 +6,27 @@ alias git_commits_in_dates_with_name_and_date='git log --pretty=format:"%ad%x09%
 alias gita='git archive --format=zip master > $1'
 alias sup='startup'
 
+#Delete any passed branch name except master
+function delete_branch {
+if [[ $1 =~ ([* ]+)?master$ ]]; then
+  echo "- [skipped] ${1}"
+else
+  git branch $1 -D -q
+  echo "x [deleted] ${1}"
+fi
+}
+
 function startup {
-#Quick function to start the day and grab the latest info, fetch all open pull requests
+#Quick function to start the day and grab the latest info, fetch all open pull requests, and remove master merged branches
 echo "==> Fetching & Sweeping GIT"
 git sweep cleanup --force
-#Bug in git-sweep right now...
-git fetch --prune
 echo "==> Fetching any open pull requests"
 #Temporarily use local copy until pull request is brought in
 ~/development/projects/current/git-pulls/bin/git-pulls update
 ~/development/projects/current/git-pulls/bin/git-pulls checkout --force
+#Remove local branches already merged into master
+echo "==> Removing any local branches merged into master"
+git branch --merged master | while read i; do delete_branch "$i"; done
 echo "==> Clearing any logs"
 for f in log/*.log
 do
