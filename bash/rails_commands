@@ -35,6 +35,12 @@ function fr {
   bundle exec foreman run $@
 }
 
+#Kill any processes related to a specific port
+# USAGE : kport 3000
+function kport {
+  lsof -Fp -i :$1 | cut -c 2- | xargs kill
+}
+
 function delete_gem_list {
   echo "Uninstalling all system gems... This could take a while..."
   for x in `gem list --no-versions`; do gem uninstall $x --all --quiet --ignore-dependencies --user-install --executables; done
