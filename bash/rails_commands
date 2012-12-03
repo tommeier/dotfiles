@@ -36,8 +36,8 @@ function fr {
 }
 
 #Kill any processes related to a specific port
-# USAGE : kport 3000
-function kport {
+# USAGE : kill_port 3000
+function kill_port {
   lsof -Fp -i :$1 | cut -c 2- | xargs kill
 }
 
