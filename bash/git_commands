@@ -18,6 +18,9 @@ fi
 
 function startup {
 #Quick function to start the day and grab the latest info, fetch all open pull requests, and remove master merged branches
+echo "==> Updating master"
+git checkout master
+git pull
 echo "==> Fetching & Sweeping GIT"
 git sweep cleanup --force
 echo "==> Fetching any open pull requests"
