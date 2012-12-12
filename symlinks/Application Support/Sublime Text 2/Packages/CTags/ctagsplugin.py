@@ -325,26 +325,11 @@ def commonfolder(m):
 
     return os.path.sep.join(s1)
 
-def tagged_project_files(view, tag_dir):
-    window = view.window()
-    if not window: return []
-    project = None #window.project()
-    fn = view_fn(view)
-
-    if not project or ( project and
-                        not  fn.startswith(dirname(project.fileName())) ):
-        prefix_arg = fn
-        files = glob.glob(join(dirname(fn),"*"))
-    else:
-        prefix_arg = project.fileName()
-        mount_points = project.mountPoints()
-        files = list( chain(*(d['files'] for d in mount_points)) )
-
-    common_prefix = commonfolder([tag_dir, prefix_arg])
-
-    return [fn[len(common_prefix)+1:] for fn in files]
-
 def files_to_search(view, tags_file, multiple=True):
+
+    if multiple:
+        return []
+
     fn = view.file_name()
     if not fn: return
 
@@ -352,11 +337,6 @@ def files_to_search(view, tags_file, multiple=True):
 
     common_prefix = commonfolder([tag_dir, fn])
     files = [fn[len(common_prefix)+1:]]
-
-    if multiple:
-        files.pop()
-        more_files = tagged_project_files(view, tag_dir)
-        files.extend(more_files)
 
     return files
 
@@ -631,7 +611,7 @@ class ShowSymbols(sublime_plugin.TextCommand):
                 sublime.status_message(
                     'No symbols found **FOR CURRENT FILE**; Try Rebuild?' )
 
-        path_cols = (0, ) if len(files) > 1 else ()
+        path_cols = (0, ) if len(files) > 1 or multi else ()
         formatting = functools.partial( format_tag_for_quickopen,
                                         file = bool(path_cols)  )
 
