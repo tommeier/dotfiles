@@ -22,7 +22,7 @@ if [ -f ~/.localrc ]; then
   source ~/.localrc
 fi
 
-alias staging_ci="ssh -p 22022 evan@vafl.proinfotech.com.au"
+alias staging_ci="ssh -p 22022 evan@ci.ferocia.com.au"
 
 #Ruby memory tweaks for 1.9.3
 export RUBY_HEAP_MIN_SLOTS=1000000

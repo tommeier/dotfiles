@@ -18,6 +18,11 @@ fi
 
 function startup {
 #Quick function to start the day and grab the latest info, fetch all open pull requests, and remove master merged branches
+# Dependencies :
+#    - gem install git-pulls
+#    - For private repos :
+#     - Environment variables : GITHUB_USER + GITHUB_TOKEN
+#     - https://help.github.com/articles/creating-an-oauth-token-for-command-line-use
 echo "==> Updating master"
 git checkout master
 git pull
