@@ -28,6 +28,7 @@ git checkout master
 git pull
 echo "==> Fetching & Sweeping GIT"
 git sweep cleanup --force
+git fetch --prune
 echo "==> Fetching any open pull requests"
 git-pulls update
 git-pulls checkout --force
