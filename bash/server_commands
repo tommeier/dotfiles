@@ -22,6 +22,10 @@ function analyse_ssl_certificate {
   openssl x509 -noout -text -in $1
 }
 
+function find_in_files {
+  grep -r "${1}" * 2> /dev/null
+}
+
 function zip_and_mail_attachment {
   zipped="$1.gz"
   gzip --best -f $1 > $zipped
