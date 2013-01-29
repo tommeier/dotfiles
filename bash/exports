@@ -8,3 +8,7 @@ export NODE_PATH="/usr/local/lib/node_modules"
 
 
 export MAGICK_HOME="/usr/local/Cellar/imagemagick/6.7.1-1"
+
+# Prefer AU English and use UTF-8
+export LANG="en_AU"
+export LC_ALL="en_AU.UTF-8"
