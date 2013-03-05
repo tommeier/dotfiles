@@ -53,6 +53,12 @@ def paste
   `pbpaste`
 end
 
+def source_for(object, method)
+  location = object.method(method).source_location
+  `subl #{location[0]}:#{location[1]}` if location
+  location
+end
+
 #Colour Setup
 ANSI_SETUP = {}
 ANSI_SETUP[:RESET] = "\e[0m"
