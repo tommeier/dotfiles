@@ -11,6 +11,7 @@ source ~/.bash/database_commands
 source ~/.bash/log_commands
 
 #source ~/.bash/rbenv_commands #Disabled for Boxen
+#source ~/.bash/rvm_commands #Deprecated for RBEnv
 
 # use .localrc for settings specific to one system
 if [ -f ~/.localrc ]; then
@@ -25,11 +26,6 @@ export RUBY_HEAP_SLOTS_INCREMENT=1000000
 export RUBY_HEAP_SLOTS_GROWTH_FACTOR=1
 export RUBY_GC_MALLOC_LIMIT=1000000000
 export RUBY_HEAP_FREE_MIN=500000
-
-
-### Added by the Heroku Toolbelt
-export PATH="/usr/local/heroku/bin:$PATH"
-
 
 #Load Boxen
 [ -f /opt/boxen/env.sh ] && source /opt/boxen/env.sh
