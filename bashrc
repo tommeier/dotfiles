@@ -25,8 +25,8 @@ export RUBY_GC_MALLOC_LIMIT=1000000000
 export RUBY_HEAP_FREE_MIN=500000
 
 #Load Boxen
-[ -f /opt/boxen/env.sh ] && source /opt/boxen/env.sh
-
+[[ -f /opt/boxen/env.sh ]] && source /opt/boxen/env.sh
+export PATH=$PATH:/opt/boxen/homebrew/share/npm/bin #Globally loaded NPM modules
 
 #####  Disabled for Boxen #####
 #Required files
