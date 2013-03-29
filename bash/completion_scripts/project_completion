@@ -26,11 +26,15 @@ class ProjectCompletion
 
   def root_projects
     return [] unless File.exists?(root_projects_path)
-    File.open(root_projects_path, 'r').readlines.collect{|path| path.gsub(/\n\r?/,'').strip }
+    File.open(root_projects_path, 'r').readlines.collect do |path| 
+      path.gsub(/\n\r?/,'').strip
+    end.delete_if {|path| !File.exists?(path) }
   end
 
   def projects
-    root_projects.inject([]) { |result, path| result += `ls #{path}`.split }
+    root_projects.inject([]) do |result, path|
+      result += `ls #{path}`.split
+    end
   end
 end
 
