@@ -4,7 +4,7 @@ require 'fileutils'
 
 desc "install the dot files into user's home directory"
 task :install do
-  replace_all = false
+  replace_all = ? ENV['REPLACE_ALL'] == 'true' ? true : false
 
   preload_private_environment
 
@@ -55,31 +55,37 @@ def link_file(file)
 end
 
 def setup_symlinks
-  #Sublime text 2
   puts "Setting up symlinks..."
-
-  kill_running_process('Sublime Text 2')
-  symlink_collection(File.join('symlinks', 'Application Support', 'Sublime Text 2'), "#{ENV['HOME']}/Library/Application Support/Sublime Text 2/")
+  #Sublime text 2
+  symlinks_target_folder = "#{ENV['HOME']}/Library/Application Support/Sublime Text 2/"
+  symlinks_source_folder = File.join('symlinks', 'Application Support', 'Sublime Text 2')
+  symlink_collection(symlinks_source_folder, symlinks_target_folder, 'Sublime Text 2')
 end
 
 #Symlink each directory/file in source directory to a target directory
 # Caveat - In root directory, it must be *either* a folder or file wanting to be symlinked
-def symlink_collection(source_directory, target_directory)
-
+def symlink_collection(source_directory, target_directory, running_process_to_kill = nil)
   puts " -- Generating symlinks for '#{File.basename(source_directory)}'"
   Dir.glob(File.join(source_directory, '*')).each do |file|
     is_directory = File.directory?(file)
 
     symlink_source = File.expand_path(file)
     symlink_target = File.join(target_directory, File.basename(file))
+    if File.symlink?(symlink_target) && File.readlink(symlink_target) == symlink_source
+      #Symlink already exists
+      puts " --- Symlink exists already '#{symlink_source}' --> '#{symlink_target}'"
+    else
+      #Generate symlink
+      kill_running_process(running_process_to_kill) if running_process_to_kill
 
-    if File.exists?(symlink_target)
-      puts "     - Removing existing target for '#{File.basename(file)}'."
-      is_directory ? FileUtils.rm_rf(symlink_target) : FileUtils.rm(symlink_target)
+      if File.exists?(symlink_target)
+        puts "     - Removing existing target for '#{File.basename(file)}'."
+        is_directory ? FileUtils.rm_rf(symlink_target) : FileUtils.rm(symlink_target)
+      end
+
+      puts " --+ Linking '#{symlink_source}' --> '#{symlink_target}'"
+      system %Q{ln -s "#{symlink_source}" "#{symlink_target}"}
     end
-
-    puts " --+ Linking '#{symlink_source}' --> '#{symlink_target}'"
-    system %Q{ln -s "#{symlink_source}" "#{symlink_target}"}
   end
   puts " -- Done."
 end
