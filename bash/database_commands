@@ -13,8 +13,6 @@ alias stop_elastic='launchctl unload -wF ~/Library/LaunchAgents/homebrew.mxcl.el
 alias start_redis='redis-server /usr/local/etc/redis.conf'
 alias access_redis='redis-cli'
 
-
-
 #mysql.server start
 alias start_mysql="cd /usr/local/Cellar/mysql/5.5.14; /usr/local/Cellar/mysql/5.5.14/bin/mysqld_safe &"
 alias stop_mysql='mysqladmin shutdown -uroot'
