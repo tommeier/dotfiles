@@ -34,6 +34,7 @@ task :install do
       link_file(file)
     end
   end
+  setup_symlinks
 end
 
 def replace_file(file)
@@ -51,6 +52,14 @@ def link_file(file)
     puts "linking ~/.#{file}"
     system %Q{ln -s "$PWD/#{file}" "$HOME/.#{file}"}
   end
+end
+
+def setup_symlinks
+  #Sublime text 2
+  puts "Setting up symlinks..."
+
+  kill_running_process('Sublime Text 2')
+  symlink_collection(File.join('symlinks', 'Application Support', 'Sublime Text 2'), "#{ENV['HOME']}/Library/Application Support/Sublime Text 2/")
 end
 
 #Symlink each directory/file in source directory to a target directory
@@ -91,14 +100,4 @@ def preload_private_environment(private_file_location = File.join(ENV['HOME'], '
       ENV[key] = value
     end
   end
-end
-
-desc "Setup symlinks"
-task :setup_symlinks do
-  #Sublime text 2
-  puts "Setting up symlinks..."
-
-  kill_running_process('Sublime Text 2')
-  symlink_collection(File.join('symlinks', 'Application Support', 'Sublime Text 2'), '/users/tom/Library/Application Support/Sublime Text 2/')
-
 end
