@@ -4,10 +4,6 @@ export TEXEDIT='mate -l %d "%s"'
 export LESSEDIT='mate -l %lm %f'
 export ARCHFLAGS="-arch x86_64";
 export CC="/usr/bin/gcc-4.2"
-export NODE_PATH="/usr/local/lib/node_modules"
-
-
-export MAGICK_HOME="/usr/local/Cellar/imagemagick/6.7.1-1"
 
 # Prefer AU English and use UTF-8
 export LANG="en_AU"
