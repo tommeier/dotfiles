@@ -4,7 +4,7 @@ require 'fileutils'
 
 desc "install the dot files into user's home directory"
 task :install do
-  replace_all = ? ENV['REPLACE_ALL'] == 'true' ? true : false
+  replace_all = ENV['REPLACE_ALL'] == 'true' ? true : false
 
   preload_private_environment
 
