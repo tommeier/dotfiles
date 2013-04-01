@@ -23,6 +23,8 @@ function startup {
 #    - For private repos :
 #     - Environment variables : GITHUB_USER + GITHUB_TOKEN
 #     - https://help.github.com/articles/creating-an-oauth-token-for-command-line-use
+# TODO: Remove git-pulls dependency and make a bash only system
+# TODO: Crash out of script if the current branch, or master is in a dirty state
 echo "==> Updating master"
 git checkout master
 git pull
