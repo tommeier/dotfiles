@@ -23,7 +23,7 @@ alias current_time='echo $(date +%H:%M:%S)'
 alias rsync_qnap="/users/tom/development/scripts/backup/rsync_backup.sh"
 
 #Path helper
-alias find_dead_path_items='echo $PATH | tr ':' '\n' | xargs ls -ld'
+alias find_dead_path_items="echo $PATH | tr ':' '\n' | xargs ls -ld"
 
 #Editor
 alias m=$EDITOR
