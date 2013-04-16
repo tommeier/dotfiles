@@ -1,239 +1,358 @@
-import sublime, sublime_plugin, re, os, subprocess
+import sublime
+import sublime_plugin
+
+import re
+import os
+import sys
+import subprocess
+import urllib
+import urllib2
+import base64
+from collections import defaultdict
+
+############### CONSTANTS ###############
+
+supported_options = [
+    'add-xml-decl',
+    'add-xml-space',
+    'alt-text',
+    'anchor-as-name',
+    'assume-xml-procins',
+    'bare',
+    'clean',
+    'css-prefix',
+    'decorate-inferred-ul',
+    'doctype',
+    'drop-empty-paras',
+    'drop-font-tags',
+    'drop-proprietary-attributes',
+    'enclose-block-text',
+    'enclose-text',
+    'escape-cdata',
+    'fix-backslash',
+    'fix-bad-comments',
+    'fix-uri',
+    'hide-comments',
+    'hide-endtags',
+    'indent-cdata',
+    'input-xml',
+    'join-classes',
+    'join-styles',
+    'literal-attributes',
+    'logical-emphasis',
+    'lower-literals',
+    'merge-divs',
+    'merge-spans',
+    'ncr',
+    'new-blocklevel-tags',
+    'new-empty-tags',
+    'new-inline-tags',
+    'new-pre-tags',
+    'numeric-entities',
+    'output-html',
+    'output-xhtml',
+    'output-xml',
+    'preserve-entities',
+    'quote-ampersand',
+    'quote-marks',
+    'quote-nbsp',
+    'repeated-attributes',
+    'replace-color',
+    'show-body-only',
+    'uppercase-attributes',
+    'uppercase-tags',
+    'word-2000',
+    'break-before-br',
+    'indent',
+    'indent-attributes',
+    'indent-spaces',
+    'markup',
+    'punctuation-wrap',
+    'sort-attributes',
+    'split',
+    'tab-size',
+    'vertical-space',
+    'wrap',
+    'wrap-asp',
+    'wrap-attributes',
+    'wrap-jste',
+    'wrap-php',
+    'wrap-script-literals',
+    'wrap-sections',
+    'ascii-chars',
+    'char-encoding',
+    'input-encoding',
+    'language',
+    'newline',
+    'output-bom',
+    'output-encoding',
+    'error-file',
+    'force-output',
+    'gnu-emacs',
+    'gnu-emacs-file',
+    'keep-time',
+    'output-file',
+    'tidy-mark',
+    'quiet',
+    'write-back',
+]
+
+re_ID = re.compile(r"""<[^>]*?id\s*=\s*("|')(.*?)("|')[^>]*?>""", re.DOTALL | re.MULTILINE)
+
+# Path to plugin, script and libraries.
+pluginpath = os.path.join(sublime.packages_path(), 'HtmlTidy')
+scriptpath = os.path.join(pluginpath, 'tidy.php')
+
+############### FUNCTIONS ###############
+
+
+def tidy_string(input_string, command):
+
+    if 'webservice' == command[0]:
+        try:
+            # call webservice
+            url = 'http://tidy.welovewordpress.de/webservice/'
+            values = {'content': base64.b64encode(input_string.encode('utf8')),
+                       'arguments': str(command)}
+
+            data = urllib.urlencode(values)
+            req = urllib2.Request(url, data, headers={"Accept": "text/html"})
+            response = urllib2.urlopen(req)
+            returned_content = response.read()
+            # print 'HtmlTidy: returned_content ' + returned_content
+            tidied = returned_content
+            # error = 'the web api responded: ' + str(returned_content)
+            error = ''
+            returncode = 0
+            return tidied, error, returncode
+        except Exception as e:
+            msg = 'Had a problem communicating with the webservice: {0}'.format(e)
+            return input_string, msg, -1
+    else:
+        p = subprocess.Popen(
+            command,
+            bufsize=-1,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            stdin=subprocess.PIPE,
+            shell=True,
+            universal_newlines=True
+        )
+
+        tidied, error = p.communicate(input_string.encode('utf8'))
+        return tidied, error, p.returncode
+
+
+def remove_duplicate_ids(html):
+    'Removes duplicated IDs in the parsed markup.'
+    'Also adapted from the Sublime Text 1 webdevelopment package.'
+    idsn = defaultdict(int)
+    matches = []
+
+    for m in re_ID.finditer(html):
+        id = m.group(2)
+        idsn[id] += 1
+        matches.append(m)
+
+    for match in reversed(matches):
+        id = match.group(2)
+
+        n = idsn[id]
+        idsn[id] -= 1
+
+        if n > 1:
+            start, end = match.span(2)
+            html = "%s%s%s%s" % (html[:start], id, str(n), html[end:])
+
+    return html
+
+
+def check_php():
+    p = subprocess.Popen(
+        'php -i | grep libTidy',
+        bufsize=-1,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        stdin=subprocess.PIPE,
+        shell=True,
+        universal_newlines=True
+    )
+
+    if p.communicate()[0] == '':
+        return False
+    else:
+        return True
+
+
+def find_tidier(prefer_tidy):
+    ''' If user prefers exe or php, try those. Otherwise, user the webservice.'''
+
+    if prefer_tidy == 'exe':
+        try:
+            tidypath = os.path.normpath(pluginpath + '/win/tidy.exe')
+            subprocess.call([tidypath, "-v"])
+            print "HTMLTidy: using Tidy found here: " + tidypath
+            return tidypath, 'list'
+        except OSError:
+            print "HTMLTidy: Didn't find tidy.exe in " + pluginpath
+            pass
+
+    elif prefer_tidy == 'php':
+        try:
+            print "HTMLTidy: Checking PHP Tidy module..."
+            if check_php():
+
+                print "HTMLTidy: Using PHP Tidy module."
+                # print "HTMLTidy: retval: " + str(retval)
+                return 'php "' + os.path.normpath(scriptpath) + '"', 'string'
+            else:
+                print "HTMLTidy: Your PHP version doesn't include Tidy support"
+                # print "HTMLTidy: retval: " + str(retval)
+                pass
+
+        except OSError:
+            print "HTMLTidy: Not using PHP"
+            pass
+
+    return "webservice", 'list'
+
+
+def fixup(string):
+    'Remove double newlines & decode text.'
+    return re.sub(r'\r\n|\r', '\n', string.decode('utf-8'))
+
+
+def compile_args(args, script, style):
+    'Take a list of tuples and present it as either a list of a string in --opt=arg style'
+    if style == 'string':
+        return script + ' ' + ' '.join([a[0] + '=' + a[1] for a in args])
+    if style == 'list':
+        output = []
+        for a in args:
+            output.extend(a)
+        return [script] + output
+
+
+def get_args(settings, args):
+    'Builds command line arguments.'
+
+    # leave out default values
+    for option in supported_options:
+        custom_value = settings.get(option)
+
+        # If custom value isn't set, ignore that setting.
+        if custom_value is None:
+            continue
+
+        if custom_value == True:
+            custom_value = 1
+        if custom_value == False:
+            custom_value = 0
+
+        # print "HtmlTidy: setting " + option + ": " + custom_value
+        args += [('--' + option, str(custom_value))]
+
+    return args
+
+
+def entab(temp, tab_width=4, all=0):
+    'Convert spaces to tabs'
+    # http://code.activestate.com/recipes/66433-change-tabsspaces-with-regular-expressions/
+    # if all is true, every time tab_width number of spaces are found next
+    # to each other, they are converted to a tab.  If false, only those at
+    # the beginning of the line are converted.  Default is false.
+
+    if all:
+        temp = re.sub(r" {" + repr(tab_width) + r"}", r"\t", temp)
+    else:
+        patt = re.compile(r"^ {" + repr(tab_width) + r"}", re.M)
+        temp, count = patt.subn(r"\t", temp)
+        i = 1
+        while count > 0:
+             # this only loops a few times, at most six or seven times on
+             # heavily indented code
+            subpatt = re.compile(r"^\t{" + repr(i) + r"} {" + repr(tab_width) + r"}", re.M)
+            temp, count = subpatt.subn("\t" * (i + 1), temp)
+            i += 1
+    return temp
+
+############### CLASS ###############
+
 
 class HtmlTidyCommand(sublime_plugin.TextCommand):
     def run(self, edit):
-        print('HtmlTidy: invoked on file: %s' % ( self.view.file_name() ) )
+        print('HtmlTidy: invoked on file: %s' % (self.view.file_name()))
 
-        # path to plugin - <sublime dir>/Packages/PhpTidy
-        pluginpath = sublime.packages_path() + '/HtmlTidy'
-        scriptpath = pluginpath + '/tidy.php'
+        # load HtmlTidy settings
+        settings = sublime.load_settings('HtmlTidy.sublime-settings')
 
-        # path to temp file
-        tmpfile    = '/tmp/htmltidy-sublime-buffer.tmp'
-        tidyerrors = '/tmp/htmltidy-error-log.tmp'
-        phppath    = '/usr/bin/php'
-        tidypath   = '/usr/bin/tidy'
-        isWindows  = False
-
-        # set different paths for php and temp file on windows
-        if sublime.platform() == 'windows':
-            tmpfile    = pluginpath + '/htmltidy-sublime-buffer.tmp'
-            tidyerrors = pluginpath + '/htmltidy-error-log.tmp'
-            tidypath   = pluginpath + '/win/tidy.exe'
-            isWindows  = True
-            # check if php.exe is in PATH
-            phppath = 'php.exe'
-            retval = os.system( '%s -v' % ( phppath ) )
-            if not retval == 0:
-                # try to find php.exe at predefined locations
-                phppath = self.find_phppath()
-
-        # get current buffer content
-        bufferLength  = sublime.Region(0, self.view.size())
-        bufferContent = self.view.substr(bufferLength).encode('utf-8')
-
-        # write tmpfile
-        fileHandle = open ( tmpfile, 'w' ) 
-        fileHandle.write ( bufferContent ) 
-        fileHandle.close() 
-        print('HtmlTidy: buffer written to tmpfile: %s' % (tmpfile))
-
-        # get supported tidy options
-        supported_options = self.get_supported_options()
-
-        # load HtmlTidy settings    
-        settings = sublime.load_settings('HtmlTidy.sublime-settings')    
-        
-        # load view settings for indentation
-        use_tabs = not self.view.settings().get('translate_tabs_to_spaces')
         tab_size = int(self.view.settings().get('tab_size', 4))
-        print('HtmlTidy: use_tabs: %s' % (use_tabs))
-        print('HtmlTidy: tab_size: %s' % (tab_size))
+        # print('HtmlTidy: tab_size: %s' % (tab_size))
+        args = [('--indent-spaces', str(tab_size))]
+        args = [('--tab-size', str(tab_size))]
 
-        # build command line arguments
-        args = '--indent-spaces=%s ' % (tab_size)
-        arg2 = '--indent-spaces %s ' % (tab_size)
-        if (use_tabs):
-            args = '--tab-size=%s ' % (tab_size)
-            arg2 = '--indent-spaces 4 --tab-size %s ' % (tab_size)
+        # Get arguments from config files.
+        # This extends the args just given, so that a user-given value for tab_size takes precedence.
+        args = get_args(settings, args)
+        prefer_tidy = settings.get('prefer_tidy', 'webservice')
 
-        # leave out default values
-        for option in supported_options:
-            default_value = supported_options[option]
-            if default_value == True : default_value = 1
-            if default_value == False: default_value = 0
-            custom_value = settings.get(option)
-            if custom_value == True : custom_value = 1
-            if custom_value == False: custom_value = 0
-            if not custom_value == None and not custom_value == default_value:
-                #print "HtmlTidy: setting ", option, ": ", default_value, "->", custom_value
-                args = args + (" --%s=%s" % (option,custom_value))
-                arg2 = arg2 + (" --%s %s" % (option,custom_value))
+        try:
+            script, arg_type = find_tidier(prefer_tidy)
+        except OSError:
+            print "HTMLTidy: Couldn't find Tidy or PHP. Stopping without Tidying anything."
+            return
 
+        allow_dupe_ids = self.view.settings().get('allow-duplicate-ids', False)
 
-        # check if native tidy is found
-        if os.path.exists( tidypath ):
-            # call /usr/bin/tidy on tmpfile
-            arg2 += ' --indent 1 --tidy-mark 0 '
-            print('HtmlTidy: calling tidy: "%s" %s -q -m -f "%s" "%s" ' % ( tidypath, arg2, tidyerrors, tmpfile ) )
-            #     retval = os.system( '"%s" %s -q -m -f "%s" "%s" ' % ( tidypath, arg2, tidyerrors, tmpfile ) )
-            retval = subprocess.call( '"%s" %s -q -m -f "%s" "%s"' % ( tidypath, arg2, tidyerrors, tmpfile ), shell = not isWindows )
-
-            if retval != 0:
-                print('HtmlTidy: tidy returned error code: %s' % (retval))
-
-            # read error log and delete
-            if os.path.exists( tidyerrors ):
-                fileHandle = open ( tidyerrors, 'r' ) 
-                errors = fileHandle.read() 
-                fileHandle.close() 
-                os.remove( tidyerrors )
-                print('HtmlTidy: error log contained: \n\n%s' % (errors))
+        # Get current selection(s).
+        if not self.view.sel()[0].empty():
+            # If selection, then make sure not to add body tags and the like.
+            args += [('--show-body-only', '1')]
 
         else:
-            # check if php is at phppath
-            retval = subprocess.call( '%s -v' % ( phppath ), shell = not isWindows )
-            if not retval == 0:
-                sublime.error_message('HtmlTidy cannot find php.exe. Make sure it is available in your PATH.')
-                return
+            # If no selection, get the entire view.
+            deselect_flag = True
+            self.view.sel().add(sublime.Region(0, self.view.size()))
 
-            # check if tidy.php is found - this has become obsolete since it's bundled
-            if not os.path.exists( scriptpath ):
-                sublime.error_message('HtmlTidy cannot find the script at %s.' % (scriptpath))
-                return
+        command = compile_args(args, script, style=arg_type)
 
-            # call tidy.php on tmpfile
-            print('HtmlTidy: calling script: "%s" "%s" "%s" %s' % ( phppath, scriptpath, tmpfile, args ) )
-            retval = subprocess.call( '"%s" "%s" "%s" %s' % ( phppath, scriptpath, tmpfile, args ), shell = not isWindows )
-            if retval != 0:
-                print('HtmlTidy: script returned: %s' % (retval))
-                if retval == 32512:
-                    sublime.error_message('HtmlTidy cannot find php at %s.' % (phppath))
-                    return
-                else:
-                    sublime.error_message('There was an error calling the script at %s. Return value: %s' % (scriptpath,retval))
-                    return
+        print 'HtmlTidy: ' + str(command)
+        #print "HtmlTidy: Passing this script and arguments: " + script + " " + str(args)
 
-        # read tmpfile and delete
-        fileHandle = open ( tmpfile, 'r' ) 
-        newContent = fileHandle.read() 
-        fileHandle.close() 
-        os.remove( tmpfile )
-        print('HtmlTidy: tmpfile was processed and removed')
+        for sel in self.view.sel():
 
-        # convert spaces to tabs if view settings say so
-        if (use_tabs):
-            newContent = self.entab( newContent )
+            tidied, err, retval = tidy_string(self.view.substr(sel), command)
 
-        # write new content back to buffer
-        self.view.replace(edit, bufferLength, self.fixup(newContent))
-        
+            err = fixup(err)
 
-    # Fixup from external command
-    def fixup(self, string):
-        return re.sub(r'\r\n|\r', '\n', string.decode('utf-8'))
+            if tidied and (retval == 0 or retval == 1):
+                # convert spaces to tabs if view settings say so
+                if (not self.view.settings().get('translate_tabs_to_spaces')):
+                    tidied = entab(tidied, tab_size)
 
-    # convert spaces to tabs
-    # http://code.activestate.com/recipes/66433-change-tabsspaces-with-regular-expressions/
-    def entab(self, temp, tab_width=4, all=0):
+                if allow_dupe_ids == False:
+                    tidied = remove_duplicate_ids(tidied)
 
-        # if all is true, every time tab_width number of spaces are found next
-        # to each other, they are converted to a tab.  If false, only those at
-        # the beginning of the line are converted.  Default is false.
+                # write new content back to buffer
+                self.view.replace(edit, sel, fixup(tidied))
 
-        if all:
-            temp = re.sub(r" {" + `tab_width` + r"}", r"\t", temp)
-        else:
-            patt = re.compile(r"^ {" + `tab_width` + r"}", re.M)
-            temp, count = patt.subn(r"\t", temp)
-            i = 1
-            while count > 0:
-                #this only loops a few times, at most six or seven times on
-                #heavily indented code
-                subpatt = re.compile(r"^\t{" + `i` + r"} {" + `tab_width` + r"}", re.M)
-                temp, count = subpatt.subn("\t"*(i+1), temp)
-                i += 1
-        return temp
+                if deselect_flag:
+                    self.deselect()
 
+                if retval == 1:
+                    print "HTMLTidy: Tidy had some warnings for you:\n" + err
 
-    # get supported options and default values
-    def get_supported_options(self):
-        return {
-            'show-body-only' : False,
-            'clean' : True,
-            'char-encoding' : 'utf8',
-            'add-xml-decl' : True,
-            'add-xml-space' : False,
-            'output-html' : True,
-            'output-xml' : False,
-            'output-xhtml' : False,
-            'numeric-entities' : False,
-            'ascii-chars' : False,
-            'doctype' : 'strict',
-            'bare' : True,
-            'fix-uri' : True,
-            'indent' : True,
-            #'indent-spaces' : 4,
-            #'tab-size' : 4,
-            'wrap-attributes' : True,
-            'wrap' : 68,
-            'indent-attributes' : True,
-            'join-classes' : False,
-            'join-styles' : False,
-            'enclose-block-text' : True,
-            'fix-bad-comments' : True,
-            'fix-backslash' : True,
-            'replace-color' : False,
-            'wrap-asp' : False,
-            'wrap-jste' : False,
-            'wrap-php' : False,
-            'write-back' : True,
-            'drop-proprietary-attributes' : False,
-            'hide-comments' : False,
-            'hide-endtags' : False,
-            'literal-attributes' : False,
-            'drop-empty-paras' : True,
-            'enclose-text' : True,
-            'quote-ampersand' : True,
-            'quote-marks' : False,
-            'quote-nbsp' : True,
-            'vertical-space' : True,
-            'wrap-script-literals' : False,
-            'tidy-mark' : True,
-            'merge-divs' : False,
-            'repeated-attributes' : 'keep-last',
-            'break-before-br' : True,
-            'new-blocklevel-tags' : '',
-            'new-pre-tags' : '',
-            'new-inline-tags' : ''
-        }
+            else:
+                print "HTMLTidy experienced an error. Opening up a new file to show you."
+                # Again, adapted from the Sublime Text 1 webdevelopment package
+                nv = self.view.window().new_file()
+                nv.set_scratch(1)
+                # Append the given command to the error message.
+                nv.insert(edit, 0, err + "\n" + str(command))
+                nv.set_name('HTMLTidy: Tidy errors')
 
-    # get a list of possible locations for php.exe on windows
-    def find_phppath(self):
-        # get list of locations
-        locations = self.get_possible_php_locations()
-        # loop through locations
-        for loc in locations:
-            # check if file exists at location
-            if os.path.exists( loc ):
-                print('HtmlTidy: found php.exe at: %s' % ( loc ) )
-                return loc
-
-    # get a list of possible locations for php.exe on windows
-    def get_possible_php_locations(self):
-        return (
-            r'c:\php\php.exe',
-            r'c:\php5\php.exe',
-            r'c:\windows\php.exe',
-            r'c:\program files\php\php.exe',
-            r'c:\xampp\php\php.exe',
-            r'c:\wamp\bin\php\php5\php.exe',
-            r'c:\wamp\bin\php\php\php.exe',
-            r'C:\wamp\bin\php\php5.3.9\php.exe',
-            r'C:\wamp\bin\php\php5.3.10\php.exe',
-            r'C:\Program Files\wamp\php\php.exe',
-            r'D:\Program Files\wamp\php\php.exe',
-            r'/usr/bin/php'
-        )
-
-
+    def deselect(self):
+        """Remove selection and place pointer at top of document (adapted from https://gist.github.com/1608283)."""
+        top = self.view.sel()[0].a
+        self.view.sel().clear()
+        self.view.sel().add(sublime.Region(top, top))
