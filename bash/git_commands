@@ -18,7 +18,9 @@ fi
 }
 
 delete_remote_branch() {
-local regex="^origin\/(.*)$"
+#Do not match start to avoid (origin/HEAD -> origin/master)
+#TODO: Collect all refs to delete and do one push to remote. (git push origin x1 x2 x3 --delete)
+local regex="origin\/([A-Za-z0-9/_-]*)$"
 local remote_branch="$1"
 
 if [[ $remote_branch =~ $regex ]]; then
@@ -26,10 +28,9 @@ if [[ $remote_branch =~ $regex ]]; then
   local branch_name="${BASH_REMATCH[1]}"
 
   if [[ $branch_name = 'master' || $branch_name = 'HEAD' ]]; then
-    echo "- [skipped] ${branch_name}"
+    echo "- [skipped] ${1}"
   else
-    git push origin $branch_name --delete -q
-    echo "x [deleted] ${branch_name}"
+    git push origin $branch_name --delete
   fi;
 else
   echo "Error: This doesn't look like a remote branch to me: '${1}'"
