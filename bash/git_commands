@@ -1,3 +1,4 @@
+#!/bin/bash -e
 
 #Git Helpers (#TODO : Parameterize this)
 alias git_commits_in_dates_with_author='git log --pretty=format:"%h%x09%an%x09%ad%x09%s" --date=local --before="Nov 01 2009" --after="Jul 1 2009" > git_output.txt'
@@ -7,14 +8,34 @@ alias gita='git archive --format=zip master > $1'
 alias sup='startup'
 
 #Delete any passed branch name except master
-function delete_branch {
-if [[ $1 =~ ([* ]+)?master$ ]]; then
+function delete_local_branch {
+if [[ $1 =~ ^([* ]+)?master$ ]]; then
   echo "- [skipped] ${1}"
 else
   git branch $1 -D -q
   echo "x [deleted] ${1}"
 fi
 }
+
+delete_remote_branch() {
+local regex="^origin\/(.*)$"
+local remote_branch="$1"
+
+if [[ $remote_branch =~ $regex ]]; then
+  local full_match=$BASH_REMATCH
+  local branch_name="${BASH_REMATCH[1]}"
+
+  if [[ $branch_name = 'master' || $branch_name = 'HEAD' ]]; then
+    echo "- [skipped] ${branch_name}"
+  else
+    git push origin $branch_name --delete -q
+    echo "x [deleted] ${branch_name}"
+  fi;
+else
+  echo "Error: This doesn't look like a remote branch to me: '${1}'"
+fi;
+}
+
 
 function startup {
 #Quick function to start the day and grab the latest info, fetch all open pull requests, and remove master merged branches
@@ -30,16 +51,13 @@ git checkout master
 git pull
 echo "==> Fetching & Sweeping merged remote branches"
 git fetch --prune
-git branch -r --merged |
-  awk -F'/' '/^ *origin/{if(!match($0, /(>|master)/)){print $2}}' |
-  xargs git push origin --delete
-
+git branch -r --merged | while read i; do delete_remote_branch "$i"; done
 echo "==> Fetching any open pull requests"
 git pulls update
 git pulls checkout --force
 #Remove local branches already merged into master
 echo "==> Removing any local branches merged into master"
-git branch --merged master | while read i; do delete_branch "$i"; done
+git branch --merged master | while read i; do delete_local_branch "$i"; done
 echo "==> Clearing any logs"
 for f in log/*.log
 do
