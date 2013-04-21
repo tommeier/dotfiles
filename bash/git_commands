@@ -56,7 +56,6 @@ git branch -r --merged | while read i; do delete_remote_branch "$i"; done
 echo "==> Fetching any open pull requests"
 git pulls update
 git pulls checkout --force
-#Remove local branches already merged into master
 echo "==> Removing any local branches merged into master"
 git branch --merged master | while read i; do delete_local_branch "$i"; done
 echo "==> Clearing any logs"
