@@ -1,7 +1,7 @@
 #Database loads
-alias create_postgres='initdb /opt/boxen/homebrew/var/postgres -E utf8'
-alias start_postgres='pg_ctl -D /opt/boxen/homebrew/var/postgres -l /opt/boxen/homebrew/var/postgres/server.log start'
-alias stop_postgres='pg_ctl -D /opt/boxen/homebrew/var/postgres stop -s -m fast'
+alias create_postgres='initdb /opt/boxen/data/postgresql -E utf8'
+alias start_postgres='pg_ctl -D /opt/boxen/data/postgresql -l /opt/boxen/data/postgresql/server.log start'
+alias stop_postgres='pg_ctl -D /opt/boxen/data/postgresql stop -s -m fast stop -s -m fast'
 alias restart_postgres='stop_postgres; start_postgres'
 
 alias start_mongo='sudo mongod'
