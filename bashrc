@@ -26,6 +26,7 @@ export RUBY_HEAP_FREE_MIN=500000
 
 #Load Boxen
 [[ -f /opt/boxen/env.sh ]] && source /opt/boxen/env.sh
+export PATH=$PATH:./node_modules #Application wide NPM modules
 export PATH=$PATH:/opt/boxen/homebrew/share/npm/bin #Globally loaded NPM modules
 
 #####  Disabled for Boxen #####
