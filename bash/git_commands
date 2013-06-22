@@ -17,24 +17,38 @@ else
 fi
 }
 
-delete_remote_branch() {
-#Do not match start to avoid (origin/HEAD -> origin/master)
-#TODO: Collect all refs to delete and do one push to remote. (git push origin x1 x2 x3 --delete)
-local regex="origin\/([A-Za-z0-9/_-]*)$"
-local remote_branch="$1"
+delete_merged_remote_branches() {
+#TODO : Collect all refs to delete and do one push to specific remote. (git push origin x1 x2 x3 --delete)
+#     : This would require a multidimensional array
+local remotes="";
+for remote in $(git remote); do
+  remotes="$remote|$remotes"
+done
+remotes="${remotes%?}"
 
-if [[ $remote_branch =~ $regex ]]; then
-  local full_match=$BASH_REMATCH
-  local branch_name="${BASH_REMATCH[1]}"
+git branch -r --merged | while read merged_branch; do
+  local regex="($remotes)\/(.*)$"
 
-  if [[ $branch_name = 'master' || $branch_name = 'HEAD' ]]; then
-    echo "- [skipped] ${1}"
+  if [[ $merged_branch =~ $regex ]]; then
+    local full_match=$BASH_REMATCH;
+    local remote_name="${BASH_REMATCH[1]}";
+    local branch_name="${BASH_REMATCH[2]}";
+
+    if [[ $branch_name = 'master' || $branch_name = 'HEAD' ]]; then
+      echo "- [skipped] ${remote_name}/${branch_name}";
+    else
+      local git_head_descriptor="^HEAD -> (.*)$"
+      if [[ $branch_name =~ $git_head_descriptor ]]; then
+        #Do nothing, this is just the HEAD descriptor for git
+        #eg: HEAD -> origin/master
+      else
+        git push $remote_name $branch_name --delete
+      fi;
+    fi;
   else
-    git push origin $branch_name --delete
+    echo "Error: I don't know how to handle this branch: '${merged_branch}'"
   fi;
-else
-  echo "Error: This doesn't look like a remote branch to me: '${1}'"
-fi;
+done
 }
 
 
@@ -52,7 +66,7 @@ git checkout master
 git pull
 echo "==> Fetching & Sweeping merged remote branches"
 git fetch --prune
-git branch -r --merged | while read i; do delete_remote_branch "$i"; done
+delete_merged_remote_branches
 echo "==> Fetching any open pull requests"
 git pulls update
 git pulls checkout --force
