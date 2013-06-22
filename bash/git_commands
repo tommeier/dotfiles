@@ -38,10 +38,9 @@ git branch -r --merged | while read merged_branch; do
       echo "- [skipped] ${remote_name}/${branch_name}";
     else
       local git_head_descriptor="^HEAD -> (.*)$"
-      if [[ $branch_name =~ $git_head_descriptor ]]; then
-        #Do nothing, this is just the HEAD descriptor for git
+      if [[ ! $branch_name =~ $git_head_descriptor ]]; then
+        #Ignore the HEAD descriptor for git
         #eg: HEAD -> origin/master
-      else
         git push $remote_name $branch_name --delete
       fi;
     fi;
