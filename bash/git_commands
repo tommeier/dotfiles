@@ -147,6 +147,17 @@ function clear_gitignored_files {
 # Destructive            #
 ##########################
 
+function delete_file_from_all_git_history {
+  local file=$1
+
+  git filter-branch --force --index-filter \
+  "git rm --cached --ignore-unmatch $file" \
+  --prune-empty --tag-name-filter cat -- --all
+}
+
+
+
+
 function delete_all_local_tags {
   git-for-each-ref --shell --format="%(refname)" refs/tags | \
   while read tag
