@@ -1,69 +1,90 @@
 {
 	"auto_complete_commit_on_tab": true,
+	"auto_complete_delay": 30,
 	"bold_folder_labels": true,
+	"caret_style": "wide",
 	"color_scheme": "Packages/Color Scheme - Default/Blackboard.tmTheme",
-	"ensure_newline_at_eof_on_save": true,
+	"detect_indentation": false,
+  "detect_slow_plugins": false,
+  "drag_text": false,
+  "draw_minimap_border": true,
+  "draw_white_space": "all",
+  "ensure_newline_at_eof_on_save": true,
 	"file_exclude_patterns":
 	[
-		".DS_Store",
-		".tags*",
-		"*.pyc",
-		"*.pyo",
-		"*.exe",
-		"*.dll",
-		"*.obj",
-		"*.o",
 		"*.a",
+		"*.class",
+		"*.db",
+		"*.dll",
+		"*.dylib",
+		"*.exe",
+		"*.idb",
 		"*.lib",
 		"*.log",
-		"*.so",
-		"*.dylib",
 		"*.ncb",
-		"*.sdf",
-		"*.suo",
+		"*.o",
+		"*.obj",
 		"*.pdb",
-		"*.idb",
-		"*.class",
+		"*.pdf",
 		"*.psd",
-		"*.db",
-		"*.pdf"
+		"*.pyc",
+		"*.pyo",
+		"*.scssc",
+		"*.sdf",
+		"*.so",
+		"*.sublime-*",
+		"*.suo",
+		".DS_Store",
+		".tags*"
 	],
+	"fold_buttons": true,
 	"folder_exclude_patterns":
 	[
-		"data",
-		".git",
-		".svn",
-		".hg",
-		"CVS",
-		".sass-cache",
 		".bundle",
-		"bundle",
+		".git",
+		".hg",
 		".rbx",
-		"tmp",
+		".sass-cache",
+		".svn",
+		"bundle",
 		"coverage",
-		"spec/javascripts/generated"
+		"CVS",
+		"data",
+		"spec/javascripts/generated",
+		"tmp"
 	],
 	"font_face": "Inconsolata",
 	"font_size": 22.0,
 	"highlight_line": true,
 	"highlight_modified_tabs": true,
+	"hot_exit": false,
 	"ignored_packages":
 	[
 		"Vintage"
 	],
+	"indent_guide_options":
+  [
+    "draw_active"
+  ],
 	"line_padding_bottom": 0.5,
 	"line_padding_top": 0.5,
+	"margin": 1,
 	"new_window_settings":
 	{
 		"show_minimap": false
 	},
+	"remember_open_files": false,
 	"rulers":
 	[
 		80
 	],
 	"save_on_focus_lost": true,
+	"show_tab_close_buttons": false,
 	"tab_size": 2,
 	"theme": "Soda Light.sublime-theme",
 	"translate_tabs_to_spaces": true,
-	"trim_trailing_white_space_on_save": true
+	"tree_animation_enabled": false,
+	"trim_trailing_white_space_on_save": true,
+	"use_simple_full_screen": true,
+  "word_separators": "./\\()\"':,-.;<>~!@#$%^&*|+=[]{}`~"
 }
