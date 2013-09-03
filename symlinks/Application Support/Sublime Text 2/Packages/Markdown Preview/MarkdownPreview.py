@@ -8,6 +8,9 @@ import traceback
 import tempfile
 import re
 import json
+import time
+import traceback
+
 
 if sublime.version() >= '3000':
     from . import desktop
@@ -20,7 +23,7 @@ if sublime.version() >= '3000':
     def Request(url, data, headers):
         ''' Adapter for urllib2 used in ST2 '''
         import urllib.request
-        return urllib.request.Request(url, data=data, headers=headers)
+        return urllib.request.Request(url, data=data, headers=headers, method='POST')
 
 else: # ST2
     import desktop
@@ -28,6 +31,8 @@ else: # ST2
     import markdown
     from helper import INSTALLED_DIRECTORY
     from urllib2 import Request, urlopen, HTTPError, URLError
+
+_CANNOT_CONVERT = u'cannot convert markdown'
     
 def getTempMarkdownPreviewPath(view):
     ''' return a permanent full path of the temp markdown preview file '''
@@ -85,6 +90,17 @@ def load_resource(name):
             traceback.print_exc()
             return ''
 
+def exists_resource(resource_file_path):
+    if sublime.version() >= '3000':
+        try:
+            sublime.load_resource(resource_file_path)
+            return True
+        except:
+            return False
+    else:
+        filename = os.path.join(os.path.dirname(sublime.packages_path()), resource_file_path)
+        return os.path.isfile(filename)
+
 def new_scratch_view(window, text):
     ''' create a new scratch view and paste text content
         return the new view
@@ -122,17 +138,22 @@ class MarkdownCheatsheetCommand(sublime_plugin.TextCommand):
         lines = '\n'.join(load_resource('sample.md').splitlines())
         view = new_scratch_view(self.view.window(), lines)
         view.set_name("Markdown Cheatsheet")
-        try:
-            view.set_syntax_file("Packages/Markdown/Markdown.tmLanguage")
-        except:
-            pass
+
+        # Set syntax file
+        syntax_files = ["Packages/Markdown Extended/Syntaxes/Markdown Extended.tmLanguage", "Packages/Markdown/Markdown.tmLanguage"]
+        for file in syntax_files:
+            if exists_resource(file):
+                view.set_syntax_file(file)
+                break # Done if any syntax is set.
+
         sublime.status_message('Markdown cheat sheet opened')
 
 
-class MarkdownPreviewCommand(sublime_plugin.TextCommand):
-    ''' preview file contents with python-markdown and your web browser '''
 
-    def getCSSOnSearchPath(self):
+class MarkdownCompiler():
+    ''' Do the markdown converting '''
+
+    def get_search_path_css(self):
         css_name = self.settings.get('css', 'default')
         if os.path.isabs(css_name):
             return u"<link href='%s' rel='stylesheet' type='text/css'>" % css_name
@@ -150,7 +171,7 @@ class MarkdownPreviewCommand(sublime_plugin.TextCommand):
         # Try the build-in css files.
         return u"<style>%s</style>" % load_resource(css_name)
 
-    def getOverrideCSS(self):
+    def get_override_css(self):
         ''' handls allow_css_overrides setting. '''
 
         if self.settings.get('allow_css_overrides'):
@@ -165,11 +186,11 @@ class MarkdownPreviewCommand(sublime_plugin.TextCommand):
                             return u"<style>%s</style>" % load_utf8(css_filename)
         return ''
 
-    def getCSS(self):
+    def get_stylesheet(self):
         ''' return the correct CSS file based on parser and settings '''
-        return self.getCSSOnSearchPath() + self.getOverrideCSS()
+        return self.get_search_path_css() + self.get_override_css()
 
-    def getJS(self):
+    def get_javascript(self):
         js_files = self.settings.get('js')
         scripts = ''
 
@@ -187,14 +208,14 @@ class MarkdownPreviewCommand(sublime_plugin.TextCommand):
                         scripts += u"<script type='text/javascript' src='%s'></script>" % js_file
         return scripts
 
-    def getMathJax(self):
+    def get_mathjax(self):
         ''' return the MathJax script if enabled '''
 
         if self.settings.get('enable_mathjax') is True:
             return load_resource('mathjax.html')
         return ''
 
-    def getHighlight(self):
+    def get_highlight(self):
         ''' return the Highlight.js and css if enabled '''
 
         highlight = ''
@@ -205,13 +226,15 @@ class MarkdownPreviewCommand(sublime_plugin.TextCommand):
         return highlight
 
 
-    def get_contents(self, region):
+    def get_contents(self, wholefile=False):
         ''' Get contents or selection from view and optionally strip the YAML front matter '''
+        region = sublime.Region(0, self.view.size())
         contents = self.view.substr(region)
-        # use selection if any
-        selection = self.view.substr(self.view.sel()[0])
-        if selection.strip() != '':
-            contents = selection
+        if not wholefile:
+            # use selection if any
+            selection = self.view.substr(self.view.sel()[0])
+            if selection.strip() != '':
+                contents = selection
         if self.settings.get('strip_yaml_front_matter') and contents.startswith('---'):
             title = ''
             title_match = re.search('(?:title:)(.+)', contents, flags=re.IGNORECASE)
@@ -245,13 +268,13 @@ class MarkdownPreviewCommand(sublime_plugin.TextCommand):
             config_extensions.extend( default_extensions )
         return config_extensions
 
-    def convert_markdown(self, markdown_text):
+    def convert_markdown(self, markdown_text, parser):
         ''' convert input markdown to HTML, with github or builtin parser '''
-        config_parser = self.settings.get('parser')
-        github_oauth_token = self.settings.get('github_oauth_token')
 
-        markdown_html = u'cannot convert markdown'
-        if config_parser and config_parser == 'github':
+        markdown_html = _CANNOT_CONVERT
+        if parser == 'github':
+            github_oauth_token = self.settings.get('github_oauth_token')
+
             # use the github API
             sublime.status_message('converting markdown with github API...')
             try:
@@ -279,17 +302,14 @@ class MarkdownPreviewCommand(sublime_plugin.TextCommand):
             except URLError:
                 sublime.error_message('cannot use github API to convert markdown. SSL is not included in your Python installation')
             except:
+                e = sys.exc_info()[1]
+                print(e)
+                traceback.print_exc()
                 sublime.error_message('cannot use github API to convert markdown. Please check your settings.')
             else:
                 sublime.status_message('converted markdown with github API successfully')
 
-        elif config_parser and config_parser == 'markdown':
-            sublime.status_message('converting markdown with Python markdown...')
-            config_extensions = self.get_config_extensions(['extra', 'toc'])
-            markdown_html = markdown.markdown(markdown_text, extensions=config_extensions)
-            markdown_html = self.postprocessor(markdown_html)
-
-        else:
+        elif parser == 'markdown2':
             # convert the markdown
             enabled_extras = set(self.get_config_extensions(['footnotes', 'toc', 'fenced-code-blocks', 'cuddled-lists']))
             if self.settings.get("enable_mathjax") is True or self.settings.get("enable_highlight") is True:
@@ -303,6 +323,11 @@ class MarkdownPreviewCommand(sublime_plugin.TextCommand):
 
             # postprocess the html from internal parser
             markdown_html = self.postprocessor(markdown_html)
+        else:
+            sublime.status_message('converting markdown with Python markdown...')
+            config_extensions = self.get_config_extensions(['extra', 'toc'])
+            markdown_html = markdown.markdown(markdown_text, extensions=config_extensions)
+            markdown_html = self.postprocessor(markdown_html)            
 
         return markdown_html
 
@@ -313,38 +338,50 @@ class MarkdownPreviewCommand(sublime_plugin.TextCommand):
             title = 'untitled' if not fn else os.path.splitext(os.path.basename(fn))[0]
         return '<title>%s</title>' % title
 
-    def run(self, edit, target='browser'):
+    def run(self, view, parser, wholefile=False):
+        ''' return full html and body html for view. '''
         self.settings = sublime.load_settings('MarkdownPreview.sublime-settings')
-        region = sublime.Region(0, self.view.size())
+        self.view = view
+        
+        contents = self.get_contents(wholefile)
+        
+        body = self.convert_markdown(contents, parser)
 
-        contents = self.get_contents(region)
+        html = u'<!DOCTYPE html>'
+        html += '<html><head><meta charset="utf-8">'
+        html += self.get_stylesheet()
+        html += self.get_javascript()
+        html += self.get_highlight()
+        html += self.get_mathjax()
+        html += self.get_title()
+        html += '</head><body>'
+        html += body
+        html += '</body>'
+        html += '</html>'
+        return html, body
 
-        markdown_html = self.convert_markdown(contents)
 
-        full_html = u'<!DOCTYPE html>'
-        full_html += '<html><head><meta charset="utf-8">'
-        full_html += self.getCSS()
-        full_html += self.getJS()
-        full_html += self.getHighlight()
-        full_html += self.getMathJax()
-        full_html += self.get_title()
-        full_html += '</head><body>'
-        full_html += markdown_html
-        full_html += '</body>'
-        full_html += '</html>'
+compiler = MarkdownCompiler()
+
+
+
+class MarkdownPreviewCommand(sublime_plugin.TextCommand):
+    def run(self, edit, parser='markdown', target='browser'):
+        settings = sublime.load_settings('MarkdownPreview.sublime-settings')
+        html, body = compiler.run(self.view, parser)
 
         if target in ['disk', 'browser']:
             # check if LiveReload ST2 extension installed and add its script to the resulting HTML
             livereload_installed = ('LiveReload' in os.listdir(sublime.packages_path()))
             # build the html
             if livereload_installed:
-                full_html += '<script>document.write(\'<script src="http://\' + (location.host || \'localhost\').split(\':\')[0] + \':35729/livereload.js?snipver=1"></\' + \'script>\')</script>'
+                html += '<script>document.write(\'<script src="http://\' + (location.host || \'localhost\').split(\':\')[0] + \':35729/livereload.js?snipver=1"></\' + \'script>\')</script>'
             # update output html file
             tmp_fullpath = getTempMarkdownPreviewPath(self.view)
-            save_utf8(tmp_fullpath, full_html)
+            save_utf8(tmp_fullpath, html)
             # now opens in browser if needed
             if target == 'browser':
-                config_browser = self.settings.get('browser')
+                config_browser = settings.get('browser')
                 if config_browser and config_browser != 'default':
                     cmd = '"%s" %s' % (config_browser, tmp_fullpath)
                     if sys.platform == 'darwin':
@@ -361,9 +398,65 @@ class MarkdownPreviewCommand(sublime_plugin.TextCommand):
                     sublime.status_message('Markdown preview launched in default html viewer')
         elif target == 'sublime':
             # create a new buffer and paste the output HTML
-            new_scratch_view(self.view.window(), markdown_html)
+            new_scratch_view(self.view.window(), body)
             sublime.status_message('Markdown preview launched in sublime')
         elif target == 'clipboard':
             # clipboard copy the full HTML
-            sublime.set_clipboard(full_html)
+            sublime.set_clipboard(html)
             sublime.status_message('Markdown export copied to clipboard')
+
+
+class MarkdownBuildCommand(sublime_plugin.WindowCommand):
+    def init_panel(self):
+        if not hasattr(self, 'output_view'):
+            if sublime.version() >= '3000':
+                self.output_view = self.window.create_output_panel("markdown")
+            else:
+                self.output_view = self.window.get_output_panel("markdown")
+
+    def puts(self, message):
+        message = message + '\n'
+        if sublime.version() >= '3000':
+            self.output_view.run_command('append', {'characters': message, 'force': True, 'scroll_to_end': True})
+        else:
+            selection_was_at_end = (len(self.output_view.sel()) == 1
+            and self.output_view.sel()[0]
+                == sublime.Region(self.output_view.size()))
+            self.output_view.set_read_only(False)
+            edit = self.output_view.begin_edit()
+            self.output_view.insert(edit, self.output_view.size(), message)
+            if selection_was_at_end:
+                self.output_view.show(self.output_view.size())
+            self.output_view.end_edit(edit)
+            self.output_view.set_read_only(True)
+
+    def run(self):
+        view = self.window.active_view()
+        if not view:
+            return
+        start_time = time.time()
+
+        self.init_panel()
+        
+        show_panel_on_build = sublime.load_settings("Preferences.sublime-settings").get("show_panel_on_build", True)
+        if show_panel_on_build:
+            self.window.run_command("show_panel", {"panel": "output.markdown"})
+        
+        mdfile = view.file_name()
+        if mdfile is None:
+            self.puts("Can't build a unsaved markdown file.")
+            return
+
+        self.puts("Compiling %s..." % mdfile)
+
+        html, body = compiler.run(view, 'markdown', True)
+
+        htmlfile = os.path.splitext(mdfile)[0]+'.html'
+        self.puts("        ->"+htmlfile)
+        save_utf8(htmlfile, html)
+
+        elapsed = time.time() - start_time
+        if body == _CANNOT_CONVERT:
+            self.puts(_CANNOT_CONVERT)
+        self.puts("[Finished in %.1fs]" % (elapsed))
+        sublime.status_message("Build finished")

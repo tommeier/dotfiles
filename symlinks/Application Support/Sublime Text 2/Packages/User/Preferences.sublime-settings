@@ -5,11 +5,11 @@
 	"caret_style": "wide",
 	"color_scheme": "Packages/Color Scheme - Default/Blackboard.tmTheme",
 	"detect_indentation": false,
-  "detect_slow_plugins": false,
-  "drag_text": false,
-  "draw_minimap_border": true,
-  "draw_white_space": "all",
-  "ensure_newline_at_eof_on_save": true,
+	"detect_slow_plugins": false,
+	"drag_text": false,
+	"draw_minimap_border": true,
+	"draw_white_space": "all",
+	"ensure_newline_at_eof_on_save": true,
 	"file_exclude_patterns":
 	[
 		"*.a",
@@ -50,6 +50,7 @@
 		"coverage",
 		"CVS",
 		"data",
+		"public/assets/source_maps",
 		"spec/javascripts/generated",
 		"tmp"
 	],
@@ -63,9 +64,9 @@
 		"Vintage"
 	],
 	"indent_guide_options":
-  [
-    "draw_active"
-  ],
+	[
+		"draw_active"
+	],
 	"line_padding_bottom": 0.5,
 	"line_padding_top": 0.5,
 	"margin": 1,
@@ -79,12 +80,12 @@
 		80
 	],
 	"save_on_focus_lost": true,
-	"show_tab_close_buttons": false,
+	"show_tab_close_buttons": true,
 	"tab_size": 2,
 	"theme": "Soda Light.sublime-theme",
 	"translate_tabs_to_spaces": true,
 	"tree_animation_enabled": false,
 	"trim_trailing_white_space_on_save": true,
 	"use_simple_full_screen": true,
-  "word_separators": "./\\()\"':,-.;<>~!@#$%^&*|+=[]{}`~"
+	"word_separators": "./\\()\"':,-.;<>~!@#$%^&*|+=[]{}`~"
 }
