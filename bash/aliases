@@ -28,3 +28,5 @@ alias find_dead_path_items="echo $PATH | tr ':' '\n' | xargs ls -ld"
 #Editor
 alias m=$EDITOR
 
+# SS Key removal
+alias remove_ssh_host="sed -i'' -e '$1 d' ~/.ssh/known_hosts"
