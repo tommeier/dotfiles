@@ -83,6 +83,10 @@ do
     cat /dev/null > $f
   fi
 done
+if [[ -e ".gitmodules" ]]; then
+  echo "==> Updating git submodules"
+  git submodule update --init
+fi;
 echo "==> Checking GIT, pruning to 2 weeks"
 git gc
 }
