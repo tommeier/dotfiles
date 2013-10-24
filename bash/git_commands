@@ -68,7 +68,7 @@ echo "==> Updating master"
 git checkout master
 git pull
 echo "==> Fetching & Sweeping merged remote branches"
-git fetch --prune
+git fetch --prune --tags
 delete_merged_remote_branches
 echo "==> Fetching any open pull requests"
 git pulls update
