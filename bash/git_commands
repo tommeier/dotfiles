@@ -67,8 +67,10 @@ function startup {
 echo "==> Updating master"
 git checkout master
 git pull
-echo "==> Fetching & Sweeping merged remote branches"
+echo "==> Fetching & Sweeping merged remote tags"
 git fetch --prune --tags
+echo "==> Fetching & Sweeping merged remote branches"
+git fetch --prune
 delete_merged_remote_branches
 echo "==> Fetching any open pull requests"
 git pulls update
