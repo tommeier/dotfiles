@@ -51,6 +51,7 @@
 		"CVS",
 		"data",
 		"public/assets/source_maps",
+		"public/banking/assets/source_maps",
 		"spec/javascripts/generated",
 		"tmp"
 	],
