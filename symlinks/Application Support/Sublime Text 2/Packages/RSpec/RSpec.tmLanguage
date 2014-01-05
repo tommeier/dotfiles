@@ -11,7 +11,7 @@
 	    (\s*+
 	        (module|class|def
 	        |background|feature|subscribe
-	        |before|describe|it
+	        |before|describe|it|scenario
 	        |unless|if
 	        |case
 	        |begin
@@ -52,7 +52,7 @@
 	<array>
 		<dict>
 			<key>match</key>
-			<string>(?&lt;!\.)\b(before|after|subject|let)\b(?![?!])</string>
+			<string>(?&lt;!\.)\b(before\b|after\b|subject!?|let!?)</string>
 			<key>name</key>
 			<string>keyword.other.rspec</string>
 		</dict>
@@ -82,10 +82,15 @@
 		<key>behaviour</key>
 		<dict>
 			<key>begin</key>
-			<string>^\s*(describe|context)\b</string>
+			<string>^\s*(?:(RSpec)\.)?(describe|context|feature)\b</string>
 			<key>beginCaptures</key>
 			<dict>
 				<key>1</key>
+				<dict>
+					<key>name</key>
+					<string>support.class.ruby</string>
+				</dict>
+				<key>2</key>
 				<dict>
 					<key>name</key>
 					<string>keyword.other.rspec.behaviour</string>
@@ -114,7 +119,7 @@
 		<key>example</key>
 		<dict>
 			<key>begin</key>
-			<string>^\s*(it|specify)\b</string>
+			<string>^\s*(it|specify|scenario)\b</string>
 			<key>beginCaptures</key>
 			<dict>
 				<key>1</key>
@@ -146,7 +151,7 @@
 		<key>pending</key>
 		<dict>
 			<key>begin</key>
-			<string>^\s*(it|specify)\b(?=((?!do|{).)*$)</string>
+			<string>^\s*(it|specify|scenario)\b(?=((?!do|{).)*$)</string>
 			<key>end</key>
 			<string>$</string>
 			<key>beginCaptures</key>
@@ -178,7 +183,7 @@
 				</dict>
 			</dict>
 			<key>match</key>
-			<string>^\s*(it|specify)\s*{</string>
+			<string>^\s*(it|specify|scenario)\s*{</string>
 		</dict>
 	</dict>
 	<key>scopeName</key>

@@ -54,7 +54,6 @@ git branch -r --merged | while read merged_branch; do
 done
 }
 
-
 function startup {
 #Quick function to start the day and grab the latest info, fetch all open pull requests, and remove master merged branches
 # Dependencies :
@@ -73,8 +72,8 @@ echo "==> Fetching & Sweeping merged remote branches"
 git fetch --prune
 delete_merged_remote_branches
 echo "==> Fetching any open pull requests"
-git pulls update
-git pulls checkout --force
+git-pulls update
+git-pulls checkout --force
 echo "==> Removing any local branches merged into master"
 git branch --merged master | while read i; do delete_local_branch "$i"; done
 echo "==> Clearing any logs"
