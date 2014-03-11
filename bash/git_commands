@@ -164,9 +164,6 @@ function delete_file_from_all_git_history {
   --prune-empty --tag-name-filter cat -- --all
 }
 
-
-
-
 function delete_all_local_tags {
   git-for-each-ref --shell --format="%(refname)" refs/tags | \
   while read tag

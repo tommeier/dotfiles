@@ -127,6 +127,10 @@
         "command": "git_pull"
     }
     ,{
+        "caption": "Git: Pull Using Rebase",
+        "command": "git_pull_rebase"
+    }
+    ,{
         "caption": "Git: Pull Current Branch",
         "command": "git_pull_current_branch"
     }
@@ -201,6 +205,10 @@
     ,{
         "caption": "Git: Gui",
         "command": "git_gui"
+    }
+    ,{
+        "caption": "Git: Gitk This File",
+        "command": "git_gitk_this_file"
     }
     ,{
         "caption": "Git: Gitk",

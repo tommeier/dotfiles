@@ -1,19 +1,19 @@
 #!/usr/bin/python
 #
-# HTMLBeautify (for Sublime Text 2) v0.6
+# HTMLBeautify (for Sublime Text 2 & 3) v0.7
 # (Inspired by fhtml.pl by John Watson)
 # by Ross A. Reyman
-# 05 March 2013
+# 13 February 2014
 # url:			http://reyman.name/
 # e-mail:		ross[at]reyman[dot]name
 
 import sublime, sublime_plugin, re
 
-# this file contains the tags that will be indented/unindented, etc.
-settings = sublime.load_settings('HTMLBeautify.sublime-settings')
-
 class HtmlBeautifyCommand(sublime_plugin.TextCommand):
 		def run(self, edit):
+
+			# this file contains the tags that will be indented/unindented, etc.
+			settings = sublime.load_settings('HTMLBeautify.sublime-settings')
 
 			# the contents of these tags will not be indented
 			ignored_tag_opening = settings.get('ignored_tag_opening')
@@ -29,14 +29,14 @@ class HtmlBeautifyCommand(sublime_plugin.TextCommand):
 			tag_pos_inline 			= settings.get('tag_pos_inline')
 
 			# these tags use raw code and should flatten to col1
-			# tabs will be removed inside these tags! use spaces for spacing in needed!
+			# tabs will be removed inside these tags! use spaces for spacing if needed!
 			tag_raw_flat_opening		= "<pre"
 			tag_raw_flat_closing		= "</pre"
 
-			# detrmine if applying to a selection or applying to the whole document
+			# determine if applying to a selection or applying to the whole document
 			if self.view.sel()[0].empty():
 				# nothing selected: process the entire file
-				region = sublime.Region(0L, self.view.size())
+				region = sublime.Region(0, self.view.size())
 				sublime.status_message('Beautifying Entire File')
 				rawcode = self.view.substr(region)
 				# print region
