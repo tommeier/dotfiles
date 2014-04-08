@@ -42,3 +42,6 @@ export PATH=$PATH:/opt/boxen/homebrew/share/npm/bin #Globally loaded NPM modules
 
 ### Added by the Heroku Toolbelt
 export PATH="/usr/local/heroku/bin:$PATH"
+
+# added by travis gem
+[ -f /Users/tom/.travis/travis.sh ] && source /Users/tom/.travis/travis.sh
