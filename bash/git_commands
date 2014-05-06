@@ -38,7 +38,7 @@ git branch -r --merged | while read merged_branch; do
     local remote_name="${BASH_REMATCH[1]}";
     local branch_name="${BASH_REMATCH[2]}";
 
-    if [[ $branch_name = 'master' || $branch_name = 'HEAD' ]]; then
+    if [[ $branch_name = 'master' || $branch_name = 'production' ||  $branch_name = 'HEAD' ]]; then
       echo "- [skipped] ${remote_name}/${branch_name}";
     else
       local git_head_descriptor="^HEAD -> (.*)$"
