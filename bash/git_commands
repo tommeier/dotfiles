@@ -13,7 +13,7 @@ alias sup='startup'
 
 #Delete any passed branch name except master
 function delete_local_branch {
-if [[ $1 =~ ^([* ]+)?master$ ]]; then
+if [[ $1 =~ ^([* ]+)?(master|production)$ ]]; then
   echo "- [skipped] ${1}"
 else
   git branch $1 -D -q
