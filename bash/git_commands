@@ -21,6 +21,11 @@ else
 fi
 }
 
+# TODO : Broken scenario:
+# - Open PR exists in branch 'candidate-extras', branches off 'candidate/4.0.3'
+# - 'candidate/4.0.3' has been merged into master
+# - 'candidate/4.0.3' is auto deleted, github then auto closes the open PR for that branch.
+# --> Fix? Check if any open PRs exist that branch off non-master branch that has been merged. If so -> ignore or ask for info.
 delete_merged_remote_branches() {
 #TODO : Collect all refs to delete and do one push to specific remote. (git push origin x1 x2 x3 --delete)
 #     : This would require a multidimensional array
@@ -45,7 +50,9 @@ git branch -r --merged | while read merged_branch; do
       if [[ ! $branch_name =~ $git_head_descriptor ]]; then
         #Ignore the HEAD descriptor for git
         #eg: HEAD -> origin/master
-        git push $remote_name $branch_name --delete
+        # Until we work out a fix for candidate branch being deleted
+        echo "[DISABLED] Would have deleted ${branch_name}"
+        #git push $remote_name $branch_name --delete
       fi;
     fi;
   else
