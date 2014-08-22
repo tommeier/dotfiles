@@ -29,6 +29,12 @@ export PATH=$PATH:./node_modules/.bin #Application wide NPM modules
 [[ -f /opt/boxen/env.sh ]] && source /opt/boxen/env.sh
 export PATH=$PATH:/opt/boxen/homebrew/share/npm/bin #Globally loaded NPM modules
 
+# Android-Boxen
+export ANDROID_HOME="/Users/tom/development/adt-bundle-mac-x86_64-20140702/sdk"
+export PATH="$PATH:$ANDROID_HOME/platform-tools:$ANDROID_HOME/tools"
+export ANDROID_PROJECT_HOME="/users/tom/src/company/ferocia/johanna-android"
+export ANT_OPTS="-javaagent:$ANDROID_PROJECT_HOME/class.rewriter.jar"
+
 #####  Disabled for Boxen #####
 #Required files
 #source ~/.bash/rbenv_commands #Disabled for Boxen
