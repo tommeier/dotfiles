@@ -51,8 +51,8 @@ git branch -r --merged | while read merged_branch; do
         #Ignore the HEAD descriptor for git
         #eg: HEAD -> origin/master
         # Until we work out a fix for candidate branch being deleted
-        echo "[DISABLED] Would have deleted ${branch_name}"
-        #git push $remote_name $branch_name --delete
+        # echo "[DISABLED] Would have deleted ${branch_name}"
+        git push $remote_name $branch_name --delete
       fi;
     fi;
   else
