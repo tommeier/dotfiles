@@ -252,9 +252,9 @@
 			<array>
 				<dict>
 					<key>match</key>
-					<string>(?i)\b(false|true|running|present|absent|file|directory)\b</string>
+					<string>(?i)\b(false|true|running|undef|present|absent|file|directory)\b</string>
 					<key>name</key>
-					<string>constant.language.php</string>
+					<string>constant.language.puppet</string>
 				</dict>
 			</array>
 		</dict>
@@ -515,6 +515,14 @@
 				<dict>
 					<key>include</key>
 					<string>#strings</string>
+				</dict>
+				<dict>
+					<key>include</key>
+					<string>#numbers</string>
+				</dict>
+				<dict>
+					<key>include</key>
+					<string>#variables</string>
 				</dict>
 				<dict>
 					<key>match</key>
