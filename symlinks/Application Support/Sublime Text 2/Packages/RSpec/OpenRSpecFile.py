@@ -5,44 +5,82 @@ from RSpec import shared
 
 class OpenRspecFileCommand(sublime_plugin.WindowCommand):
 
-	def run(self):
-		if not self.window.active_view():
-			return
+    def run(self):
+        if not self.window.active_view():
+            return
 
-		self.views = []
-		window = self.window
-		current_file_path = self.window.active_view().file_name()
+        current_file_path = self.window.active_view().file_name()
+        if current_file_path is None: return
 
-		if re.search(r"\w+\.rb$", current_file_path):
+        print("Current file: " + current_file_path)
 
-			current_file = re.search(r"([\w\.]+)$", current_file_path).group(1)
-			base_name = re.search(r"(\w+)\.(\w+)$", current_file).group(1)
-			base_name = re.sub('_spec', '', base_name)
+        if current_file_path.endswith(".rb"):
+            if self.quick_find(current_file_path):
+                return
 
-			source_matcher = re.compile("[/\\\\]" + base_name + "\.rb$")
-			test_matcher   = re.compile("[/\\\\]" + base_name + "_spec\.rb$")
+            current_file_name = re.search(r"[/\\]([\w.]+)$", current_file_path).group(1)
+            base_name = re.search(r"(\w+)\.rb$", current_file_name).group(1)
+            base_name = re.sub(r"_spec$", "", base_name)
 
-			target_group = shared.other_group_in_pair(window)
+            if current_file_name.endswith("_spec.rb"):
+                source_matcher = re.compile(r"[/\\]" + base_name + "\.rb$")
+                self.open_project_file(source_matcher, current_file_path)
+            else:
+                test_matcher = re.compile(r"[/\\]" + base_name + "_spec\.rb$")
+                self.open_project_file(test_matcher, current_file_path)
+        else:
+            print("Error: current file is not a ruby file")
 
-			print("Current file: " + current_file)
-			if  re.search(re.compile(base_name + "_spec\.rb$"), current_file):
-				self.open_project_file(source_matcher, window, target_group)
-			elif re.search(re.compile(base_name + "\.rb$"), current_file):
-				self.open_project_file(test_matcher, window, target_group)
-			else:
-	 			print("Current file is not valid for RSpec switch file!")
+    def open_project_file(self, file_matcher, file_path):
+        for path, dirs, filenames in self.walk_project_folder(file_path):
+            for filename in filter(lambda f: f.endswith(".rb"), filenames):
+                current_file = os.path.join(path, filename)
+                if file_matcher.search(current_file):
+                    return self.switch_to(os.path.join(path, filename))
+        print("RSpec: No matching files found")
 
-	def open_project_file(self, file_matcher, window, group=-1):
-		for root, dirs, files in os.walk(window.folders()[0]):
-			for f in files:
-				if re.search(r"\.rb$", f):
-					cur_file = os.path.join(root, f)
-					# print("Assessing: " + cur_file)
-					if file_matcher.search(cur_file):
-						file_view = window.open_file(os.path.join(root, f))
-						if group >= 0: # don't set the view unless specified
-							window.run_command('move_to_group', {'group': group})
-						self.views.append(file_view)
-						print("Opened: " + f)
-						return
-		print("No matching files!")
+    def spec_paths(self, file_path):
+        return [
+            self.batch_replace(file_path,
+                (r"\b(?:app|lib)\b", "spec"), (r"\b(\w+)\.rb", r"\1_spec.rb")),
+            self.batch_replace(file_path,
+                (r"\blib\b", os.path.join("spec", "lib")), (r"\b(\w+)\.rb", r"\1_spec.rb"))
+        ]
+
+    def code_paths(self, file_path):
+        file_path = re.sub(r"\b(\w+)_spec\.rb$", r"\1.rb", file_path)
+        return [
+            re.sub(r"\bspec\b", "app", file_path),
+            re.sub(r"\bspec\b", "lib", file_path),
+            re.sub(r"\b{}\b".format(os.path.join("spec", "lib")), "lib", file_path)
+        ]
+
+    def quick_find(self, file_path):
+        if re.search(r"\bspec\b|_spec\.rb$", file_path):
+            for path in self.code_paths(file_path):
+                if os.path.exists(path):
+                    return self.switch_to(path)
+        elif re.search(r"\b(?:app|lib)\b", file_path):
+            for path in self.spec_paths(file_path):
+                if os.path.exists(path):
+                    return self.switch_to(path)
+        print("RSpec: quick find failed, doing regular find")
+
+    def batch_replace(self, string, *pairs):
+        for target, replacement in pairs:
+            string = re.sub(target, replacement, string)
+        return string
+
+    def switch_to(self, file_path):
+        group = shared.other_group_in_pair(self.window)
+        file_view = self.window.open_file(file_path)
+        self.window.run_command("move_to_group", { "group": group })
+        print("Opened: " + file_path)
+        return True
+
+    def walk_project_folder(self, file_path):
+        for folder in self.window.folders():
+            if not file_path.startswith(folder):
+                continue
+            for dir_data in os.walk(folder):
+                yield dir_data
