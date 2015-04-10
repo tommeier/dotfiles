@@ -17,13 +17,6 @@ fi
 
 alias staging_ci="ssh -p 22022 tom@211.27.76.94"
 
-#Ruby memory tweaks for 1.9.3
-export RUBY_HEAP_MIN_SLOTS=1000000
-export RUBY_HEAP_SLOTS_INCREMENT=1000000
-export RUBY_HEAP_SLOTS_GROWTH_FACTOR=1
-export RUBY_GC_MALLOC_LIMIT=1000000000
-export RUBY_HEAP_FREE_MIN=500000
-
 #Load Boxen
 export PATH=$PATH:./node_modules/.bin #Application wide NPM modules
 [[ -f /opt/boxen/env.sh ]] && source /opt/boxen/env.sh
