@@ -47,12 +47,16 @@ git branch -r --merged | while read merged_branch; do
       echo "- [skipped] ${remote_name}/${branch_name}";
     else
       local git_head_descriptor="^HEAD -> (.*)$"
+      # Ignore the HEAD descriptor for git
+      #eg: HEAD -> origin/master
       if [[ ! $branch_name =~ $git_head_descriptor ]]; then
-        #Ignore the HEAD descriptor for git
-        #eg: HEAD -> origin/master
-        # Until we work out a fix for candidate branch being deleted
-        echo "[DISABLED] Would have deleted ${branch_name}"
-        # git push $remote_name $branch_name --delete
+
+        if [ -z "$DELETE_MERGED_REMOTE_BRANCHES" ]; then
+          # Until we work out a fix for candidate branch being deleted
+          echo "[DISABLED] Would have deleted ${branch_name}"
+        else
+          git push $remote_name $branch_name --delete
+        fi;
       fi;
     fi;
   else
