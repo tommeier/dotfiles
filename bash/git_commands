@@ -21,6 +21,11 @@ else
 fi
 }
 
+reset_submodules() {
+  git submodule foreach --recursive git clean -fdqx
+  git submodule foreach --recursive git reset --hard
+}
+
 # TODO : Broken scenario:
 # - Open PR exists in branch 'candidate-extras', branches off 'candidate/4.0.3'
 # - 'candidate/4.0.3' has been merged into master
