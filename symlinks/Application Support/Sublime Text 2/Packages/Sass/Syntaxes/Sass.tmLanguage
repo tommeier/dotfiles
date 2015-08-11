@@ -25,7 +25,7 @@
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>@(extend|import|mixin|include|charset|import|media|page|font-face|namespace|for|function|return) [\/\.\%\w-]*\b</string>
+			<string>@(at-root|charset|debug|each|error|extend|font-face|for|function|import|include|media|mixin|namespace|page|return|warn|while)[\/\.\%\w-]*\b</string>
 			<key>name</key>
 			<string>keyword.control.at-rule.sass</string>
 		</dict>
@@ -36,21 +36,12 @@
 			<string>keyword.control.mixin-shorthand.sass</string>
 		</dict>
 		<dict>
-			<key>begin</key>
-			<string>"</string>
-			<key>end</key>
-			<string>"</string>
-			<key>name</key>
-			<string>string.quoted.double.sass</string>
-			<key>patterns</key>
-			<array>
-				<dict>
-					<key>match</key>
-					<string>\\.</string>
-					<key>name</key>
-					<string>constant.character.escaped.sass</string>
-				</dict>
-			</array>
+			<key>include</key>
+			<string>#quoted-single</string>
+		</dict>
+		<dict>
+			<key>include</key>
+			<string>#quoted-double</string>
 		</dict>
 		<dict>
 			<key>match</key>
@@ -123,6 +114,14 @@
 					<key>include</key>
 					<string>#nested-parens</string>
 				</dict>
+				<dict>
+					<key>include</key>
+					<string>#quoted-single</string>
+				</dict>
+				<dict>
+					<key>include</key>
+					<string>#quoted-double</string>
+				</dict>
 			</array>
 		</dict>
 		<dict>
@@ -184,6 +183,42 @@
 	</array>
 	<key>repository</key>
 	<dict>
+		<key>quoted-single</key>
+		<dict>
+			<key>begin</key>
+			<string>'</string>
+			<key>end</key>
+			<string>'</string>
+			<key>name</key>
+			<string>string.quoted.single.sass</string>
+			<key>patterns</key>
+			<array>
+				<dict>
+					<key>match</key>
+					<string>\\.</string>
+					<key>name</key>
+					<string>constant.character.escaped.sass</string>
+				</dict>
+			</array>
+		</dict>
+		<key>quoted-double</key>
+		<dict>
+			<key>begin</key>
+			<string>"</string>
+			<key>end</key>
+			<string>"</string>
+			<key>name</key>
+			<string>string.quoted.double.sass</string>
+			<key>patterns</key>
+			<array>
+				<dict>
+					<key>match</key>
+					<string>\\.</string>
+					<key>name</key>
+					<string>constant.character.escaped.sass</string>
+				</dict>
+			</array>
+		</dict>
 		<key>nested-parens</key>
 		<dict>
 			<key>begin</key>
