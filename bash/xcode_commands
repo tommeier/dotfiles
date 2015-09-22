@@ -1,0 +1,19 @@
+
+
+function reset_simulators_state {
+  echo "Resetting state of simulators"
+  echo "Ensure all possible clients of CoreSimulatorService are no longer running:"
+  killall Xcode 2> /dev/null
+  killall Instruments 2> /dev/null
+  killall 'iOS Simulator' 2> /dev/null
+  killall Simulator 2> /dev/null
+  killall 'Simulator (Watch)' 2> /dev/null
+  killall ibtoold 2> /dev/null
+  killall simctl 2> /dev/null
+
+  echo "Killing simulator:"
+  sudo killall -9 com.apple.CoreSimulator.CoreSimulatorService
+
+  echo "Removing all the data and logs:"
+  rm -rf ~/Library/*/CoreSimulator
+}
