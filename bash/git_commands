@@ -26,6 +26,13 @@ reset_submodules() {
   git submodule foreach --recursive git reset --hard
 }
 
+# In buildkite pre-checkout
+# if [[ -e "$BUILDKITE_BUILD_CHECKOUT_PATH" ]]; then
+#   cd "$BUILDKITE_BUILD_CHECKOUT_PATH"
+#   git submodule foreach --recursive git reset --hard
+#   git submodule foreach --recursive git clean -fdqx
+# fi
+
 # TODO : Broken scenario:
 # - Open PR exists in branch 'candidate-extras', branches off 'candidate/4.0.3'
 # - 'candidate/4.0.3' has been merged into master
