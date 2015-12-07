@@ -22,20 +22,20 @@ You can use builtin [python-markdown][10] parser or use the [github markdown API
  - MathJax support : \\\\(\frac{\pi}{2}\\\\) thanks to @bps10
  - HTML template customisation thanks to @hozaka
  - Embed images as base64 (see [settings][settings] file for more info)
- - Strip out multimarkdown critic marks (see [settings][settings] file for more info)
+ - Strip out multimarkdown critic marks from either Githubs or Python Markdown input source (see [settings][settings] file for more info)
  - 3rd party extensions for the Python Markdown parser:
 
     | Extension | Documentation |
     |-----------|---------------|
-    | magiclink | Find and convert HTML links and email address to links ([MagicLink Documentation](http://facelessuser.github.io/PyMdown/Extensions/MagicLink.html)). |
-    | delete | Surround inline text with `~~crossed out~~` to get del tags ~~crossed out~~. |
+    | magiclink | Find and convert HTML links and email address to links ([MagicLink Documentation](http://facelessuser.github.io/pymdown-extensions/extensions/magiclink/)). |
+    | delete | Surround inline text with `~~strike through~~` to get del tags ~~strike through~~. |
     | insert | Surround inline text with `^^underlined^^` to get ins tags <ins>underlined</ins>. |
-    | tasklist | Github Flavored Markdown tasklists ([Tasklist Documentation](http://facelessuser.github.io/PyMdown/Extensions/Tasklist.html)). |
-    | githubemoji | Support for Github Flavored Markdown emojis ([GithubEmoji Documentation](http://facelessuser.github.io/PyMdown/Extensions/GithubEmoji.html)). |
-    | headeranchor | Github Flavored Markdown style header anchors ([HeaderAnchor Documentation](http://facelessuser.github.io/PyMdown/Extensions/HeaderAnchor.html)). |
+    | tasklist | Github Flavored Markdown tasklists ([Tasklist Documentation](http://facelessuser.github.io/pymdown-extensions/extensions/tasklist/)). |
+    | githubemoji | Support for Github Flavored Markdown emojis ([GithubEmoji Documentation](http://facelessuser.github.io/pymdown-extensions/extensions/githubemoji/)). |
+    | headeranchor | Github Flavored Markdown style header anchors ([HeaderAnchor Documentation](http://facelessuser.github.io/pymdown-extensions/extensions/headeranchor/)). |
     | github | A convenience extension to add: `magiclink`, `delete`, `tasklist`, `githubemoji`, `headeranchor`, `superfences`, and `nl2br` to parse and display Markdown in a github-ish way.  It is recommed to pair `github` with `extra` and `codehilite` (with language guessing off) to parse close to github's way.  Be aware of what extensions `github` loads, because you should not load extensions more than once. |
-    | progressbar | Create progress bars ([ProgressBar Documentation](http://facelessuser.github.io/PyMdown/Extensions/ProgressBar.html)). |
-    | superfences | Allow fenced blocks to be nested under lists, blockquotes, etc. and add special UML diagram blocks ([SuperFences Documentation](http://facelessuser.github.io/PyMdown/Extensions/SuperFences.html)). |
+    | progressbar | Create progress bars ([ProgressBar Documentation](http://facelessuser.github.io/pymdown-extensions/extensions/progressbar/)). |
+    | superfences | Allow fenced blocks to be nested under lists, blockquotes, etc. and add special UML diagram blocks ([SuperFences Documentation](http://facelessuser.github.io/pymdown-extensions/extensions/superfences/)). |
 
 ## Installation :
 
@@ -44,7 +44,7 @@ You can use builtin [python-markdown][10] parser or use the [github markdown API
 For all Sublime Text 2/3 users we recommend install via [Package Control][3].
 
 1. [Install][11] Package Control if you haven't yet.
-2. Use `cmd+shift+P` then `Package Control: Install Package`
+2. Use <kbd>cmd</kbd>+<kbd>shift</kbd>+<kbd>P</kbd> then `Package Control: Install Package`
 3. Look for `Markdown Preview` and install it.
 
 ### Manual Install
@@ -59,7 +59,7 @@ For all Sublime Text 2/3 users we recommend install via [Package Control][3].
 ### To preview :
 
  - optionally select some of your markdown for conversion
- - use `cmd+shift+P` then `Markdown Preview` to show the follow commands (you will be prompted to select which parser you prefer):
+ - use <kbd>cmd</kbd>+<kbd>shift</kbd>+<kbd>P</kbd> then `Markdown Preview` to show the follow commands (you will be prompted to select which parser you prefer):
 	- Markdown Preview: Preview in Browser
 	- Markdown Preview: Export HTML in Sublime Text
 	- Markdown Preview: Copy to Clipboard
@@ -68,9 +68,25 @@ For all Sublime Text 2/3 users we recommend install via [Package Control][3].
    `{ "keys": ["alt+m"], "command": "markdown_preview", "args": {"target": "browser", "parser":"markdown"} },` for a specific parser and target or `{ "keys": ["alt+m"], "command": "markdown_preview_select", "args": {"target": "browser"} },` to bring up the quick panel to select enabled parsers for a given target.
  - once converted a first time, the output HTML will be updated on each file save (with LiveReload plugin)
 
+### Enabling Other External Markdown Parsers :
+
+External parser commands and arguments should first be mapped to a name.  The path to the binary should be first, followed by flags etc.
+
+```js
+    "markdown_binary_map": {
+        "multimarkdown": ["/usr/local/bin/multimarkdown"]
+    },
+```
+
+Then the name can be placed in `enabled_parsers` to enable use of the new parser.
+
+```js
+    "enabled_parsers": ["markdown", "github", "multimarkdown"],
+```
+
 ### To build :
 
- - Just use `Ctrl+B` (Windows/Linux) or `cmd+B` (Mac) to build current file.
+ - Just use <kbd>ctrl</kbd>+<kbd>B</kbd> (Windows/Linux) or <kbd>cmd</kbd>+<kbd>B</kbd> (Mac) to build current file.
 
 ### To config :
 
@@ -175,15 +191,15 @@ This may be further enhanced in the future.
 The code is available at github [project][home] under [MIT licence][4].
 
  [home]: https://github.com/revolunet/sublimetext-markdown-preview
- [3]: https://sublime.wbond.net/
+ [3]: https://packagecontrol.io/
  [4]: http://revolunet.mit-license.org
- [5]: http://developer.github.com/v3/markdown
- [6]: http://github.github.com/github-flavored-markdown/
+ [5]: https://developer.github.com/v3/markdown/
+ [6]: https://help.github.com/articles/github-flavored-markdown/
  [7]: https://github.com/dz0ny/LiveReload-sublimetext2
  [8]: https://github.com/revolunet/sublimetext-markdown-preview/issues/27#issuecomment-11772098
  [9]: https://github.com/revolunet/sublimetext-markdown-preview/issues/78#issuecomment-15644727
  [10]: https://github.com/waylan/Python-Markdown
- [11]: https://sublime.wbond.net/installation
+ [11]: https://packagecontrol.io/installation
  [12]: https://github.com/revolunet/sublimetext-markdown-preview/archive/master.zip
  [issue]: https://github.com/revolunet/sublimetext-markdown-preview/issues
  [settings]: https://github.com/revolunet/sublimetext-markdown-preview/blob/master/MarkdownPreview.sublime-settings

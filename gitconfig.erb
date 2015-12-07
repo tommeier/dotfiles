@@ -9,6 +9,7 @@
   df = diff
   lg = log -p
   df = !git diff | subl
+  praise = blame
   edit-unmerged = "!f() { git ls-files --unmerged | cut -f2 | sort -u ; }; mate `f`"
   add-unmerged = "!f() { git ls-files --unmerged | cut -f2 | sort -u ; }; git add `f`"
   edit-modified = "!f() { git ls-files --modified | cut -f2 | sort -u ; }; mate `f`"

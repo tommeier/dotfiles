@@ -1,0 +1,1 @@
+{"description": "A TextMate and Sublime Text Bundle for the Elixir programming language.", "url": "https://github.com/elixir-lang/elixir-tmbundle", "platforms": ["*"], "version": "2015.11.19.18.47.54", "sublime_text": "*", "dependencies": []}

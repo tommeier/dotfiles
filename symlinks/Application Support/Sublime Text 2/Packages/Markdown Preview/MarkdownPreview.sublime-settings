@@ -20,7 +20,7 @@
 
         default - The current default parser is python-markdown parser.
         markdown - Use the built-in python-markdown parser
-        github - Use the github API to convert markdown, so you can use GitHub flavored Markdown, see http://github.github.com/github-flavored-markdown/
+        github - Use the github API to convert markdown, so you can use GitHub flavored Markdown, see https://help.github.com/articles/github-flavored-markdown/
     */
     "parser": "default",
 
@@ -60,8 +60,29 @@
         Pygments support for syntax highlighting.  Controls whether codehilite extension
         will use Pygments.  If disabled, code blocks will be formatted for javascript
         highighters such as highlight.js.
+
+        If you manually set codehilite as an included extension in "enabled_extensions",
+        your settings will override this one.  To configure using pygments manually:
+            "enabled_extensions": [
+                "codehilite(use_pygments=False)" // <-Turn off pygments usage
+            ]
     */
     "enable_pygments": true,
+
+    /*
+        Sets whether highlight JS will auto-guess raw block's syntax.
+        Alternative is to to only highlight blocks where a language has
+        been defined.
+
+        Default is True (guess).
+
+        If you manually set codehilite as an included extension in "enabled_extensions",
+        your settings will override this one.  To configure language guessing manually:
+            "enabled_extensions": [
+                "codehilite(guess_lang=False)" // <-Turn off language guessing
+            ]
+    */
+    "guess_language": true,
 
     /*
         List of enabled extensions of the selected markdown parser.
@@ -73,11 +94,11 @@
         default - use the default set of extensions, see table later.
         [ "default", "def_list", ... ] - a list of extensions. Use "default" to include the default extensions.
 
-         Parser     | "default" Values
+            Parser     | "default" Values
         ------------|---------------------------
-         default    | ["extra", "github", "toc", "headerid", "meta", "sane_lists", "smarty", "wikilinks"]
-         markdown   | ["extra", "github", "toc", "headerid", "meta", "sane_lists", "smarty", "wikilinks"]
-         github     | extension's values are not used.
+            default    | ["extra", "github", "toc", "meta", "sane_lists", "smarty", "wikilinks"]
+            markdown   | ["extra", "github", "toc", "meta", "sane_lists", "smarty", "wikilinks"]
+            github     | extension's values are not used.
 
     */
     "enabled_extensions": "default",
@@ -91,6 +112,23 @@
         will automatically run that parser.
     */
     "enabled_parsers": ["markdown", "github"],
+
+    /*
+        Custom external markdown parsers.
+        
+        "markdown_binary_map" contains key values pairs.  The key
+        is name of the parser and what is used in "enabled_parsers"
+        to turn on the access to the parser.  The value is an array
+        containing the path to the binary and all the parameters that
+        are desired.
+
+        Multimarkdown is provided as an example below.  It's path may differ
+        on your system.
+    */
+
+    "markdown_binary_map": {
+        "multimarkdown": ["/usr/local/bin/multimarkdown"]
+    },
 
     /*
         Default mode for the github Markdown parser : markdown (documents) or gfm (comments)
@@ -175,11 +213,6 @@
     // "path_tempfile": "/tmp/my_notes",
 
     /*
-        Absolute path to multimarkdown executable
-    */
-    "multimarkdown_binary": "",
-
-    /*
         Sets HTML output to a simple form:
             - No head
             - No body tags
@@ -194,7 +227,7 @@
         Setting is a string value: (absolute | relative | base64 | none)
             absolute: converts relative local paths to absolute
             relative: converts relative local paths to a path relative to the
-                      HTML output
+                        HTML output
             base64: coverts the local file to base64 and embeds it in the HTML
             none: does nothing
     */
@@ -205,7 +238,7 @@
         Setting is a string value: (absolute | relative | none)
             absolute: converts relative local paths to absolute
             relative: converts relative local paths to a path relative to the
-                      HTML output
+                        HTML output
             none: does nothing
     */
     "file_path_conversions": "absolute",
@@ -216,23 +249,10 @@
             accept: Accepts the proposed inserts and deletions (comments etc. are discarded)
             reject: Rejects the proposed inserts and deletions (comments etc. are discarded)
             none: does nothing
+
+        Critic marks only affects "github" and "markdown" (Python Markdown).
     */
     "strip_critic_marks": "none",
-
-    /*
-        Sets whether highlight JS will auto-guess raw block's syntax.
-        Alternative is to to only highlight blocks where a language has
-        been defined.
-
-        Default is True (guess).
-
-        If you manually set codehilite as an included extension in "enabled_extensions",
-        your settings will override this one.  To configure language guessing manually:
-            "enabled_extensions": [
-                "codehilite(guess_lang=False)" // <-Turn off language guessing
-            ]
-    */
-    "guess_language": true,
 
     /*
         Strips the YAML front matter header and converts title to a heading
