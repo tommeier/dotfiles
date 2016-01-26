@@ -3,16 +3,14 @@
 <plist version="1.0">
 <dict>
 	<key>content</key>
-	<string>defmodule ${1:${TM_FILENAME/(?:\A|_)([A-Za-z0-9]+)(?:\.[a-z]+)*/(?2::\u$1)/g}} do
-	$0
-end</string>
+	<string>def $1, do: $0</string>
 	<key>name</key>
-	<string>defmodule</string>
+	<string>def (one line)</string>
 	<key>scope</key>
 	<string>source.elixir</string>
 	<key>tabTrigger</key>
-	<string>defmod</string>
+	<string>df</string>
 	<key>uuid</key>
-	<string>1BAFD05F-558D-4B18-95BF-7399E84A8E39</string>
+	<string>70D885A3-B612-4B5D-842E-D94474C8C8CA</string>
 </dict>
 </plist>

@@ -19,7 +19,7 @@ except ValueError:
 SUBLIME_MAJOR_VERSION = int(sublime.version()) / 1000
 
 jq_exits = False
-jq_version = None
+jq_init = False
 
 import subprocess
 
@@ -27,18 +27,26 @@ import subprocess
 if sys.platform != 'win32' and '/usr/local/bin' not in os.environ['PATH']:
     os.environ["PATH"] += os.pathsep + '/usr/local/bin'
 
-try:
-    # checking if ./jq tool is available so we can use it
-    s = subprocess.Popen(["jq", "--version"],
-                         stderr=subprocess.PIPE,
-                         stdout=subprocess.PIPE)
-    out, err = s.communicate()
-    jq_version = err.decode("utf-8").replace("jq version ", "").strip()
-    jq_exits = True
-except OSError:
-    os_exception = sys.exc_info()[1]
-    print(str(os_exception))
-    jq_exits = False
+""" defer jq presence check until the user tries to use it, include Package "Fix Mac Path" to resolve
+    all homebrew issues (https://github.com/int3h/SublimeFixMacPath) """
+def check_jq():
+    global jq_exits
+    global jq_init
+
+    if not jq_init:
+        jq_init = True
+        try:
+            # checking if ./jq tool is available so we can use it
+            s = subprocess.Popen(["jq", "--version"],
+                                 stdin=subprocess.PIPE,
+                                 stderr=subprocess.PIPE,
+                                 stdout=subprocess.PIPE)
+            out, err = s.communicate()
+            jq_exits = True
+        except OSError:
+            os_exception = sys.exc_info()[1]
+            print(str(os_exception))
+            jq_exits = False
 
 
 s = sublime.load_settings("Pretty JSON.sublime-settings")
@@ -169,6 +177,7 @@ class JqPrettyJson(sublime_plugin.WindowCommand):
     Allows work with ./jq
     """
     def run(self):
+        check_jq()
         if jq_exits:
             self.window.show_input_panel("Enter ./jq filter expression", ".",
                                          self.done, None, None)
@@ -197,7 +206,10 @@ class JqPrettyJson(sublime_plugin.WindowCommand):
             raw_json = self.get_content()
 
             if SUBLIME_MAJOR_VERSION < 3:
-                out, err = p.communicate(bytes(raw_json))
+                if sys.platform != 'win32':
+                    out, err = p.communicate(bytes(raw_json))
+                else:
+                    out, err = p.communicate(unicode(raw_json).encode('utf-8'))
             else:
                 out, err = p.communicate(bytes(raw_json, "utf-8"))
             output = out.decode("UTF-8").strip()

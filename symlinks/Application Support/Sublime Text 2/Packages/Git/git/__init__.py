@@ -1,4 +1,7 @@
+from __future__ import absolute_import, unicode_literals, print_function, division
+
 import os
+import re
 import sublime
 import sublime_plugin
 import threading
@@ -7,13 +10,29 @@ import functools
 import os.path
 import time
 
-# when sublime loads a plugin it's cd'd into the plugin directory. Thus
-# __file__ is useless for my purposes. What I want is "Packages/Git", but
-# allowing for the possibility that someone has renamed the file.
-# Fun discovery: Sublime on windows still requires posix path separators.
-PLUGIN_DIRECTORY = os.getcwd().replace(os.path.normpath(os.path.join(os.getcwd(), '..', '..')) + os.path.sep, '').replace(os.path.sep, '/')
 
 git_root_cache = {}
+
+
+# Goal is to get: "Packages/Git", allowing for people who rename things
+def find_plugin_directory():
+    if ".sublime-package" in __file__:
+        # zipped package, all we care about is the bit right before .sublime-package
+        match = re.search(r"([^\\/]+)\.sublime-package", __file__)
+        if match:
+            return "Packages/" + match.group(1)
+    if __file__.startswith('./'):
+        # ST2, we get "./git/__init__.py" which is pretty useless since we want the part above that
+        # However, os.getcwd() is the plugin directory!
+        full = os.getcwd()
+    else:
+        # In a complete inversion, in ST3 when a plugin is loaded we
+        # actually can trust __file__. It'll be something like:
+        # /Users/dlynch/Library/Application Support/Sublime Text 3/Packages/Git/git/__init__.py
+        full = os.path.normpath(os.path.join(os.path.dirname(__file__), '..'))
+    dirname = os.path.split(full)[-1]
+    return "Packages/" + dirname.replace(".sublime-package", "")
+PLUGIN_DIRECTORY = find_plugin_directory()
 
 
 def main_thread(callback, *args, **kwargs):
@@ -65,13 +84,19 @@ def view_contents(view):
 
 
 def plugin_file(name):
-    return os.path.join(PLUGIN_DIRECTORY, name)
+    return PLUGIN_DIRECTORY + '/' + name
 
 
-def do_when(conditional, callback, *args, **kwargs):
+def do_when(conditional, command, *args, **kwargs):
     if conditional():
-        return callback(*args, **kwargs)
-    sublime.set_timeout(functools.partial(do_when, conditional, callback, *args, **kwargs), 50)
+        return command(*args, **kwargs)
+    sublime.set_timeout(functools.partial(do_when, conditional, command, *args, **kwargs), 50)
+
+
+def goto_xy(view, line, col):
+    view.run_command("goto_line", {"line": line})
+    for i in range(col):
+        view.run_command("move", {"by": "characters", "forward": True})
 
 
 def _make_text_safeish(text, fallback_encoding, method='decode'):
@@ -83,17 +108,60 @@ def _make_text_safeish(text, fallback_encoding, method='decode'):
         unitext = getattr(text, method)('utf-8')
     except (UnicodeEncodeError, UnicodeDecodeError):
         unitext = getattr(text, method)(fallback_encoding)
+    except AttributeError:
+        # strongly implies we're already unicode, but just in case let's cast
+        # to string
+        unitext = str(text)
     return unitext
 
 
+def _test_paths_for_executable(paths, test_file):
+    for directory in paths:
+        file_path = os.path.join(directory, test_file)
+        if os.path.exists(file_path) and os.access(file_path, os.X_OK):
+            return file_path
+
+
+def find_binary(cmd):
+    # It turns out to be difficult to reliably run git, with varying paths
+    # and subprocess environments across different platforms. So. Let's hack
+    # this a bit.
+    # (Yes, I could fall back on a hardline "set your system path properly"
+    # attitude. But that involves a lot more arguing with people.)
+    path = os.environ.get('PATH', '').split(os.pathsep)
+    if os.name == 'nt':
+        cmd = cmd + '.exe'
+
+    path = _test_paths_for_executable(path, cmd)
+
+    if not path:
+        # /usr/local/bin:/usr/local/git/bin
+        if os.name == 'nt':
+            extra_paths = (
+                os.path.join(os.environ.get("ProgramFiles", ""), "Git", "bin"),
+                os.path.join(os.environ.get("ProgramFiles(x86)", ""), "Git", "bin"),
+            )
+        else:
+            extra_paths = (
+                '/usr/local/bin',
+                '/usr/local/git/bin',
+            )
+        path = _test_paths_for_executable(extra_paths, cmd)
+    return path
+GIT = find_binary('git')
+GITK = find_binary('gitk')
+
+
 class CommandThread(threading.Thread):
+    command_lock = threading.Lock()
+
     def __init__(self, command, on_done, working_dir="", fallback_encoding="", **kwargs):
         threading.Thread.__init__(self)
         self.command = command
         self.on_done = on_done
         self.working_dir = working_dir
         if "stdin" in kwargs:
-            self.stdin = kwargs["stdin"]
+            self.stdin = kwargs["stdin"].encode()
         else:
             self.stdin = None
         if "stdout" in kwargs:
@@ -104,37 +172,54 @@ class CommandThread(threading.Thread):
         self.kwargs = kwargs
 
     def run(self):
+        # Ignore directories that no longer exist
+        if not os.path.isdir(self.working_dir):
+            return
+
+        self.command_lock.acquire()
+        output = ''
+        callback = self.on_done
         try:
+            if self.working_dir != "":
+                os.chdir(self.working_dir)
+            # Windows needs startupinfo in order to start process in background
+            startupinfo = None
+            if os.name == 'nt':
+                startupinfo = subprocess.STARTUPINFO()
+                startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
 
-            # Ignore directories that no longer exist
-            if os.path.isdir(self.working_dir):
+            shell = False
+            if sublime.platform() == 'windows':
+                shell = True
 
-                # Per http://bugs.python.org/issue8557 shell=True is required to
-                # get $PATH on Windows. Yay portable code.
-                shell = os.name == 'nt'
-                if self.working_dir != "":
-                    os.chdir(self.working_dir)
+            env = os.environ.copy()
+            if sublime.platform() == 'windows' and 'HOME' not in env:
+                env['HOME'] = env['USERPROFILE']
 
-                proc = subprocess.Popen(self.command,
-                    stdout=self.stdout, stderr=subprocess.STDOUT,
-                    stdin=subprocess.PIPE,
-                    shell=shell, universal_newlines=True,
-                    env=os.environ)
-                output = proc.communicate(self.stdin)[0]
-                if not output:
-                    output = ''
-                # if sublime's python gets bumped to 2.7 we can just do:
-                # output = subprocess.check_output(self.command)
-                main_thread(self.on_done,
-                    _make_text_safeish(output, self.fallback_encoding), **self.kwargs)
-
-        except subprocess.CalledProcessError, e:
-            main_thread(self.on_done, e.returncode)
-        except OSError, e:
+            # universal_newlines seems to break `log` in python3
+            proc = subprocess.Popen(self.command,
+                stdout=self.stdout, stderr=subprocess.STDOUT,
+                stdin=subprocess.PIPE, startupinfo=startupinfo,
+                shell=shell, universal_newlines=False,
+                env=env)
+            output = proc.communicate(self.stdin)[0]
+            if not output:
+                output = ''
+            output = _make_text_safeish(output, self.fallback_encoding)
+        except subprocess.CalledProcessError as e:
+            output = e.returncode
+        except OSError as e:
+            callback = sublime.error_message
             if e.errno == 2:
-                main_thread(sublime.error_message, "Git binary could not be found in PATH\n\nConsider using the git_command setting for the Git plugin\n\nPATH is: %s" % os.environ['PATH'])
+                global _has_warned
+                if not _has_warned:
+                    _has_warned = True
+                    output = "{cmd} binary could not be found in PATH\n\nConsider using the {cmd_setting}_command setting for the Git plugin\n\nPATH is: {path}".format(cmd=self.command[0], cmd_setting=self.command[0].replace('-', '_'), path=os.environ['PATH'])
             else:
-                raise e
+                output = e.strerror
+        finally:
+            self.command_lock.release()
+            main_thread(callback, output, **self.kwargs)
 
 
 # A base for all commands
@@ -153,10 +238,20 @@ class GitCommand(object):
         s = sublime.load_settings("Git.sublime-settings")
         if s.get('save_first') and self.active_view() and self.active_view().is_dirty() and not no_save:
             self.active_view().run_command('save')
-        if command[0] == 'git' and s.get('git_command'):
-            command[0] = s.get('git_command')
-        if command[0] == 'git-flow' and s.get('git_flow_command'):
+        if command[0] == 'git':
+            us = sublime.load_settings('Preferences.sublime-settings')
+            if s.get('git_command') or us.get('git_binary'):
+                command[0] = s.get('git_command') or us.get('git_binary')
+            elif GIT:
+                command[0] = GIT
+        if command[0] == 'gitk' and s.get('gitk_command'):
+            if s.get('gitk_command'):
+                command[0] = s.get('gitk_command')
+            elif GITK:
+                command[0] = GITK
+        if command[0] == 'git' and command[1] == 'flow' and s.get('git_flow_command'):
             command[0] = s.get('git_flow_command')
+            del(command[1])
         if not callback:
             callback = self.generic_done
 
@@ -167,13 +262,13 @@ class GitCommand(object):
             message = kwargs.get('status_message', False) or ' '.join(command)
             sublime.status_message(message)
 
-    def generic_done(self, result):
+    def generic_done(self, result, **kw):
         if self.may_change_files and self.active_view() and self.active_view().file_name():
             if self.active_view().is_dirty():
                 result = "WARNING: Current view is dirty.\n\n"
             else:
                 # just asking the current file to be re-opened doesn't do anything
-                print "reverting"
+                print("reverting")
                 position = self.active_view().viewport_position()
                 self.active_view().run_command('revert')
                 do_when(lambda: not self.active_view().is_loading(), lambda: self.active_view().set_viewport_position(position, False))
@@ -190,12 +285,11 @@ class GitCommand(object):
     def _output_to_view(self, output_file, output, clear=False,
             syntax="Packages/Diff/Diff.tmLanguage", **kwargs):
         output_file.set_syntax_file(syntax)
-        edit = output_file.begin_edit()
-        if clear:
-            region = sublime.Region(0, self.output_view.size())
-            output_file.erase(edit, region)
-        output_file.insert(edit, 0, output)
-        output_file.end_edit(edit)
+        args = {
+            'output': output,
+            'clear': clear
+        }
+        output_file.run_command('git_scratch_output', args)
 
     def scratch(self, output, title=False, position=None, **kwargs):
         scratch_file = self.get_window().new_file()
@@ -204,6 +298,7 @@ class GitCommand(object):
         scratch_file.set_scratch(True)
         self._output_to_view(scratch_file, output, **kwargs)
         scratch_file.set_read_only(True)
+        scratch_file.settings().set('word_wrap', False)
         if position:
             sublime.set_timeout(lambda: scratch_file.set_viewport_position(position), 0)
         return scratch_file
@@ -241,7 +336,8 @@ class GitWindowCommand(GitCommand, sublime_plugin.WindowCommand):
     # only one.
     def is_enabled(self):
         if self._active_file_name() or len(self.window.folders()) == 1:
-            return git_root(self.get_working_dir())
+            return bool(git_root(self.get_working_dir()))
+        return False
 
     def get_file_name(self):
         return ''
@@ -274,7 +370,8 @@ class GitTextCommand(GitCommand, sublime_plugin.TextCommand):
     def is_enabled(self):
         # First, is this actually a file on the file system?
         if self.view.file_name() and len(self.view.file_name()) > 0:
-            return git_root(self.get_working_dir())
+            return bool(git_root(self.get_working_dir()))
+        return False
 
     def get_file_name(self):
         return os.path.basename(self.view.file_name())
@@ -299,52 +396,3 @@ class GitTextCommand(GitCommand, sublime_plugin.TextCommand):
         # the case of the quick panel.
         # So, this is not necessarily ideal, but it does work.
         return self.view.window() or sublime.active_window()
-
-
-# A few miscellaneous commands
-
-
-class GitCustomCommand(GitWindowCommand):
-    may_change_files = True
-
-    def run(self, command=None):
-        if command is None:
-            self.get_window().show_input_panel("Git command", "",
-            self.on_input, None, None)
-        else:
-            self.on_input(command)
-
-
-    def on_input(self, command):
-        command = str(command)  # avoiding unicode
-        if command.strip() == "":
-            self.panel("No git command provided")
-            return
-        import shlex
-        cmds = [c.strip() for c in command.split(';') if c.strip() != '']
-        for cmd in cmds:
-            command_splitted = ['git'] + shlex.split(cmd)
-            print command_splitted
-            self.run_command(command_splitted)
-
-
-class GitGuiCommand(GitTextCommand):
-    def run(self, edit):
-        command = ['git', 'gui']
-        self.run_command(command)
-
-
-class GitGitkCommand(GitTextCommand):
-    def run(self, edit):
-        command = ['gitk']
-        self.run_command(command)
-
-class GitGitkAllCommand(GitTextCommand):
-    def run(self, edit):
-        command = ['gitk', '--all']
-        self.run_command(command)
-
-class GitGitkThisFileCommand(GitTextCommand):
-    def run(self, edit):
-        command = ['gitk', self.get_file_name()]
-        self.run_command(command)
