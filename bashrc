@@ -29,17 +29,6 @@ export PATH="$PATH:$ANDROID_HOME/platform-tools:$ANDROID_HOME/tools"
 export ANDROID_PROJECT_HOME="/users/tom/src/company/ferocia/johanna-android"
 export ANT_OPTS="-javaagent:$ANDROID_PROJECT_HOME/class.rewriter.jar"
 
-#####  Disabled for Boxen #####
-#Required files
-#source ~/.bash/rbenv_commands #Disabled for Boxen
-#source ~/.bash/rvm_commands #Deprecated for RBEnv
-#Paths
-#export PATH=$PATH:/usr/local/bin
-#export PATH=$PATH:/usr/local/sbin
-#export PATH=$PATH:/usr/local/share/npm/bin
-#export PATH=$PATH:/usr/local/share/python
-#export NODE_PATH="/usr/local/lib/node_modules"
-
 ### Added by the Heroku Toolbelt
 export PATH="/usr/local/heroku/bin:$PATH"
 
