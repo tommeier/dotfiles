@@ -65,7 +65,7 @@ git branch -r --merged | while read merged_branch; do
 
         if [ -z "$DELETE_MERGED_REMOTE_BRANCHES" ]; then
           # Until we work out a fix for candidate branch being deleted
-          echo "[DISABLED] Would have deleted ${branch_name}"
+          echo "[DISABLED] Would have deleted ${branch_name} (DELETE_MERGED_REMOTE_BRANCHES=set to remove)"
         else
           git push $remote_name $branch_name --delete
         fi;
