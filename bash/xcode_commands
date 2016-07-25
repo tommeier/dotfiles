@@ -44,7 +44,7 @@ function clear_xcode_data {
   echo "Removing device logs:"
   rm -rf "~/Library/Developer/Xcode/iOS\ Device\ Logs/*"
 
-  echo "Done!"
+  echo "Done"
 
   echo
   echo "Manually clear any irrelevent iOS support here: "

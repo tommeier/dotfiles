@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.org/dzhibas/SublimePrettyJson.svg)](https://travis-ci.org/dzhibas/SublimePrettyJson)
 
-Prettify/Minify/Query JSON plugin for Sublime Text 2 & 3
+Prettify/Minify/Query/Goto/Validate/Lint JSON plugin for Sublime Text 2 & 3
 
 ## Installation
 
@@ -60,10 +60,28 @@ http://stedolan.github.io/jq/
 **use_entire_file_if_no_selection** - true
 
 **indent** - 2
+`int used for how many spaces to use for indent, replace it with value "\t" and tabs will be used instead`
 
 **sort_keys** - false
 
 **ensure_ascii** - false
+
+**line_separator** - ","
+
+**value_separator** - ": "
+`value separator in config, so if you need to get rid of extra space you can remove it with this param`
+
+**keep_arrays_single_line** - false
+`if we need to re-structure arrays and make them single-line`
+
+**max_arrays_line_length** - 120 
+`if array for example '["a", "b", 123213, ....]' length will reach max it will be kept multi-line (for beauty)`
+
+**pretty_on_save** - false
+`do we need to automatically Pretty JSON on save`
+
+**validate_on_save** - true
+`do we need validate JSON files on each save`
 
 ## Using tabs for indentation
 

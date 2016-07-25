@@ -3,11 +3,12 @@ import sublime_plugin
 import re
 import json
 from xml.dom.minidom import parseString
+from xml.parsers.expat import ExpatError, errors
 from os.path import basename, splitext
 
 
 class BaseIndentCommand(sublime_plugin.TextCommand):
-
+  
     def __init__(self, view):
         self.view = view
         self.language = self.get_language()
@@ -86,8 +87,14 @@ class AutoIndentCommand(BaseIndentCommand):
 class IndentXmlCommand(BaseIndentCommand):
 
     def indent(self, s):
-        # convert to utf
-        s = s.encode("utf-8")
+        # figure out encoding
+        utfEncoded = s.encode("utf-8")
+        encoding = "utf-8"
+        encodingMatch = re.compile(b"<\?.*encoding=\"(.*?)\".*\?>").match(utfEncoded)
+        if encodingMatch:
+            encoding = encodingMatch.group(1).decode("utf-8").lower()
+
+        s = s.encode(encoding)
         xmlheader = re.compile(b"<\?.*\?>").match(s)
         # convert to plain string without indents and spaces
         s = re.compile(b'>\s+([^\s])', re.DOTALL).sub(b'>\g<1>', s)
@@ -95,9 +102,10 @@ class IndentXmlCommand(BaseIndentCommand):
         s = s.replace(b'<![CDATA[', b'%CDATAESTART%').replace(b']]>', b'%CDATAEEND%')
         try:
             s = parseString(s).toprettyxml()
-        except Exception as e:
-            sublime.active_window().run_command("show_panel", {"panel": "console", "toggle": True})
-            raise e
+        except ExpatError as err:
+            message = "Invalid XML: %s line:%d:col:%d" % (errors.messages[err.code], err.lineno, err.offset)
+            sublime.status_message(message)
+            return
         # remove line breaks
         s = re.compile('>\n\s+([^<>\s].*?)\n\s+</', re.DOTALL).sub('>\g<1></', s)
         # restore cdata
@@ -105,7 +113,7 @@ class IndentXmlCommand(BaseIndentCommand):
         # remove xml header
         s = s.replace("<?xml version=\"1.0\" ?>", "").strip()
         if xmlheader:
-            s = xmlheader.group().decode("utf-8") + "\n" + s
+            s = xmlheader.group().decode(encoding) + "\n" + s
         return s
 
     def check_enabled(self, language):

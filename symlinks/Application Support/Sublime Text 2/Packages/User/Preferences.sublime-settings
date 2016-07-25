@@ -47,6 +47,7 @@
 		".sass-cache",
 		".svn",
 		"bundle",
+		"build",
 		"coverage",
 		"CVS",
 		"data",
@@ -56,7 +57,7 @@
 		"tmp"
 	],
 	"font_face": "Inconsolata",
-	"font_size": 26.0,
+	"font_size": 22.0,
 	"highlight_line": true,
 	"highlight_modified_tabs": true,
 	"hot_exit": false,

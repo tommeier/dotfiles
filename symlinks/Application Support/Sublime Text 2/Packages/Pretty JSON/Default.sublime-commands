@@ -4,6 +4,10 @@
         "command": "pretty_json"
     },
     {
+        "caption": "Pretty JSON: Format and Sort JSON",
+        "command": "pretty_json_and_sort"
+    },
+    {
         "caption": "Pretty JSON: Minify (compress) JSON",
         "command": "un_pretty_json"
     },
@@ -18,5 +22,19 @@
     {
         "caption": "Pretty JSON: Validate",
         "command": "pretty_json_validate"
+    },
+    {
+        "caption": "Preferences: Pretty JSON Settings - User",
+        "command": "open_file", "args":
+        {
+            "file": "${packages}/User/Pretty JSON.sublime-settings"
+        }
+    },
+    {
+        "caption": "Preferences: Pretty JSON Settings - Default",
+        "command": "open_file", "args":
+        {
+            "file": "${packages}/Pretty JSON/Pretty JSON.sublime-settings"
+        }
     }
 ]

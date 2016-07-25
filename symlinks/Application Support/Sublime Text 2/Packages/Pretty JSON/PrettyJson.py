@@ -8,6 +8,11 @@ from xml.etree import ElementTree
 from xml.dom import minidom
 
 try:
+  basestring
+except NameError:
+  basestring = str
+
+try:
     # python 3 / Sublime Text 3
     from . import simplejson as json
     from .simplejson import OrderedDict
@@ -52,8 +57,9 @@ def check_jq():
 s = sublime.load_settings("Pretty JSON.sublime-settings")
 
 
-class PrettyJsonBaseCommand(sublime_plugin.TextCommand):
-    json_error_matcher = re.compile(r"line (\d+) column (\d+) \(char (\d+)\)")
+class PrettyJsonBaseCommand:
+    json_error_matcher = re.compile(r"line (\d+)")
+    force_sorting = False
 
     @staticmethod
     def json_loads(selection):
@@ -63,26 +69,77 @@ class PrettyJsonBaseCommand(sublime_plugin.TextCommand):
 
     @staticmethod
     def json_dumps(obj):
-        return json.dumps(obj,
-                          indent=s.get("indent", 2),
-                          ensure_ascii=s.get("ensure_ascii", False),
-                          sort_keys=s.get("sort_keys", False),
-                          separators=(',', ': '),
-                          use_decimal=True)
+
+        sort_keys = s.get("sort_keys", False)
+        if PrettyJsonBaseCommand.force_sorting:
+            sort_keys = True
+
+        line_separator = s.get("line_separator", ",")
+        value_separator = s.get("value_separator", ": ")
+
+        output_json = json.dumps(obj,
+                                 indent=s.get("indent", 2),
+                                 ensure_ascii=s.get("ensure_ascii", False),
+                                 sort_keys=sort_keys,
+                                 separators=(line_separator, value_separator),
+                                 use_decimal=True)
+
+        # do we need try and shuffle things around ?
+        post_process = s.get("keep_arrays_single_line", False)
+
+        if post_process:
+            # find all array matches
+            matches = re.findall(r"\[([^\[\]]+?)\]", output_json)
+            join_separator = line_separator.ljust(2)
+            for m in matches:
+                items = [a.strip() for a in m.split(line_separator.strip())]
+                replacement = join_separator.join(items)
+                # if line not gets too long, replace with single line
+                if len(replacement) <= s.get("max_arrays_line_length", 120):
+                    output_json = output_json.replace(m, replacement)
+
+        return output_json
 
     @staticmethod
     def json_dumps_minified(obj):
+        line_separator = s.get("line_separator", ",")
+        """:type : str"""
+        value_separator = s.get("value_separator", ": ")
+        """:type : str"""
+
+        sort_keys = s.get("sort_keys", False)
+        if PrettyJsonBaseCommand.force_sorting:
+            sort_keys = True
+
         return json.dumps(obj,
                           ensure_ascii=s.get("ensure_ascii", False),
-                          sort_keys=s.get("sort_keys", False),
-                          separators=(',', ':'),
+                          sort_keys=sort_keys,
+                          separators=(line_separator.strip(), value_separator.strip()),
                           use_decimal=True)
 
     def highlight_error(self, message):
+
+        self.view.erase_regions('json_errors')
+        self.view.erase_status('json_errors')
+
         m = self.json_error_matcher.search(message)
         if m:
             line = int(m.group(1)) - 1
+
+            # sometime we need to highlight one line above
+            if "','" in message and "delimiter" in message:
+                line_content = self.view.substr(self.view.full_line(self.view.text_point(line - 1, 0)))
+                if line_content.strip()[-1] != ',' and line_content.strip() != '{' and line_content.strip() != '}':
+                    line -= 1
+
+            if "control character '\\n'" in message:
+                line_content = self.view.substr(self.view.full_line(self.view.text_point(line - 1, 0)))
+                quotes = re.findall(r"\"", line_content)
+                if len(quotes) % 2 != 0 and len(quotes) != 0:
+                    line -= 1
+
             regions = [self.view.full_line(self.view.text_point(line, 0)), ]
+
             self.view.add_regions('json_errors', regions, 'invalid', 'dot',
                                   sublime.DRAW_OUTLINED)
             self.view.show(regions[0])
@@ -99,7 +156,7 @@ class PrettyJsonBaseCommand(sublime_plugin.TextCommand):
             self.view.set_syntax_file("Packages/JavaScript/JSON.tmLanguage")
 
 
-class PrettyJsonValidate(PrettyJsonBaseCommand):
+class PrettyJsonValidate(PrettyJsonBaseCommand, sublime_plugin.TextCommand):
     def run(self, edit):
         self.view.erase_regions('json_errors')
         for region in self.view.sel():
@@ -118,7 +175,7 @@ class PrettyJsonValidate(PrettyJsonBaseCommand):
                 sublime.message_dialog("Invalid JSON")
 
 
-class PrettyJsonCommand(PrettyJsonBaseCommand):
+class PrettyJsonCommand(PrettyJsonBaseCommand, sublime_plugin.TextCommand):
 
     """ Pretty Print JSON """
     def run(self, edit):
@@ -135,17 +192,38 @@ class PrettyJsonCommand(PrettyJsonBaseCommand):
                 selection = region
 
             try:
-                obj = self.json_loads(self.view.substr(selection))
+                selection_text = self.view.substr(selection)
+                obj = self.json_loads(selection_text)
                 self.view.replace(edit, selection, self.json_dumps(obj))
 
                 if selected_entire_file:
                     self.change_syntax()
 
             except Exception:
-                self.show_exception()
+                amount_of_single_quotes = re.findall(r"(\'[^\']+\'?)", selection_text)
+                amount_of_double_quotes = re.findall(r"(\"[^\"]+\"?)", selection_text)
+
+                if len(amount_of_single_quotes) >= len(amount_of_double_quotes):
+                    selection_text_modified = re.sub(r"(?:\'([^\']+)\'?)", r'"\1"', selection_text)
+                    obj = self.json_loads(selection_text_modified)
+                    self.view.replace(edit, selection, self.json_dumps(obj))
+
+                    if selected_entire_file:
+                        self.change_syntax()
+                else:
+                    self.show_exception()
 
 
-class UnPrettyJsonCommand(PrettyJsonBaseCommand):
+class PrettyJsonAndSortCommand(PrettyJsonCommand, sublime_plugin.TextCommand):
+
+    """ Pretty print json with forced sorting """
+    def run(self, edit):
+        PrettyJsonBaseCommand.force_sorting = True
+        PrettyJsonCommand.run(self, edit)
+        PrettyJsonBaseCommand.force_sorting = False
+
+
+class UnPrettyJsonCommand(PrettyJsonBaseCommand, sublime_plugin.TextCommand):
 
     """ Compress/minify JSON - it makes json as one-liner """
     def run(self, edit):
@@ -223,7 +301,7 @@ class JqPrettyJson(sublime_plugin.WindowCommand):
             sublime.status_message(str(exc))
 
 
-class JsonToXml(PrettyJsonBaseCommand):
+class JsonToXml(PrettyJsonBaseCommand, sublime_plugin.TextCommand):
     """
     converts Json to XML
     """
@@ -314,6 +392,58 @@ class JsonToXml(PrettyJsonBaseCommand):
 class JqPrettyJsonOut(sublime_plugin.TextCommand):
     def run(self, edit, jq_output=''):
         self.view.insert(edit, 0, jq_output)
+
+
+class PrettyJsonGotoSymbolCommand(PrettyJsonBaseCommand, sublime_plugin.TextCommand):
+    def run(self, edit):
+        self.items = []
+        self.goto_items = []
+
+        content = self.view.substr(sublime.Region(0, self.view.size()))
+
+        try:
+            json_data = self.json_loads(content)
+            self.generate_items(json_data, '')
+            sublime.active_window().show_quick_panel(self.items, self.goto)
+        except Exception:
+            self.show_exception()
+
+    def generate_items(self, json_data, root_key):
+        if isinstance(json_data, OrderedDict):
+            for key in json_data:
+                new_key_name = root_key + '.' + key
+                self.items.append('%s' % new_key_name)
+                self.goto_items.append('"%s"' % key)
+                self.generate_items(json_data[key], new_key_name)
+        elif isinstance(json_data, list):
+            for index, item in enumerate(json_data):
+                if isinstance(item, basestring):
+                    self.items.append('%s' % root_key + '.' + item)
+                    self.goto_items.append('"%s"' % item)
+
+    def goto(self, pos):
+        string_to_search = self.goto_items[pos]
+
+        found = 0
+        for index, item in enumerate(self.goto_items):
+            if index >= pos:
+                break
+            if item == string_to_search:
+                found += 1
+
+        regions = self.view.find_all(string_to_search, sublime.LITERAL)
+        for i, r in enumerate(regions):
+            line = self.view.substr(self.view.full_line(r))
+            if ":" in line:
+                split = line.split(":")
+                val = split[1].strip()
+                if string_to_search in val:
+                    del regions[i]
+
+        region = regions[found]
+        self.view.sel().clear()
+        self.view.sel().add(region)
+        self.view.show(region)
 
 
 def plugin_loaded():
