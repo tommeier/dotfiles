@@ -1,1 +1,0 @@
-{"description": "Plugin for Sublime Text editor for reindenting XML and JSON files", "url": "https://github.com/alek-sys/sublimetext_indentxml", "platforms": ["*"], "version": "2016.06.20.10.53.53", "sublime_text": "*", "dependencies": []}

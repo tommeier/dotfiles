@@ -1,5 +1,0 @@
-[
-    {
-        "keys": ["ctrl+shift+\\"], "command": "format_gherkin"
-    }
-]

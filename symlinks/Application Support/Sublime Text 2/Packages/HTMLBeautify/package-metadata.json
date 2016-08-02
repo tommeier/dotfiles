@@ -1,1 +1,0 @@
-{"description": "A plugin for Sublime Text that formats (indents) HTML source code. It makes code easier for humans to read.", "url": "https://github.com/rareyman/HTMLBeautify", "platforms": ["*"], "version": "2015.02.23.20.05.55", "sublime_text": "*", "dependencies": []}
