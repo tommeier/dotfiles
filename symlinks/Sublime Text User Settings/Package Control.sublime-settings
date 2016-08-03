@@ -5,10 +5,13 @@
 	],
 	"installed_packages":
 	[
+		"Alignment",
 		"Babel",
+		"BeautifyRuby",
 		"Git",
 		"Package Control",
 		"Puppet",
+		"RSpec",
 		"Theme - Soda"
 	]
 }

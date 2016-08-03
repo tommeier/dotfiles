@@ -1,8 +1,76 @@
 {
+	"auto_complete": true,
+	"auto_complete_commit_on_tab": true,
+	"auto_complete_with_fields": true,
+	"bold_folder_labels": false,
+	"caret_style": "wide",
 	"color_scheme": "Packages/Color Scheme - Default/Blackboard.tmTheme",
+	"default_encoding": "UTF-8",
+	"detect_indentation": true,
+	"drag_text": false,
+	"draw_minimap_border": false,
+	"ensure_newline_at_eof_on_save": true,
+	"file_exclude_patterns":
+	[
+		"*.a",
+		"*.class",
+		"*.db",
+		"*.dll",
+		"*.dylib",
+		"*.exe",
+		"*.idb",
+		"*.lib",
+		"*.ncb",
+		"*.o",
+		"*.obj",
+		"*.pdb",
+		"*.pdf",
+		"*.psd",
+		"*.pyc",
+		"*.pyo",
+		"*.scssc",
+		"*.sdf",
+		"*.so",
+		"*.suo",
+		".DS_Store",
+		".tags*"
+	],
+	"folder_exclude_patterns":
+	[
+		".git",
+		".bundle",
+		".sass-cache",
+		".bundle",
+		".hg",
+		".rbx",
+		".sass-cache",
+		".svn",
+		"build",
+		"coverage",
+		"CVS",
+		"spec/javascripts/generated",
+		"tmp"
+	],
+	"font_face": "Inconsolata",
+	"font_options":
+	[
+		"subpixel_antialias"
+	],
+	"font_size": 16.0,
+	"highlight_line": true,
+	"highlight_modified_tabs": true,
+	"hot_exit": false,
 	"ignored_packages":
 	[
 		"Vintage"
 	],
-	"theme": "Soda Dark.sublime-theme"
+	"line_padding_bottom": 1,
+	"line_padding_top": 1,
+	"tab_size": 2,
+	"theme": "Soda Dark.sublime-theme",
+	"translate_tabs_to_spaces": true,
+	"tree_animation_enabled": false,
+	"trim_trailing_white_space_on_save": true,
+	"use_simple_full_screen": true,
+	"word_wrap": true
 }
