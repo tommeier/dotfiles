@@ -56,10 +56,15 @@ end
 
 def setup_symlinks
   puts "Setting up symlinks..."
-  #Sublime text 2
-  symlinks_target_folder = "#{ENV['HOME']}/Library/Application Support/Sublime Text 2/"
-  symlinks_source_folder = File.join('symlinks', 'Application Support', 'Sublime Text 2')
-  symlink_collection(symlinks_source_folder, symlinks_target_folder, 'Sublime Text 2')
+  #Sublime text 3
+
+  symlinks_target_file = "#{ENV['HOME']}/Library/Application Support/Sublime Text 3/Packages/User/Package Control.sublime-settings"
+  symlinks_source_file = File.join('symlinks', 'Application Support', 'Sublime Text 3', 'Packages', 'User', 'Package Control.sublime-settings')
+  symlink_collection(symlinks_source_file, symlinks_target_file, 'Sublime Text 3')
+
+  symlinks_target_file = "#{ENV['HOME']}/Library/Application Support/Sublime Text 3/Packages/User/Preferences.sublime-settings"
+  symlinks_source_file = File.join('symlinks', 'Application Support', 'Sublime Text 3', 'Packages', 'User', 'Preferences.sublime-settings')
+  symlink_collection(symlinks_source_file, symlinks_target_file, 'Sublime Text 3')
 end
 
 #Symlink each directory/file in source directory to a target directory
