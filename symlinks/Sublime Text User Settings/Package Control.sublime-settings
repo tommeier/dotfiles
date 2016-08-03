@@ -1,1 +1,13 @@
-/Users/tom/Library/Application Support/Sublime Text 3/Packages/User/Package Control.sublime-settings
+{
+	"bootstrapped": true,
+	"in_process_packages":
+	[
+	],
+	"installed_packages":
+	[
+		"Babel",
+		"Git",
+		"Puppet",
+		"Theme - Soda"
+	]
+}

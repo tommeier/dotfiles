@@ -59,10 +59,10 @@ def setup_symlinks
   #Sublime text 3
   #Package Control.sublime-settings + Preferences.sublime-settings
   symlinks_source_directory = "#{ENV['HOME']}/Library/Application Support/Sublime Text 3/Packages/User/"
-  symlinks_target_directory = File.join('symlinks', 'Sublime Text User Settings')
+  symlinks_dotfiles_directory = File.join('symlinks', 'Sublime Text User Settings')
   symlink_collection(
     symlinks_source_directory, 
-    symlinks_target_directory, 
+    symlinks_dotfiles_directory, 
     'Sublime Text 3', 
     ['Package Control.cache', 'Package Control.last-run', 'Package Control.merged-ca-bundle', 'Package Control.user-ca-bundle', 'oscrypto-ca-bundle.crt']
   )
@@ -70,9 +70,9 @@ end
 
 #Symlink each directory/file in source directory to a target directory
 # Caveat - In root directory, it must be *either* a folder or file wanting to be symlinked
-def symlink_collection(source_directory, target_directory, running_process_to_kill = nil, file_exclusions = [])
-  puts " -- Generating symlinks for '#{File.basename(source_directory)}'"
-  FileUtils.mkdir_p(target_directory) unless File.exists?(target_directory)
+def symlink_collection(source_directory, dotfiles_directory, running_process_to_kill = nil, file_exclusions = [])
+  puts " -- Generating symlinks for '#{File.basename(dotfiles_directory)}' -> '#{File.basename(source_directory)}'"
+  FileUtils.mkdir_p(dotfiles_directory) unless File.exists?(dotfiles_directory)
   Dir.glob(File.join(source_directory, '*')).each do |file|
     if file_exclusions.include?(File.basename(file)) 
       puts "Skipping - #{file}"
@@ -80,22 +80,31 @@ def symlink_collection(source_directory, target_directory, running_process_to_ki
     end
     is_directory = File.directory?(file)
 
-    symlink_source = File.expand_path(file)
-    symlink_target = File.join(target_directory, File.basename(file))
-    if File.symlink?(symlink_target) && File.readlink(symlink_target) == symlink_source
-      #Symlink already exists
-      puts " --- Symlink exists already '#{symlink_source}' --> '#{symlink_target}'"
+    source_path   = File.expand_path(file)
+    dotfiles_path = File.join(File.expand_path(dotfiles_directory), File.basename(file))
+    if File.symlink?(source_path) && File.readlink(source_path) == dotfiles_path && File.exists?(dotfiles_path)
+      #Symlink already exists and content exists in dotfiles
+      puts " --- Symlink exists already '#{dotfiles_path}' --> '#{source_path}'"
     else
       #Generate symlink
       kill_running_process(running_process_to_kill) if running_process_to_kill
 
-      if File.exists?(symlink_target)
+      if File.exists?(source_path) && !File.symlink?(source_path)
+        # First run
+        puts "     - Removing existing source for '#{File.basename(file)}' and moving to dotfiles location."
+        if File.exists?(dotfiles_path)
+          is_directory ? FileUtils.rm_rf(dotfiles_path) : FileUtils.rm(dotfiles_path)
+        end
+
+        FileUtils.mv(source_path, dotfiles_path)
+      elsif File.exists?(source_path)
         puts "     - Removing existing target for '#{File.basename(file)}'."
-        is_directory ? FileUtils.rm_rf(symlink_target) : FileUtils.rm(symlink_target)
+        is_directory ? FileUtils.rm_rf(source_path) : FileUtils.rm(source_path)
       end
 
-      puts " --+ Linking '#{symlink_source}' --> '#{symlink_target}'"
-      system %Q{ln -s "#{symlink_source}" "#{symlink_target}"}
+      puts " --+ Linking '#{dotfiles_path}' --> '#{source_path}'"
+
+      system %Q{ln -s "#{dotfiles_path}" "#{source_path}"}
     end
   end
   puts " -- Done."

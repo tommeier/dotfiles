@@ -1,1 +1,8 @@
-/Users/tom/Library/Application Support/Sublime Text 3/Packages/User/Preferences.sublime-settings
+{
+	"color_scheme": "Packages/Color Scheme - Default/Blackboard.tmTheme",
+	"ignored_packages":
+	[
+		"Vintage"
+	],
+	"theme": "Soda Dark.sublime-theme"
+}
