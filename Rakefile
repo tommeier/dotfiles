@@ -57,21 +57,27 @@ end
 def setup_symlinks
   puts "Setting up symlinks..."
   #Sublime text 3
-
-  symlinks_target_file = "#{ENV['HOME']}/Library/Application Support/Sublime Text 3/Packages/User/Package Control.sublime-settings"
-  symlinks_source_file = File.join('symlinks', 'Application Support', 'Sublime Text 3', 'Packages', 'User', 'Package Control.sublime-settings')
-  symlink_collection(symlinks_source_file, symlinks_target_file, 'Sublime Text 3')
-
-  symlinks_target_file = "#{ENV['HOME']}/Library/Application Support/Sublime Text 3/Packages/User/Preferences.sublime-settings"
-  symlinks_source_file = File.join('symlinks', 'Application Support', 'Sublime Text 3', 'Packages', 'User', 'Preferences.sublime-settings')
-  symlink_collection(symlinks_source_file, symlinks_target_file, 'Sublime Text 3')
+  #Package Control.sublime-settings + Preferences.sublime-settings
+  symlinks_source_directory = "#{ENV['HOME']}/Library/Application Support/Sublime Text 3/Packages/User/"
+  symlinks_target_directory = File.join('symlinks', 'Sublime Text User Settings')
+  symlink_collection(
+    symlinks_source_directory, 
+    symlinks_target_directory, 
+    'Sublime Text 3', 
+    ['Package Control.cache', 'Package Control.last-run', 'Package Control.merged-ca-bundle', 'Package Control.user-ca-bundle', 'oscrypto-ca-bundle.crt']
+  )
 end
 
 #Symlink each directory/file in source directory to a target directory
 # Caveat - In root directory, it must be *either* a folder or file wanting to be symlinked
-def symlink_collection(source_directory, target_directory, running_process_to_kill = nil)
+def symlink_collection(source_directory, target_directory, running_process_to_kill = nil, file_exclusions = [])
   puts " -- Generating symlinks for '#{File.basename(source_directory)}'"
+  FileUtils.mkdir_p(target_directory) unless File.exists?(target_directory)
   Dir.glob(File.join(source_directory, '*')).each do |file|
+    if file_exclusions.include?(File.basename(file)) 
+      puts "Skipping - #{file}"
+      next
+    end
     is_directory = File.directory?(file)
 
     symlink_source = File.expand_path(file)
