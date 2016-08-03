@@ -63,7 +63,7 @@ def setup_symlinks
   symlink_collection(
     symlinks_source_directory, 
     symlinks_dotfiles_directory, 
-    'Sublime Text 3', 
+    'Sublime Text', 
     ['Package Control.cache', 'Package Control.last-run', 'Package Control.merged-ca-bundle', 'Package Control.user-ca-bundle', 'oscrypto-ca-bundle.crt']
   )
 end
@@ -111,7 +111,7 @@ def symlink_collection(source_directory, dotfiles_directory, running_process_to_
 end
 
 def kill_running_process(process_name)
-  pid = `pgrep 'Sublime Text 2'`
+  pid = `pgrep '#{process_name}'`
   unless pid.to_s == ''
     puts " ** Killing running process : '#{process_name}' - #{pid}"
     Process.kill "USR2", pid.to_i
