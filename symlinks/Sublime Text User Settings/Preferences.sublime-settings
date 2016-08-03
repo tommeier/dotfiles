@@ -49,7 +49,9 @@
 		"coverage",
 		"CVS",
 		"spec/javascripts/generated",
-		"tmp"
+		"tmp",
+		"ui/_build",
+		"node_modules"
 	],
 	"font_face": "Inconsolata",
 	"font_options":
