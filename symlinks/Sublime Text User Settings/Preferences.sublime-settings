@@ -50,15 +50,14 @@
 		"CVS",
 		"spec/javascripts/generated",
 		"tmp",
-		"ui/_build",
-		"node_modules"
+		"ui/_build"
 	],
 	"font_face": "Inconsolata",
 	"font_options":
 	[
 		"subpixel_antialias"
 	],
-	"font_size": 16.0,
+	"font_size": 18.0,
 	"highlight_line": true,
 	"highlight_modified_tabs": true,
 	"hot_exit": false,
