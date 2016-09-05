@@ -8,11 +8,15 @@
 		"Alignment",
 		"Babel",
 		"BeautifyRuby",
+		"Better CoffeeScript",
+		"Cucumber",
 		"Git",
 		"Package Control",
 		"Puppet",
 		"RSpec",
 		"Sass",
+		"SublimeLinter",
+		"SublimeLinter-jsxhint",
 		"Theme - Soda"
 	]
 }

@@ -4,7 +4,7 @@
 	"auto_complete_with_fields": true,
 	"bold_folder_labels": false,
 	"caret_style": "wide",
-	"color_scheme": "Packages/Color Scheme - Default/Blackboard.tmTheme",
+	"color_scheme": "Packages/User/SublimeLinter/Blackboard (SL).tmTheme",
 	"default_encoding": "UTF-8",
 	"detect_indentation": true,
 	"drag_text": false,
@@ -50,6 +50,7 @@
 		"CVS",
 		"spec/javascripts/generated",
 		"tmp",
+		"node_modules",
 		"ui/_build"
 	],
 	"font_face": "Inconsolata",
@@ -57,7 +58,7 @@
 	[
 		"subpixel_antialias"
 	],
-	"font_size": 18.0,
+	"font_size": 20.0,
 	"highlight_line": true,
 	"highlight_modified_tabs": true,
 	"hot_exit": false,
