@@ -10,7 +10,6 @@ alias edit_elastic_config="subl /usr/local/Cellar/elasticsearch/0.19.9/config/el
 alias start_elastic='launchctl load -wF ~/Library/LaunchAgents/homebrew.mxcl.elasticsearch.plist'
 alias stop_elastic='launchctl unload -wF ~/Library/LaunchAgents/homebrew.mxcl.elasticsearch.plist'
 
-alias start_redis='redis-server /opt/boxen/homebrew/etc/redis.conf'
 alias access_redis='redis-cli'
 
 #mysql.server start
