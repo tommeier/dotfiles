@@ -10,7 +10,9 @@ alias git_commits_in_dates_without_author='git log --pretty=format:"%h%x09%ad%x0
 alias git_commits_in_dates_with_name_and_date='git log --pretty=format:"%ad%x09%s" --date=local --before="Nov 01 2009" --after="Jul 1 2009" > git_output.txt'
 alias gita='git archive --format=zip master > $1'
 alias sup='startup'
-
+export clean_all_git_command='cd "${0}/../" && git gc --aggressive | pwd'
+alias clean_all_git_directories="find . -type d -iname '.git' -maxdepth 10 -exec sh -c '${clean_all_git_command}' \"{}\" \;"
+#find . -type d -iname '.git' -maxdepth 10 -exec sh -c 'cd "${0}/../" && git gc --aggressive | pwd' "{}" \;
 #Delete any passed branch name except master
 function delete_local_branch {
 if [[ $1 =~ ^([* ]+)?(master|production)$ ]]; then
