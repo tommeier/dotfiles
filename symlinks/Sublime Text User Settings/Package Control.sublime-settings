@@ -13,10 +13,12 @@
 		"Git",
 		"Package Control",
 		"Puppet",
+		"RPM Spec Syntax",
 		"RSpec",
 		"Sass",
 		"SublimeLinter",
 		"SublimeLinter-jsxhint",
+		"Swift",
 		"Theme - Soda"
 	]
 }
