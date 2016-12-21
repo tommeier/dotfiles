@@ -1,4 +1,5 @@
 
+alias delete_unavailable_simulators='xcrun simctl delete unavailable'
 
 function close_simulators {
   echo "Ensure all possible clients of CoreSimulatorService are no longer running:"

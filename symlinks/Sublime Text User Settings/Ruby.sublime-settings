@@ -1,6 +1,9 @@
 {
 	"extensions":
 	[
-		"Fastfile"
+		"Fastfile",
+		"Appfile",
+		"Matchfile",
+		"Podfile"
 	]
 }
