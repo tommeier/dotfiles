@@ -10,6 +10,7 @@ alias git_commits_in_dates_without_author='git log --pretty=format:"%h%x09%ad%x0
 alias git_commits_in_dates_with_name_and_date='git log --pretty=format:"%ad%x09%s" --date=local --before="Nov 01 2009" --after="Jul 1 2009" > git_output.txt'
 alias gita='git archive --format=zip master > $1'
 alias sup='startup'
+alias remote_sup="startup 'remove_remote_branches'"
 export clean_all_git_command='cd "${0}/../" && git gc --aggressive | pwd'
 alias clean_all_git_directories="find . -type d -iname '.git' -maxdepth 10 -exec sh -c '${clean_all_git_command}' \"{}\" \;"
 #find . -type d -iname '.git' -maxdepth 10 -exec sh -c 'cd "${0}/../" && git gc --aggressive | pwd' "{}" \;
@@ -65,11 +66,10 @@ git branch -r --merged | while read merged_branch; do
       #eg: HEAD -> origin/master
       if [[ ! $branch_name =~ $git_head_descriptor ]]; then
 
-        if [ -z "$DELETE_MERGED_REMOTE_BRANCHES" ]; then
-          # Until we work out a fix for candidate branch being deleted
-          echo "[DISABLED] Would have deleted ${branch_name} (DELETE_MERGED_REMOTE_BRANCHES=set to remove)"
+        if [ -z "$DEBUG" ]; then
+          git push $remote_name "${remote_name}/${branch_name}" --delete
         else
-          git push $remote_name $branch_name --delete
+          echo "[DISABLED] Would have deleted ${remote_name}/${branch_name} (DELETE_MERGED_REMOTE_BRANCHES=set to remove)"
         fi;
       fi;
     fi;
@@ -88,14 +88,23 @@ function startup {
 #     - https://help.github.com/articles/creating-an-oauth-token-for-command-line-use
 # TODO: Remove git-pulls dependency and make a bash only system
 # TODO: Crash out of script if the current branch, or master is in a dirty state
+local remove_remote_branches=false
+if [ "$1" == "remove_remote_branches" ]; then
+  remove_remote_branches=true
+fi;
+for remote in $(git remote); do
+  echo "==> ($remote) Fetching & Sweeping merged remote tags"
+  git fetch $remote --prune --tags
+  echo "==> ($remote) Fetching & Sweeping merged remote branches"
+  git fetch $remote --prune
+done
+if [[ "$remove_remote_branches" == true ]]; then
+  echo "==> Removing any merged remote branches"
+  delete_merged_remote_branches
+fi
 echo "==> Updating master"
 git checkout master
 git pull
-echo "==> Fetching & Sweeping merged remote tags"
-git fetch --prune --tags
-echo "==> Fetching & Sweeping merged remote branches"
-git fetch --prune
-delete_merged_remote_branches
 echo "==> Fetching any open pull requests"
 git-pulls update
 git-pulls checkout --force
