@@ -4,6 +4,7 @@ source ~/.bash/completions
 source ~/.bash/exports
 source ~/.bash/paths
 source ~/.bash/config
+source ~/.bash/bash_commands
 source ~/.bash/rails_commands
 source ~/.bash/git_commands
 source ~/.bash/server_commands
