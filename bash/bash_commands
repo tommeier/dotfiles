@@ -1,0 +1,17 @@
+#!/bin/bash -e
+
+# Generic bash commands
+
+function outdated {
+  if [ -f ./Gemfile ]; then
+    bundle outdated
+
+    if [ -f ./Podfile ]; then
+      bundle exec pod outdated
+    fi
+  else
+    if [ -f ./Podfile ]; then
+      pod outdated
+    fi
+  fi
+}
