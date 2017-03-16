@@ -9,6 +9,7 @@ alias git_commits_in_dates_with_author='git log --pretty=format:"%h%x09%an%x09%a
 alias git_commits_in_dates_without_author='git log --pretty=format:"%h%x09%ad%x09%s" --date=local --before="Nov 01 2009" --after="Jul 1 2009" > git_output.txt'
 alias git_commits_in_dates_with_name_and_date='git log --pretty=format:"%ad%x09%s" --date=local --before="Nov 01 2009" --after="Jul 1 2009" > git_output.txt'
 alias gita='git archive --format=zip master > $1'
+alias gitb='git branch --sort=-committerdate | head -n 5'
 alias sup='startup'
 alias remote_sup="startup 'remove_remote_branches'"
 export clean_all_git_command='cd "${0}/../" && git gc --aggressive | pwd'

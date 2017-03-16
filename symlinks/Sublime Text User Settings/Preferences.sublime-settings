@@ -51,7 +51,8 @@
 		"spec/javascripts/generated",
 		"tmp",
 		"node_modules",
-		"ui/_build"
+		"ui/_build",
+		"_build"
 	],
 	"font_face": "Inconsolata",
 	"font_options":
