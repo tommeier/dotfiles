@@ -106,9 +106,10 @@ fi
 echo "==> Updating master"
 git checkout master
 git pull
-echo "==> Fetching any open pull requests"
-git-pulls update
-git-pulls checkout --force
+# Disabled as git-pulls is failing with octokit for un-debugged reason
+# echo "==> Fetching any open pull requests"
+# git-pulls update
+# git-pulls checkout --force
 echo "==> Removing any local branches merged into master"
 git branch --merged master | while read i; do delete_local_branch "$i"; done
 echo "==> Clearing any logs"
