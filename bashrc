@@ -17,14 +17,17 @@ if [ -f ~/.localrc ]; then
   source ~/.localrc
 fi
 
-alias staging_ci="ssh -p 22022 tom@211.27.76.94"
-
 #Load Boxen
 export PATH=$PATH:./node_modules/.bin #Application wide NPM modules
 [[ -f /opt/boxen/env.sh ]] && source /opt/boxen/env.sh
 
 ### Added by the Heroku Toolbelt
 export PATH="/usr/local/heroku/bin:$PATH"
+
+### Android Studio for React Native
+export ANDROID_HOME=$HOME/Library/Android/sdk
+export PATH=$PATH:$ANDROID_HOME/tools
+export PATH=$PATH:$ANDROID_HOME/platform-tools
 
 # added by travis gem
 [ -f /Users/tom/.travis/travis.sh ] && source /Users/tom/.travis/travis.sh
