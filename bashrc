@@ -25,9 +25,18 @@ export PATH=$PATH:./node_modules/.bin #Application wide NPM modules
 export PATH="/usr/local/heroku/bin:$PATH"
 
 ### Android Studio for React Native
+if [ -x /usr/libexec/java_home ]; then
+  export JAVA_HOME=`/usr/libexec/java_home`
+  export PATH="$JAVA_HOME/bin:$PATH"
+fi
 export ANDROID_HOME=$HOME/Library/Android/sdk
 export PATH=$PATH:$ANDROID_HOME/tools
 export PATH=$PATH:$ANDROID_HOME/platform-tools
 
 # added by travis gem
 [ -f /Users/tom/.travis/travis.sh ] && source /Users/tom/.travis/travis.sh
+
+# Dupe for postgres
+export POSTGRES_SERVICE_PORT=$BOXEN_POSTGRESQL_PORT
+export POSTGRES_SERVICE_USERNAME=
+export POSTGRES_SERVICE_PASSWORD=

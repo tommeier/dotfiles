@@ -21,7 +21,14 @@
 		"RSpec",
 		"Sass",
 		"SublimeLinter",
+		"SublimeLinter-coffee",
+		"SublimeLinter-csslint",
+		"SublimeLinter-flow",
+		"SublimeLinter-json",
 		"SublimeLinter-jsxhint",
+		"SublimeLinter-rubocop",
+		"SublimeLinter-ruby",
+		"SummitLinter",
 		"Swift",
 		"Theme - Soda"
 	]
