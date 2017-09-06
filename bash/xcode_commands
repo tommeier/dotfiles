@@ -23,6 +23,10 @@ function reset_simulators_state {
   rm -rf ~/Library/*/CoreSimulator
 }
 
+function delete_appium_simulators {
+  xcrun simctl list devices | grep appiumTest | cut -d "(" -f 2 | cut -d ")" -f 1 | xargs xcrun simctl delete
+}
+
 function clear_xcode_data {
   echo "Clearing all xcode data"
   close_simulators
