@@ -2,15 +2,12 @@
 	"bootstrapped": true,
 	"in_process_packages":
 	[
-		"Package Control"
 	],
 	"installed_packages":
 	[
 		"Alignment",
 		"Babel",
 		"BeautifyRuby",
-		"Better CoffeeScript",
-		"Boxy Theme",
 		"Cucumber",
 		"Flow",
 		"Git",
@@ -32,7 +29,6 @@
 		"SublimeLinter-rubocop",
 		"SublimeLinter-ruby",
 		"SummitLinter",
-		"Swift",
-		"Theme - Soda"
+		"Swift"
 	]
 }

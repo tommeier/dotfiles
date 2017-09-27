@@ -61,10 +61,16 @@ def setup_symlinks
   symlinks_source_directory = "#{ENV['HOME']}/Library/Application Support/Sublime Text 3/Packages/User/"
   symlinks_dotfiles_directory = File.join('symlinks', 'Sublime Text User Settings')
   symlink_collection(
-    symlinks_source_directory, 
-    symlinks_dotfiles_directory, 
-    'Sublime Text', 
-    ['Package Control.cache', 'Package Control.last-run', 'Package Control.merged-ca-bundle', 'Package Control.user-ca-bundle', 'oscrypto-ca-bundle.crt']
+    symlinks_source_directory,
+    symlinks_dotfiles_directory,
+    'Sublime Text',
+    [
+      'Package Control.cache',
+      'Package Control.last-run',
+      'Package Control.merged-ca-bundle',
+      'Package Control.user-ca-bundle',
+      'oscrypto-ca-bundle.crt'
+    ]
   )
 end
 
@@ -74,9 +80,11 @@ def symlink_collection(source_directory, dotfiles_directory, running_process_to_
   puts " -- Generating symlinks for '#{File.basename(dotfiles_directory)}' -> '#{File.basename(source_directory)}'"
   FileUtils.mkdir_p(dotfiles_directory) unless File.exists?(dotfiles_directory)
   Dir.glob(File.join(source_directory, '*')).each do |file|
-    if file_exclusions.include?(File.basename(file)) 
+    if file_exclusions.include?(File.basename(file))
       puts "Skipping - #{file}"
       next
+    else
+      puts "Processing - #{file}"
     end
     is_directory = File.directory?(file)
 
