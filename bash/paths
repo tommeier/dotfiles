@@ -1,11 +1,8 @@
 #Build path params
 ORIGINAL_PATH=$PATH
-export PATH=~/bin
-export PATH=$PATH:./bin
 export PATH=$PATH:/usr/bin
 export PATH=$PATH:/sbin
 export PATH=$PATH:$ORIGINAL_PATH
-
 export MANPATH="/usr/local/man:/usr/local/git/man:$MANPATH"
 
 

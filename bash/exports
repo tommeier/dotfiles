@@ -1,9 +1,5 @@
 export EDITOR='subl --wait'
-
-export TEXEDIT='mate -l %d "%s"'
-export LESSEDIT='mate -l %lm %f'
-export ARCHFLAGS="-arch x86_64";
-#export CC="/usr/llvm-gcc-4.2"
+# export ARCHFLAGS="-arch x86_64";
 
 # Prefer AU English and use UTF-8
 export LANG="en_AU"
