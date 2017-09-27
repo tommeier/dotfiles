@@ -4,7 +4,7 @@
 	"auto_complete_with_fields": true,
 	"bold_folder_labels": true,
 	"caret_style": "wide",
-	"color_scheme": "Packages/Material Theme/schemes/Material-Theme.tmTheme",
+	"color_scheme": "Packages/User/SublimeLinter/Monokai (SL).tmTheme",
 	"default_encoding": "UTF-8",
 	"detect_indentation": true,
 	"drag_text": false,
@@ -65,7 +65,7 @@
 	"hot_exit": false,
 	"ignored_packages":
 	[
-		"Package Control"
+		"Vintage"
 	],
 	"line_padding_bottom": 1,
 	"line_padding_top": 1,
@@ -75,7 +75,6 @@
 	],
 	"scroll_past_end": true,
 	"tab_size": 2,
-	"theme": "Material-Theme.sublime-theme",
 	"translate_tabs_to_spaces": true,
 	"tree_animation_enabled": false,
 	"trim_trailing_white_space_on_save": true,
