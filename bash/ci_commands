@@ -1,0 +1,23 @@
+
+# function ssh_to_all_honeybadgers {
+HONEYBADGERS = 6..10
+
+commands = HONEYBADGERS.map { |i| "ssh honeybadger@honeybadger#{i}.ferocia.com.au" }
+filter = ARGV.first
+if filter
+  commands.select! { |c| c.include?(filter) }
+end
+commands = commands.map { |c| "bash -c \"#{c}; read -n 1 -p 'Press any key to continue...'\"" }
+first = commands.shift
+
+system("tmux new-session -d #{first}")
+commands.each do |c|
+  system("tmux split-window #{c}")
+  system("tmux select-layout even-vertical")
+end
+system("tmux set-option synchronize-panes")
+system("tmux attach")
+# }
+
+# softwareupdate --install -a
+# xcode-select --install
