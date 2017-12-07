@@ -30,6 +30,15 @@ reset_submodules() {
   git submodule foreach --recursive git reset --hard
 }
 
+case_sensitive_git_rename() {
+  original="$1"
+  temp="$original.2"
+  new="$2"
+  git mv -f "$original" "$temp"
+  git mv -f "$temp" "$new"
+}
+
+
 # In buildkite pre-checkout
 # if [[ -e "$BUILDKITE_BUILD_CHECKOUT_PATH" ]]; then
 #   cd "$BUILDKITE_BUILD_CHECKOUT_PATH"
@@ -68,7 +77,8 @@ git branch -r --merged | while read merged_branch; do
       if [[ ! $branch_name =~ $git_head_descriptor ]]; then
 
         if [ -z "$DEBUG" ]; then
-          git push $remote_name "${remote_name}/${branch_name}" --delete
+          # git push $remote_name "${remote_name}/${branch_name}" --delete
+          git push $remote_name "${branch_name}" --delete
         else
           echo "[DISABLED] Would have deleted ${remote_name}/${branch_name} (DELETE_MERGED_REMOTE_BRANCHES=set to remove)"
         fi;

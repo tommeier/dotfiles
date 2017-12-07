@@ -10,6 +10,7 @@ source ~/.bash/git_commands
 source ~/.bash/server_commands
 source ~/.bash/database_commands
 source ~/.bash/log_commands
+# source ~/.bash/ci_commands
 source ~/.bash/xcode_commands
 
 # use .localrc for settings specific to one system
