@@ -10,9 +10,10 @@
 		"Babel",
 		"BeautifyRuby",
 		"Cucumber",
+		"Dockerfile Syntax Highlighting",
 		"Flow",
-		"FlowType",
 		"Git",
+		"GraphQL",
 		"Indent Respectful Sort",
 		"Markdown Preview",
 		"Markmon real-time markdown preview",
@@ -31,6 +32,7 @@
 		"SublimeLinter-rubocop",
 		"SublimeLinter-ruby",
 		"SummitLinter",
-		"Swift"
+		"Swift",
+		"Terraform"
 	]
 }

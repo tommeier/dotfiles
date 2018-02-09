@@ -8,3 +8,5 @@ fi
 export HISTCONTROL=erasedups
 export HISTSIZE=10000
 shopt -s histappend
+
+test -e "${HOME}/.iterm2_shell_integration.bash" && source "${HOME}/.iterm2_shell_integration.bash"
