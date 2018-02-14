@@ -4,7 +4,7 @@
 	"auto_complete_with_fields": true,
 	"bold_folder_labels": true,
 	"caret_style": "wide",
-	"color_scheme": "Packages/Material Theme/schemes/Material-Theme.tmTheme",
+	"color_scheme": "Packages/User/SublimeLinter/Monokai (SL).tmTheme",
 	"default_encoding": "UTF-8",
 	"detect_indentation": true,
 	"drag_text": false,

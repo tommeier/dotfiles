@@ -6,33 +6,11 @@
 	"installed_packages":
 	[
 		"A File Icon",
-		"Alignment",
 		"Babel",
-		"BeautifyRuby",
-		"Cucumber",
-		"Dockerfile Syntax Highlighting",
-		"Flow",
-		"Git",
-		"GraphQL",
-		"Indent Respectful Sort",
-		"Markdown Preview",
-		"Markmon real-time markdown preview",
 		"Material Theme",
 		"Package Control",
 		"Puppet",
-		"RPM Spec Syntax",
-		"RSpec",
-		"Sass",
 		"SublimeLinter",
-		"SublimeLinter-coffee",
-		"SublimeLinter-csslint",
-		"SublimeLinter-flow",
-		"SublimeLinter-json",
-		"SublimeLinter-jsxhint",
-		"SublimeLinter-rubocop",
-		"SublimeLinter-ruby",
-		"SummitLinter",
-		"Swift",
-		"Terraform"
+		"SublimeLinter-flow"
 	]
 }
