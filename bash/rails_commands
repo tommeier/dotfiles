@@ -8,6 +8,9 @@ alias be="bundle exec"
 alias bec='bundle exec c'
 alias bes='bundle exec s'
 
+#Rails - Foreman commands
+alias fs="bundle exec foreman start"
+
 alias bump="rm -rfR tmp/cache/ && touch ~/.pow/restart.txt && sudo nginx -s stop && sudo nginx"
 
 #Gem Helpers
