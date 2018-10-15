@@ -58,7 +58,7 @@
 	[
 		"subpixel_antialias"
 	],
-	"font_size": 17.0,
+	"font_size": 12.0,
 	"highlight_line": true,
 	"highlight_modified_tabs": true,
 	"hot_exit": false,

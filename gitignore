@@ -3,7 +3,6 @@
 .*.swp
 .bundle
 .DS_Store
-bin/
 config/database.yml
 coverage
 coverage.data
