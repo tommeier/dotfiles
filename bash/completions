@@ -1,4 +1,8 @@
 # brew install git bash-completion
-[ -f /usr/local/etc/bash_completion ] && . /usr/local/etc/bash_completion
+if [ -f /usr/local/etc/bash_completion ]; then
+  . /usr/local/etc/bash_completion
+else
+  echo '[dotfiles] Please install bash-completion: brew install git bash bash-completion'
+fi
 
 complete -C ~/.bash/completion_scripts/project_completion -o default p
