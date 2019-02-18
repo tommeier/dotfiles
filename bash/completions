@@ -1,4 +1,4 @@
-source ~/.bash/completion_scripts/git_completion
-complete -C ~/.bash/completion_scripts/rake_completion -o default rake
+# brew install git bash-completion
+[ -f /usr/local/etc/bash_completion ] && . /usr/local/etc/bash_completion
+
 complete -C ~/.bash/completion_scripts/project_completion -o default p
-complete -C ~/.bash/completion_scripts/capistrano_completion -o default cap
