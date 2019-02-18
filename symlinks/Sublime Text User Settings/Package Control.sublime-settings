@@ -6,6 +6,8 @@
 	"installed_packages":
 	[
 		"A File Icon",
+		"Ansible",
+		"Ansible Vault",
 		"Babel",
 		"BeautifyRuby",
 		"Better CoffeeScript",
@@ -22,7 +24,9 @@
 		"Material Theme",
 		"Package Control",
 		"Puppet",
+		"Sass",
 		"SublimeLinter",
-		"SublimeLinter-flow"
+		"SublimeLinter-flow",
+		"SublimeLinter-ruby"
 	]
 }
