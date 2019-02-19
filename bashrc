@@ -47,4 +47,4 @@ source '/usr/local/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/completion.
 export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES
 
 ### Added by IBM Cloud CLI
-source /usr/local/Bluemix/bx/bash_autocomplete
+[ -f /usr/local/Bluemix/bx/bash_autocomplete ] && source /usr/local/Bluemix/bx/bash_autocomplete
