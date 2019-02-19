@@ -13,24 +13,25 @@
   edit-unmerged = "!f() { git ls-files --unmerged | cut -f2 | sort -u ; }; mate `f`"
   add-unmerged = "!f() { git ls-files --unmerged | cut -f2 | sort -u ; }; git add `f`"
   edit-modified = "!f() { git ls-files --modified | cut -f2 | sort -u ; }; mate `f`"
+
 [color]
-    ui = auto
-    branch = auto
-    diff = auto
-    status = auto
-  [color "branch"]
-    current = yellow reverse
-    local = yellow
-    remote = green
-  [color "diff"]
-    meta = yellow bold
-    frag = magenta bold
-    old = red bold
-    new = green bold
-  [color "status"]
-    added = yellow
-    changed = green
-    untracked = cyan
+  ui = auto
+  branch = auto
+  diff = auto
+  status = auto
+[color "branch"]
+  current = yellow reverse
+  local = yellow
+  remote = green
+[color "diff"]
+  meta = yellow bold
+  frag = magenta bold
+  old = red bold
+  new = green bold
+[color "status"]
+  added = yellow
+  changed = green
+  untracked = cyan
 [core]
   excludesfile = <%= ENV['HOME'] %>/.gitignore
   editor = subl --wait
