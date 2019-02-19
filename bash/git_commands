@@ -154,9 +154,8 @@ function parse_git_dirty {
   [[ $(git status --porcelain 2> /dev/null | tail -n1) != "" ]] && echo "(☠ )"
 }
 
-#Display custom dirty git branch items
+# Display custom dirty git branch items
 export PS1='\[\033[01;32m\]\w $(git branch &>/dev/null; if [ $? -eq 0 ]; then echo "\[\033[01;34m\]$(parse_git_branch)"; fi) \$ \[\033[00m\]'
-
 
 ##########################
 # Analysis               #
