@@ -2,39 +2,36 @@
 
 class ProjectCompletion
   #Edit file with one line per root directory for auto project completion
-  PROJECT_ROOTS_PATH = '~/.bash/completion_scripts/project_completion_roots'
+  PROJECT_ROOTS_PATH = '~/.bash/completion_scripts/project_completion_roots'.freeze
+  ROOT_PROJECTS_PATH = begin
+    path = File.expand_path(PROJECT_ROOTS_PATH)
+    path = File.readlink(path) if File.symlink?(path)
+    path
+  end.freeze
+  ROOT_PROJECTS = begin
+    if File.exists?(ROOT_PROJECTS_PATH)
+      paths = File.open(ROOT_PROJECTS_PATH, 'r').readlines.collect(&:strip)
+      Dir.glob(paths)
+    else
+      []
+    end
+  end.freeze
+  PROJECTS = begin
+    `ls -G #{ROOT_PROJECTS.join(' ')}`.split
+  end.freeze
 
   def initialize(command)
     @command = command
   end
 
   def matches
-    projects.select do |task|
+    PROJECTS.select do |task|
       task[0, typed.length] == typed
     end
   end
 
   def typed
-    @command[/\s(.+?)$/, 1] || ''
-  end
-
-  def root_projects_path
-    @path ||= File.expand_path(PROJECT_ROOTS_PATH)
-    @path = File.readlink(path) if File.symlink?(@path)
-    @path
-  end
-
-  def root_projects
-    return [] unless File.exists?(root_projects_path)
-    File.open(root_projects_path, 'r').readlines.collect do |path| 
-      path.gsub(/\n\r?/,'').strip
-    end.delete_if {|path| !File.exists?(path) }
-  end
-
-  def projects
-    root_projects.inject([]) do |result, path|
-      result += `ls #{path}`.split
-    end
+    @typed ||= @command[/\s(.+?)$/, 1] || ''
   end
 end
 
