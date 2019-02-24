@@ -10,14 +10,19 @@ class ProjectCompletion
   end.freeze
   ROOT_PROJECTS = begin
     if File.exists?(ROOT_PROJECTS_PATH)
-      paths = File.open(ROOT_PROJECTS_PATH, 'r').readlines.collect(&:strip)
-      Dir.glob(paths)
+      # paths = File.open(ROOT_PROJECTS_PATH, 'r').readlines.collect(&:strip)
+      # Dir.glob(paths) # Not switching folder when globs exist in project_completion_roots
+      File.open(ROOT_PROJECTS_PATH, 'r').readlines.inject([]) do |result, root_path|
+        cleaned_path = root_path.strip
+        result << cleaned_path if Dir.exists?(cleaned_path)
+        result
+      end
     else
       []
     end
   end.freeze
   PROJECTS = begin
-    `ls -G #{ROOT_PROJECTS.join(' ')}`.split
+    `ls #{ROOT_PROJECTS.join(' ')}`.split
   end.freeze
 
   def initialize(command)
