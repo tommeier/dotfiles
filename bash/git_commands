@@ -123,7 +123,7 @@ git pull
 echo "==> Removing any local branches merged into master"
 git branch --merged master | while read i; do delete_local_branch "$i"; done
 echo "==> Clearing any logs"
-for f in log/*.log
+for f in $(find . -name "*.log" -type f -exec ls {} \;)
 do
   if [ -f $f ]; then
     echo "Nulling ${f}"
