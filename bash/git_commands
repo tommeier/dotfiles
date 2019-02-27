@@ -135,7 +135,7 @@ if [[ -e ".gitmodules" ]]; then
   git submodule update --init
 fi;
 echo "==> Checking GIT, pruning to 2 weeks"
-git gc
+git gc --auto
 }
 
 function git_commits_by_user {
