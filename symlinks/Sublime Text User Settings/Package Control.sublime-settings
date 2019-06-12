@@ -23,6 +23,7 @@
 		"Puppet",
 		"RuboCop",
 		"Sass",
+		"SCSS",
 		"SublimeLinter",
 		"SublimeLinter-contrib-swiftlint",
 		"SublimeLinter-flow",
