@@ -9,6 +9,7 @@
 		"Ansible",
 		"Ansible Vault",
 		"Babel",
+		"Base Encoder",
 		"BeautifyRuby",
 		"Better CoffeeScript",
 		"CFG Configuration Syntax Highlighting",
@@ -29,5 +30,8 @@
 		"SublimeLinter-flow",
 		"Swift",
 		"Terraform"
+	],
+	"repositories":
+	[
 	]
 }

@@ -122,14 +122,14 @@ git pull
 # git-pulls checkout --force
 echo "==> Removing any local branches merged into master"
 git branch --merged master | while read i; do delete_local_branch "$i"; done
-echo "==> Clearing any logs"
-for f in $(find . -name "*.log" -type f -exec ls {} \;)
-do
-  if [ -f $f ]; then
-    echo "Nulling ${f}"
-    cat /dev/null > $f
-  fi
-done
+# echo "==> Clearing any logs"
+# for f in $(find . -name "*.log" -type f -exec ls {} \;)
+# do
+#   if [ -f $f ]; then
+#     echo "Nulling ${f}"
+#     cat /dev/null > $f
+#   fi
+# done
 if [[ -e ".gitmodules" ]]; then
   echo "==> Updating git submodules"
   git submodule update --init
@@ -141,7 +141,6 @@ git gc --auto
 function git_commits_by_user {
 git log --pretty=format:%an | awk '{ ++c[$0]; } END { for(cc in c) printf "%5d %s\n",c[cc],cc; }'| sort -r
 }
-
 
 ##########################
 #Display                 #
