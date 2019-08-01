@@ -74,7 +74,6 @@
 		"SublimeLinter-jsxhint",
 		"SublimeLinter-rubocop",
 		"Swift",
-		"Terraform",
 		"Vintage"
 	],
 	"line_padding_bottom": 1,
@@ -84,6 +83,7 @@
 		120
 	],
 	"scroll_past_end": true,
+	"show_full_path": true,
 	"tab_size": 2,
 	"theme": "Material-Theme.sublime-theme",
 	"translate_tabs_to_spaces": true,
