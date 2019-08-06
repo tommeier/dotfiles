@@ -48,3 +48,5 @@ export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES
 
 ### Added by IBM Cloud CLI
 [ -f /usr/local/Bluemix/bx/bash_autocomplete ] && source /usr/local/Bluemix/bx/bash_autocomplete
+
+export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"
