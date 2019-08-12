@@ -18,6 +18,7 @@ alias flushdns='dscacheutil -flushcache'
 alias reload="source ~/.bash_profile"
 alias edit_hostfile="$EDITOR /private/etc/hosts"
 alias current_time='echo $(date +%H:%M:%S)'
+alias please='sudo $(fc -ln -1)' # sudo last command
 
 #User commands
 alias rsync_qnap="/users/tom/development/scripts/backup/rsync_backup.sh"
