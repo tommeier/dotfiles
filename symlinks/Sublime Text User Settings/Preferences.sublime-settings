@@ -33,7 +33,8 @@
 		"*.so",
 		"*.suo",
 		".DS_Store",
-		".tags*"
+		".tags*",
+		"terraform-provider-*.*_x4"
 	],
 	"folder_exclude_patterns":
 	[
