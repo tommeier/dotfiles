@@ -1,29 +1,28 @@
-source ~/.bash/aliases
-source ~/.bash/aliases_script
-source ~/.bash/completions
-source ~/.bash/exports
-source ~/.bash/paths
-source ~/.bash/config
-source ~/.bash/bash_commands
-source ~/.bash/rails_commands
-source ~/.bash/git_commands
-source ~/.bash/server_commands
-source ~/.bash/database_commands
-source ~/.bash/log_commands
-# source ~/.bash/ci_commands
-source ~/.bash/xcode_commands
+source ~/.bash/aliases.sh
+source ~/.bash/aliases_script.sh
+source ~/.bash/bash_commands.sh
+source ~/.bash/completions.sh
+source ~/.bash/exports.sh
+source ~/.bash/git_commands.sh
+source ~/.bash/log_commands.sh
+source ~/.bash/paths.sh
+source ~/.bash/rails_commands.sh
+source ~/.bash/server_commands.sh
+source ~/.bash/xcode_commands.sh
 
 # use .localrc for settings specific to one system
 if [ -f ~/.localrc ]; then
   source ~/.localrc
 fi
 
-# Load Ruby
+# Ruby via Rbenv
 eval "$(rbenv init -)"
 
-#Load Node
+# Node
 eval "$(nodenv init -)"
 export PATH=$PATH:./node_modules/.bin #Application wide NPM modules
+# Yarn
+export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"
 
 ### Android Studio for React Native
 if [ -x /usr/libexec/java_home ]; then
@@ -41,12 +40,3 @@ fi
 # GCloud
 source '/usr/local/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/path.bash.inc'
 source '/usr/local/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/completion.bash.inc'
-
-## Hack for High Sierra + Ruby with Unicorn
-# https://blog.phusion.nl/2017/10/13/why-ruby-app-servers-break-on-macos-high-sierra-and-what-can-be-done-about-it/
-export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES
-
-### Added by IBM Cloud CLI
-[ -f /usr/local/Bluemix/bx/bash_autocomplete ] && source /usr/local/Bluemix/bx/bash_autocomplete
-
-export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"

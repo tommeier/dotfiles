@@ -58,4 +58,3 @@ function clear_xcode_data {
 
   ls -lh "$IOS_LOCATION"
 }
-
