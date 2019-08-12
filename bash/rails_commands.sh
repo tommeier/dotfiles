@@ -1,7 +1,4 @@
 #Rails commands
-alias sgi32="env ARCHFLAGS=\"-Os -arch i386 -fno-common\" gem install --no-ri --no-rdoc"
-alias sgi64="env ARCHFLAGS=\"-Os -arch x86_64 -fno-common\" gem install --no-ri --no-rdoc"
-alias spd="spec --require spec/formatters/dashboard_formatter.rb --format DashboardFormatter"
 
 #Rails - Bundler commands
 alias be="bundle exec"
@@ -10,33 +7,12 @@ alias bes='bundle exec s'
 
 #Rails - Foreman commands
 alias fs="bundle exec foreman start"
-
-alias bump="rm -rfR tmp/cache/ && touch ~/.pow/restart.txt && sudo nginx -s stop && sudo nginx"
-
-#Gem Helpers
-alias sort_out_gem='gem specification $1 > .specification'
-
-#Enable console command to work in rails 2 + 3
-function c {
-  if [ -f "./script/console" ]; then
-    ./script/console $@
-  else
-rails console $@
-  fi
-}
-
-#Enable script command to work in rails 2 + 3
-function s {
-  if [ -f "./script/server" ]; then
-    ./script/server $@
-  else
-rails server $@
-  fi
-}
-
 function fr {
   bundle exec foreman run $@
 }
+
+#Gem Helpers
+alias sort_out_gem='gem specification $1 > .specification'
 
 #Kill any processes related to a specific port
 # USAGE : kill_port 3000

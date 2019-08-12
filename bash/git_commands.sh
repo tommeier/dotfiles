@@ -1,9 +1,5 @@
 #!/bin/bash -e
 
-# Generate changelog
-
-alias changelog="/users/tom/src/personal/git-release/bin/git-release -v patch -P -p releases/v -A -s releases/v0.2.0"
-
 #Git Helpers (#TODO : Parameterize this)
 alias git_commits_in_dates_with_author='git log --pretty=format:"%h%x09%an%x09%ad%x09%s" --date=local --before="Nov 01 2009" --after="Jul 1 2009" > git_output.txt'
 alias git_commits_in_dates_without_author='git log --pretty=format:"%h%x09%ad%x09%s" --date=local --before="Nov 01 2009" --after="Jul 1 2009" > git_output.txt'
@@ -14,7 +10,7 @@ alias sup='startup'
 alias remote_sup="startup 'remove_remote_branches'"
 export clean_all_git_command='cd "${0}/../" && git gc --aggressive | pwd'
 alias clean_all_git_directories="find . -type d -iname '.git' -maxdepth 10 -exec sh -c '${clean_all_git_command}' \"{}\" \;"
-#find . -type d -iname '.git' -maxdepth 10 -exec sh -c 'cd "${0}/../" && git gc --aggressive | pwd' "{}" \;
+
 #Delete any passed branch name except master
 function delete_local_branch {
 if [[ $1 =~ ^([* ]+)?(master|production)$ ]]; then
@@ -37,14 +33,6 @@ case_sensitive_git_rename() {
   git mv -f "$original" "$temp"
   git mv -f "$temp" "$new"
 }
-
-
-# In buildkite pre-checkout
-# if [[ -e "$BUILDKITE_BUILD_CHECKOUT_PATH" ]]; then
-#   cd "$BUILDKITE_BUILD_CHECKOUT_PATH"
-#   git submodule foreach --recursive git reset --hard
-#   git submodule foreach --recursive git clean -fdqx
-# fi
 
 # TODO : Broken scenario:
 # - Open PR exists in branch 'candidate-extras', branches off 'candidate/4.0.3'
@@ -145,16 +133,16 @@ git log --pretty=format:%an | awk '{ ++c[$0]; } END { for(cc in c) printf "%5d %
 ##########################
 #Display                 #
 ##########################
-function parse_git_branch {
-  git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e "s/* \(.*\)/\1$(parse_git_dirty)/"
-}
+# function parse_git_branch {
+#   git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e "s/* \(.*\)/\1$(parse_git_dirty)/"
+# }
 
-function parse_git_dirty {
-  [[ $(git status --porcelain 2> /dev/null | tail -n1) != "" ]] && echo "(☠ )"
-}
+# function parse_git_dirty {
+#   [[ $(git status --porcelain 2> /dev/null | tail -n1) != "" ]] && echo "(☠ )"
+# }
 
-# Display custom dirty git branch items
-export PS1='\[\033[01;32m\]\w $(git branch &>/dev/null; if [ $? -eq 0 ]; then echo "\[\033[01;34m\]$(parse_git_branch)"; fi) \$ \[\033[00m\]'
+# # Display custom dirty git branch items
+# export PS1='\[\033[01;32m\]\w $(git branch &>/dev/null; if [ $? -eq 0 ]; then echo "\[\033[01;34m\]$(parse_git_branch)"; fi) \$ \[\033[00m\]'
 
 ##########################
 # Analysis               #
@@ -177,9 +165,7 @@ function analyse_remote_branches {
       printf "$result\n"
     fi
     echo "---"
-
   done
-
 }
 
 #Thanks to Nathan DeVries

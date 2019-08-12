@@ -1,5 +1,3 @@
-alias tail_ferocia_demo="ssh apache@app01 'tail -f johanna-demo/log/*.log'"
-
 #Tail all log files in a passed directory
 #useful for folders with lots of small 'progress' logs
 function tail_all_log_files {

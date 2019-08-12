@@ -23,11 +23,8 @@ alias current_time='echo $(date +%H:%M:%S)'
 alias rsync_qnap="/users/tom/development/scripts/backup/rsync_backup.sh"
 alias killall_ruby="ps aux | grep ruby | grep -v grep | awk '{print $2}' | xargs kill"
 
-#Path helper
-alias find_dead_path_items="echo $PATH | tr ':' '\n' | xargs ls -ld"
-
 #Editor
 alias m=$EDITOR
 
-# SS Key removal
+# SSH Key removal
 alias remove_ssh_host="sed -i'' -e '$1 d' ~/.ssh/known_hosts"

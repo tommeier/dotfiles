@@ -31,38 +31,3 @@ function zip_and_mail_attachment {
   gzip --best -f $1 > $zipped
   echo -e "Email attachment of ${1} zipped" | mutt -s "Emailing attachment : ${1}" -a $zipped 'tom@venombytes.com'
 }
-
-
-function install_postfix {
-  #To ubuntu slice
-  sudo aptitude update
-  sudo aptitude install postfix
-  #Open IPTABLES
-  iptables -I INPUT -p tcp --dport 25 -m state --state NEW,ESTABLISHED -j ACCEPT
-  iptables -I OUTPUT -p tcp --sport 25 -m state --state NEW,ESTABLISHED -j ACCEPT
-  #Control postfix
-  sudo /etc/init.d/postfix start
-  sudo /etc/init.d/postfix stop
-  sudo /etc/init.d/postfix restart
-  #Start postfix at boot
-  sudo /usr/sbin/update-rc.d postfix defaults
-  #Log files
-  /var/log/mail.info
-  /var/log/mail.warn
-  /var/log/mail.err
-  #Combined log file
-  /var/log/mail.log
-  #Config file
-  /etc/postfix/main.cf
-
-  # sudo /etc/init.d/postfix restart
-  # * Stopping Postfix Mail Transport Agent postfix
-  #  ...done.
-  # * Starting Postfix Mail Transport Agent postfix
-  #  ...done.
-  # vi /etc/mailname
-  # vi /etc/aliases
-  # sudo /usr/bin/newaliases
-
-
-}
