@@ -6,6 +6,7 @@ source ~/.bash/exports.sh
 source ~/.bash/git_commands.sh
 source ~/.bash/log_commands.sh
 source ~/.bash/paths.sh
+source ~/.bash/prompt.sh
 source ~/.bash/rails_commands.sh
 source ~/.bash/server_commands.sh
 source ~/.bash/xcode_commands.sh
