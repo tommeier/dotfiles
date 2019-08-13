@@ -4,7 +4,7 @@
 if [ -f "$(brew --prefix)/opt/bash-git-prompt/share/gitprompt.sh" ]; then
   __GIT_PROMPT_DIR=$(brew --prefix)/opt/bash-git-prompt/share
   # GIT_PROMPT_THEME=Single_line_DarkTom_Custom # custom settings in ~/.git-prompt-colors.sh
-  GIT_PROMPT_ONLY_IN_REPO=1
+  GIT_PROMPT_ONLY_IN_REPO=0
 
   # brew install kube-ps1.sh
   if [ -f "$(brew --prefix)/opt/kube-ps1/share/kube-ps1.sh" ]; then
