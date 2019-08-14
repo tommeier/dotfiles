@@ -1,4 +1,11 @@
 {
+	"added_words":
+	[
+		"fastlane",
+		"au",
+		"cd",
+		"Fastfile"
+	],
 	"auto_complete": true,
 	"auto_complete_commit_on_tab": true,
 	"auto_complete_with_fields": true,
