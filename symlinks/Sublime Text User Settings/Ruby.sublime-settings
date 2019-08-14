@@ -1,6 +1,7 @@
 {
 	"extensions":
 	[
-		".irbrc"
+		"Podfile",
+		"Matchfile"
 	]
 }
