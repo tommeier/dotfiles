@@ -2,6 +2,8 @@
 	"extensions":
 	[
 		"Podfile",
-		"Matchfile"
+		"Matchfile",
+		".irbrc",
+		"pryrc"
 	]
 }

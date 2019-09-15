@@ -30,7 +30,8 @@
 		"SublimeLinter-contrib-swiftlint",
 		"SublimeLinter-flow",
 		"Swift",
-		"Terraform"
+		"Terraform",
+		"ZSH"
 	],
 	"repositories":
 	[
