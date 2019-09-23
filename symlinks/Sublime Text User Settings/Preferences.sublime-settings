@@ -1,4 +1,11 @@
 {
+	"added_words":
+	[
+		"fastlane",
+		"au",
+		"cd",
+		"Fastfile"
+	],
 	"auto_complete": true,
 	"auto_complete_commit_on_tab": true,
 	"auto_complete_with_fields": true,
@@ -60,7 +67,7 @@
 	[
 		"subpixel_antialias"
 	],
-	"font_size": 18.0,
+	"font_size": 20.0,
 	"highlight_line": true,
 	"highlight_modified_tabs": true,
 	"hot_exit": false,
