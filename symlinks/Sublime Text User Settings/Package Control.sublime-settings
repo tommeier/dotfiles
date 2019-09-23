@@ -19,6 +19,7 @@
 		"GraphQL",
 		"HTML-CSS-JS Prettify",
 		"Jinja2",
+		"JSON Reindent",
 		"JsPrettier",
 		"Material Theme",
 		"Package Control",
@@ -29,6 +30,7 @@
 		"SublimeLinter",
 		"SublimeLinter-contrib-swiftlint",
 		"SublimeLinter-flow",
+		"SublimeLinter-shellcheck",
 		"Swift",
 		"Terraform"
 	],

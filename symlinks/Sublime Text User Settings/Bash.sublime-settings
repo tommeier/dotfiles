@@ -1,6 +1,7 @@
 {
 	"extensions":
 	[
-		"aliases"
+		"aliases",
+		"local"
 	]
 }
