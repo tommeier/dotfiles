@@ -29,3 +29,6 @@ alias m=$EDITOR
 
 # SSH Key removal
 alias remove_ssh_host="sed -i'' -e '$1 d' ~/.ssh/known_hosts"
+
+#alias otp generation for 1password via yubikey
+alias 1p="ykman oath code 1p"
