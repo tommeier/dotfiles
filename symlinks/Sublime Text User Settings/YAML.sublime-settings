@@ -1,6 +1,7 @@
 {
 	"extensions":
 	[
-		"tmpl"
+		"tmpl",
+		"tpl"
 	]
 }
