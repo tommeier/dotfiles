@@ -67,7 +67,7 @@
 	[
 		"subpixel_antialias"
 	],
-	"font_size": 16.0,
+	"font_size": 20.0,
 	"highlight_line": true,
 	"highlight_modified_tabs": true,
 	"hot_exit": false,
@@ -82,7 +82,8 @@
 		"SublimeLinter-jsxhint",
 		"SublimeLinter-rubocop",
 		"Swift",
-		"Vintage"
+		"Vintage",
+		"zzz A File Icon zzz"
 	],
 	"line_padding_bottom": 1,
 	"line_padding_top": 1,
