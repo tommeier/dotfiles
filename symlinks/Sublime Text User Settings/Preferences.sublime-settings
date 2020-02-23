@@ -73,7 +73,6 @@
 	"hot_exit": false,
 	"ignored_packages":
 	[
-		"Flow",
 		"Indent Respectful Sort",
 		"MarkdownPreview",
 		"Markmon real-time markdown preview",
