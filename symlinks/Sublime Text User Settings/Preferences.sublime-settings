@@ -35,6 +35,7 @@
 		"*.psd",
 		"*.pyc",
 		"*.pyo",
+		"*.rbi",
 		"*.scssc",
 		"*.sdf",
 		"*.so",
