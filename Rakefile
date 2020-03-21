@@ -50,7 +50,7 @@ def link_file(file)
     end
   else
     puts "linking ~/.#{file}"
-    system %Q{ln -s "$PWD/#{file}" "$HOME/.#{file}"}
+    system %Q{ln -fvs "$PWD/#{file}" "$HOME/.#{file}"}
   end
 end
 
@@ -112,7 +112,7 @@ def symlink_collection(source_directory, dotfiles_directory, running_process_to_
 
       puts " --+ Linking '#{dotfiles_path}' --> '#{source_path}'"
 
-      system %Q{ln -s "#{dotfiles_path}" "#{source_path}"}
+      system %Q{ln -fvs "#{dotfiles_path}" "#{source_path}"}
     end
   end
   puts " -- Done."
