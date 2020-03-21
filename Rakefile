@@ -9,7 +9,7 @@ task :install do
   preload_private_environment
 
   Dir['*'].each do |file|
-    next if %w[Rakefile README.rdoc LICENSE symlinks].include? file
+    next if %w[Rakefile README.rdoc LICENSE symlinks Gemfile Gemfile.lock].include? file
 
     if File.exist?(File.join(ENV['HOME'], ".#{file.sub('.erb', '')}"))
       if File.identical? file, File.join(ENV['HOME'], ".#{file.sub('.erb', '')}")
