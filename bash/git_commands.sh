@@ -93,7 +93,7 @@ if [ "$1" == "remove_remote_branches" ]; then
 fi;
 for remote in $(git remote); do
   echo "==> ($remote) Fetching & Sweeping merged remote tags"
-  git fetch $remote --prune --tags
+  git fetch $remote --prune --tags --force
   echo "==> ($remote) Fetching & Sweeping merged remote branches"
   git fetch $remote --prune
 done
