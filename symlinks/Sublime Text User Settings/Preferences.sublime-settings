@@ -20,6 +20,7 @@
 	"file_exclude_patterns":
 	[
 		"*.a",
+		"*.bundle",
 		"*.class",
 		"*.db",
 		"*.dll",
@@ -27,6 +28,7 @@
 		"*.exe",
 		"*.idb",
 		"*.lib",
+		"*.map",
 		"*.ncb",
 		"*.o",
 		"*.obj",
@@ -41,6 +43,7 @@
 		"*.so",
 		"*.suo",
 		".DS_Store",
+		".eslintcache",
 		".tags*",
 		"terraform-provider-*.*_x4"
 	],
@@ -68,7 +71,7 @@
 	[
 		"subpixel_antialias"
 	],
-	"font_size": 18.0,
+	"font_size": 16.0,
 	"highlight_line": true,
 	"highlight_modified_tabs": true,
 	"hot_exit": false,
