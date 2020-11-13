@@ -16,6 +16,9 @@ if [ -f ~/.localrc ]; then
   source ~/.localrc
 fi
 
+# Homebrew bin locations
+export PATH="/usr/local/sbin:$PATH"
+
 # Ruby via Rbenv
 eval "$(rbenv init -)"
 export RUBY_CONFIGURE_OPTS="--with-openssl-dir=$(brew --prefix openssl@1.1)"
@@ -41,7 +44,7 @@ if [ -z ${ANDROID_HOME+x} ]; then
   export PATH=$ANDROID_HOME/platform-tools:$PATH
 fi
 
-# GCloud
-source '/usr/local/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/path.bash.inc'
-source '/usr/local/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/completion.bash.inc'
-export DOCKER=false
+# GCloud (note python 3.9 fails)
+export CLOUDSDK_PYTHON="/usr/local/opt/python@3.8/libexec/bin/python"
+source "/usr/local/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/path.bash.inc"
+source "/usr/local/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/completion.bash.inc"
