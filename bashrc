@@ -19,6 +19,11 @@ fi
 # Homebrew bin locations
 export PATH="/usr/local/sbin:$PATH"
 
+# Load ASDF (https://github.com/asdf-vm/asdf)
+# Location: $(brew --prefix asdf)
+. /usr/local/opt/asdf/asdf.sh
+. /usr/local/opt/asdf/etc/bash_completion.d/asdf.bash
+
 # Ruby via Rbenv
 eval "$(rbenv init -)"
 export RUBY_CONFIGURE_OPTS="--with-openssl-dir=$(brew --prefix openssl@1.1)"
