@@ -40,13 +40,12 @@ if [ -x /usr/libexec/java_home ]; then
   export PATH="$JAVA_HOME/bin:$PATH"
 fi
 
-if [ -z ${ANDROID_HOME+x} ]; then
-  export ANDROID_HOME=$HOME/Library/Android/sdk
-  export ANDROID_SDK=$ANDROID_HOME
-  export PATH=$ANDROID_HOME/emulator:$PATH
-  export PATH=$ANDROID_HOME/tools:$PATH
-  export PATH=$ANDROID_HOME/tools/bin:$PATH
-  export PATH=$ANDROID_HOME/platform-tools:$PATH
+if [ -z ${ANDROID_SDK_ROOT+x} ]; then
+  export ANDROID_SDK_ROOT=$HOME/Library/Android/sdk
+  export PATH=$ANDROID_SDK_ROOT/emulator:$PATH
+  export PATH=$ANDROID_SDK_ROOT/tools:$PATH
+  export PATH=$ANDROID_SDK_ROOT/tools/bin:$PATH
+  export PATH=$ANDROID_SDK_ROOT/platform-tools:$PATH
 fi
 
 # GCloud (note python 3.9 fails)
