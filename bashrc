@@ -48,7 +48,6 @@ if [ -z ${ANDROID_SDK_ROOT+x} ]; then
   export PATH=$ANDROID_SDK_ROOT/platform-tools:$PATH
 fi
 
-# GCloud (note python 3.9 fails)
-export CLOUDSDK_PYTHON="/usr/local/opt/python@3.8/libexec/bin/python"
+# Gcloud SDK
 source "/usr/local/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/path.bash.inc"
 source "/usr/local/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/completion.bash.inc"

@@ -2,7 +2,6 @@
 
 Pry.config.pager = false
 Pry.config.color = true
-Pry.config.history.should_save = true
 Pry.config.should_load_local_rc = Dir.pwd != Dir.home
 
 require 'readline'
