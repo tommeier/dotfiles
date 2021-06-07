@@ -101,5 +101,5 @@
 	"tree_animation_enabled": false,
 	"trim_trailing_white_space_on_save": true,
 	"use_simple_full_screen": true,
-	"word_wrap": true
+	"word_wrap": true,
 }
