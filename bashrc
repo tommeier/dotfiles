@@ -48,6 +48,10 @@ apply_java_8() {
   export JAVA_HOME=`/usr/libexec/java_home -v 1.8`
   apply_java_paths
 }
+apply_java_15() {
+  export JAVA_HOME=`/usr/libexec/java_home -v 15.0.2`
+  apply_java_paths
+}
 apply_java_latest() {
   export JAVA_HOME=`/usr/libexec/java_home` # Will be latest
   apply_java_paths
@@ -56,7 +60,8 @@ apply_java_latest() {
 ### Android Studio for React Native
 if [ -x /usr/libexec/java_home ]; then
   # apply_java_8
-  apply_java_latest
+  apply_java_15
+  # apply_java_latest
 fi
 
 # Gcloud SDK
