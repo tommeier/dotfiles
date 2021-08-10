@@ -21,12 +21,11 @@ export PATH="/usr/local/sbin:$PATH"
 
 # Load ASDF (https://github.com/asdf-vm/asdf)
 # Location: $(brew --prefix asdf)
-. /usr/local/opt/asdf/asdf.sh
-. /usr/local/opt/asdf/etc/bash_completion.d/asdf.bash
+. /usr/local/opt/asdf/libexec/asdf.sh
 
 # Ruby via Rbenv
 eval "$(rbenv init -)"
-export RUBY_CONFIGURE_OPTS="--with-openssl-dir=$(brew --prefix openssl@1.1)"
+# export RUBY_CONFIGURE_OPTS="--with-openssl-dir=$(brew --prefix openssl@1.1)"
 
 # Node
 eval "$(nodenv init -)"
@@ -34,34 +33,19 @@ export PATH=$PATH:./node_modules/.bin #Application wide NPM modules
 # Yarn
 export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"
 
-apply_java_paths() {
-  export PATH="$JAVA_HOME/bin:$PATH"
-  if [ -z ${ANDROID_SDK_ROOT+x} ]; then
-    export ANDROID_SDK_ROOT=$HOME/Library/Android/sdk
-    export PATH=$ANDROID_SDK_ROOT/emulator:$PATH
-    export PATH=$ANDROID_SDK_ROOT/tools:$PATH
-    export PATH=$ANDROID_SDK_ROOT/tools/bin:$PATH
-    export PATH=$ANDROID_SDK_ROOT/platform-tools:$PATH
-  fi
-}
-apply_java_8() {
-  export JAVA_HOME=`/usr/libexec/java_home -v 1.8`
-  apply_java_paths
-}
-apply_java_15() {
-  export JAVA_HOME=`/usr/libexec/java_home -v 15.0.2`
-  apply_java_paths
-}
-apply_java_latest() {
-  export JAVA_HOME=`/usr/libexec/java_home` # Will be latest
-  apply_java_paths
-}
-
 ### Android Studio for React Native
 if [ -x /usr/libexec/java_home ]; then
-  # apply_java_8
-  apply_java_15
-  # apply_java_latest
+  export JAVA_HOME=`/usr/libexec/java_home -v 15`
+  export PATH="$JAVA_HOME/bin:$PATH"
+fi
+
+if [ -z ${ANDROID_SDK_ROOT+x} ]; then
+  export ANDROID_SDK_ROOT=$HOME/Library/Android/sdk
+  export PATH=$ANDROID_SDK_ROOT/emulator:$PATH
+  export PATH=$ANDROID_SDK_ROOT/tools:$PATH
+  export PATH=$ANDROID_SDK_ROOT/tools/bin:$PATH
+  export PATH=$ANDROID_SDK_ROOT/platform-tools:$PATH
+  export PATH=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH
 fi
 
 # Gcloud SDK
