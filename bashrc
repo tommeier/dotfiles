@@ -25,7 +25,6 @@ export PATH="/usr/local/sbin:$PATH"
 
 # Ruby via Rbenv
 eval "$(rbenv init -)"
-# export RUBY_CONFIGURE_OPTS="--with-openssl-dir=$(brew --prefix openssl@1.1)"
 
 # Node
 eval "$(nodenv init -)"
@@ -36,7 +35,7 @@ export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"
 ### Android Studio for React Native
 if [ -x /usr/libexec/java_home ]; then
   export JAVA_HOME=`/usr/libexec/java_home -v 15`
-  export PATH="$JAVA_HOME/bin:$PATH"
+  export PATH=$JAVA_HOME/bin:$PATH
 fi
 
 if [ -z ${ANDROID_SDK_ROOT+x} ]; then
