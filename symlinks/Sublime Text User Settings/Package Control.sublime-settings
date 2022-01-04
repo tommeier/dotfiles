@@ -37,6 +37,7 @@
 		"SublimeLinter-flow",
 		"SublimeLinter-shellcheck",
 		"Swift",
+		"Terraform",
 		"ZSH",
 	],
 	"repositories":
