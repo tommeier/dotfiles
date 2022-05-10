@@ -4,16 +4,18 @@
 alias git_commits_in_dates_with_author='git log --pretty=format:"%h%x09%an%x09%ad%x09%s" --date=local --before="Nov 01 2009" --after="Jul 1 2009" > git_output.txt'
 alias git_commits_in_dates_without_author='git log --pretty=format:"%h%x09%ad%x09%s" --date=local --before="Nov 01 2009" --after="Jul 1 2009" > git_output.txt'
 alias git_commits_in_dates_with_name_and_date='git log --pretty=format:"%ad%x09%s" --date=local --before="Nov 01 2009" --after="Jul 1 2009" > git_output.txt'
-alias gita='git archive --format=zip master > $1'
-alias gitb='git branch --sort=-committerdate | head -n 5'
 alias sup='startup'
 alias remote_sup="startup 'remove_remote_branches'"
 export clean_all_git_command='cd "${0}/../" && git gc --aggressive | pwd'
 alias clean_all_git_directories="find . -type d -iname '.git' -maxdepth 10 -exec sh -c '${clean_all_git_command}' \"{}\" \;"
 
-#Delete any passed branch name except master
+function git_default_branch() {
+  git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@'
+}
+
+#Delete any passed branch name except protected
 function delete_local_branch {
-if [[ $1 =~ ^([* ]+)?(master|production)$ ]]; then
+if [[ $1 =~ ^([* ]+)?(master|main|production)$ ]]; then
   echo "- [skipped] ${1}"
 else
   git branch $1 -D -q
@@ -36,9 +38,9 @@ case_sensitive_git_rename() {
 
 # TODO : Broken scenario:
 # - Open PR exists in branch 'candidate-extras', branches off 'candidate/4.0.3'
-# - 'candidate/4.0.3' has been merged into master
+# - 'candidate/4.0.3' has been merged into default branch (main/master)
 # - 'candidate/4.0.3' is auto deleted, github then auto closes the open PR for that branch.
-# --> Fix? Check if any open PRs exist that branch off non-master branch that has been merged. If so -> ignore or ask for info.
+# --> Fix? Check if any open PRs exist that branch off non-default branch (main/master) branch that has been merged. If so -> ignore or ask for info.
 delete_merged_remote_branches() {
 #TODO : Collect all refs to delete and do one push to specific remote. (git push origin x1 x2 x3 --delete)
 #     : This would require a multidimensional array
@@ -55,13 +57,14 @@ git branch -r --merged | while read merged_branch; do
     local full_match=$BASH_REMATCH;
     local remote_name="${BASH_REMATCH[1]}";
     local branch_name="${BASH_REMATCH[2]}";
+    local default_branch="$(git_default_branch)";
 
-    if [[ $branch_name = 'master' || $branch_name = 'production' ||  $branch_name = 'HEAD' ]]; then
+    if [[ $branch_name = "default_branch" || $branch_name = 'production' ||  $branch_name = 'HEAD' ]]; then
       echo "- [skipped] ${remote_name}/${branch_name}";
     else
       local git_head_descriptor="^HEAD -> (.*)$"
       # Ignore the HEAD descriptor for git
-      #eg: HEAD -> origin/master
+      #eg: HEAD -> origin/master|main
       if [[ ! $branch_name =~ $git_head_descriptor ]]; then
 
         if [ -z "$DEBUG" ]; then
@@ -79,15 +82,16 @@ done
 }
 
 function startup {
-#Quick function to start the day and grab the latest info, fetch all open pull requests, and remove master merged branches
+#Quick function to start the day and grab the latest info, fetch all open pull requests, and remove merged branches
 # Dependencies :
 #    - gem install git-pulls
 #    - For private repos :
 #     - Environment variables : GITHUB_USER + GITHUB_TOKEN
 #     - https://help.github.com/articles/creating-an-oauth-token-for-command-line-use
 # TODO: Remove git-pulls dependency and make a bash only system
-# TODO: Crash out of script if the current branch, or master is in a dirty state
+# TODO: Crash out of script if the current branch, or default branch is in a dirty state
 local remove_remote_branches=false
+local default_branch="$(git_default_branch)";
 if [ "$1" == "remove_remote_branches" ]; then
   remove_remote_branches=true
 fi;
@@ -101,15 +105,15 @@ if [[ "$remove_remote_branches" == true ]]; then
   echo "==> Removing any merged remote branches"
   delete_merged_remote_branches
 fi
-echo "==> Updating master"
-git checkout master
+echo "==> Updating ${default_branch}"
+git checkout $default_branch
 git pull
 # Disabled as git-pulls is failing with octokit for un-debugged reason
 # echo "==> Fetching any open pull requests"
 # git-pulls update
 # git-pulls checkout --force
-echo "==> Removing any local branches merged into master"
-git branch --merged master | while read i; do delete_local_branch "$i"; done
+echo "==> Removing any local branches merged into $default_branch"
+git branch --merged $default_branch | while read i; do delete_local_branch "$i"; done
 # echo "==> Clearing any logs"
 # for f in $(find . -name "*.log" -type f -exec ls {} \;)
 # do
@@ -148,19 +152,21 @@ git log --pretty=format:%an | awk '{ ++c[$0]; } END { for(cc in c) printf "%5d %
 # Analysis               #
 ##########################
 function analyse_remote_branches {
+  local default_branch="$(git_default_branch)";
   printf "\n\n== Loading remote branches..\n"
   git gc --prune=now
   git remote prune origin
   git for-each-ref --shell --format="%(refname)" refs/remotes/origin | \
+
   while read branch
   do
     branch_name=${branch/refs\/remotes\/origin\//}
     printf "\nRemote Branch : ${branch_name}\n"
-    result=`git log master..origin/${branch_name//\'/} --pretty=format:" -------> %h | %ar | %an | %s" --abbrev-commit --date-order --decorate -n 8`
+    result=`git log $default_branch..origin/${branch_name//\'/} --pretty=format:" -------> %h | %ar | %an | %s" --abbrev-commit --date-order --decorate -n 8`
     if [ "$result" == "" ]; then
-      echo " <--> Commits all  merged in master"
+      echo " <--> Commits all  merged in $default_branch"
     else
-      echo " --> Commits not in master : "
+      echo " --> Commits not in $default_branch : "
       #echo "${result}"
       printf "$result\n"
     fi
@@ -204,6 +210,8 @@ function delete_all_local_tags {
 }
 
 function delete_all_local_branches {
+  local default_branch="$(git_default_branch)";
+
   printf "\n\n\n\n== Would you like to delete ALL local branches? \nTHIS ACTION CANNOT BE UNDONE WITHOUT A WIZARDS HAT\nPlease select option (or any key to skip):\n"
   echo "1) Delete all - (git branch branch_name -D)"
   echo "-) Skip"
@@ -221,7 +229,7 @@ function delete_all_local_branches {
 
             branch_name=${branch/$branch_repo\//}
 
-            if [ $branch_name != "'master'" -a $branch_name != "'dev'" ]; then
+            if [ $branch_name != "'$default_branch'" -a $branch_name != "'dev'" ]; then
               git branch ${branch_name//\'/} -D
               echo "${branch_name} deleted."
 
