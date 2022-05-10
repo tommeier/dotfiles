@@ -1,3 +1,7 @@
+# Homebrew bin locations
+export PATH="/opt/homebrew/bin:$PATH"
+export BREW_PREFIXED=$(brew --prefix)
+
 source ~/.bash/aliases.sh
 source ~/.bash/aliases_script.sh
 source ~/.bash/bash_commands.sh
@@ -16,12 +20,9 @@ if [ -f ~/.localrc ]; then
   source ~/.localrc
 fi
 
-# Homebrew bin locations
-export PATH="/usr/local/sbin:$PATH"
-
 # Load ASDF (https://github.com/asdf-vm/asdf)
 # Location: $(brew --prefix asdf)
-. /usr/local/opt/asdf/libexec/asdf.sh
+. $(brew --prefix asdf)/libexec/asdf.sh
 
 # Ruby via Rbenv
 eval "$(rbenv init -)"
@@ -35,7 +36,9 @@ export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"
 ### Android Studio for React Native
 if [ -x /usr/libexec/java_home ]; then
   export JAVA_HOME=`/usr/libexec/java_home -v 15`
-  export PATH=$JAVA_HOME/bin:$PATH
+  if [[ "$JAVA_HOME" != "" ]]; then
+    export PATH=$JAVA_HOME/bin:$PATH
+  fi
 fi
 
 if [ -z ${ANDROID_SDK_ROOT+x} ]; then
@@ -48,5 +51,5 @@ if [ -z ${ANDROID_SDK_ROOT+x} ]; then
 fi
 
 # Gcloud SDK
-source "/usr/local/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/path.bash.inc"
-source "/usr/local/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/completion.bash.inc"
+source "$BREW_PREFIXED/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/path.bash.inc"
+source "$BREW_PREFIXED/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/completion.bash.inc"
