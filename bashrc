@@ -15,6 +15,8 @@ source ~/.bash/rails_commands.sh
 source ~/.bash/server_commands.sh
 source ~/.bash/xcode_commands.sh
 
+export TERM="xterm-256color"
+
 # use .localrc for settings specific to one system
 if [ -f ~/.localrc ]; then
   source ~/.localrc
