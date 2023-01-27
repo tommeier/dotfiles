@@ -12,7 +12,7 @@ shopt -s histappend
 test -e "${HOME}/.iterm2_shell_integration.bash" && source "${HOME}/.iterm2_shell_integration.bash"
 
 #export PATH="$BREW_PREFIXED/opt/openssl@1.1/bin:$PATH"
-export PATH="$BREW_PREFIXED/opt/openssl@3/bin:$PATH"
+#export PATH="$BREW_PREFIXED/opt/openssl@3/bin:$PATH"
 
 
 # Required for M1 to compile postgresql

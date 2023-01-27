@@ -27,7 +27,7 @@ fi
 . $(brew --prefix asdf)/libexec/asdf.sh
 
 # Ruby via Rbenv
-eval "$(rbenv init -)"
+# eval "$(rbenv init -)"
 
 # Node
 eval "$(nodenv init -)"
