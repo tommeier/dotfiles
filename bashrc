@@ -26,7 +26,12 @@ fi
 # Location: $(brew --prefix asdf)
 . $(brew --prefix asdf)/libexec/asdf.sh
 
-# Ruby via Rbenv
+if [ -d $HOME/.asdf/plugins/java/ ]; then
+  source $HOME/.asdf/plugins/java/set-java-home.bash
+  #source $HOME/.asdf/plugins/java/set-java-home.zsh
+fi
+
+# Ruby via Rbenv (deprecated - use asdf)
 # eval "$(rbenv init -)"
 
 # Node
@@ -43,6 +48,8 @@ if [ -x /usr/libexec/java_home ]; then
   fi
 fi
 
+
+
 if [ -z ${ANDROID_SDK_ROOT+x} ]; then
   export ANDROID_SDK_ROOT=$HOME/Library/Android/sdk
   export PATH=$ANDROID_SDK_ROOT/emulator:$PATH
@@ -52,6 +59,8 @@ if [ -z ${ANDROID_SDK_ROOT+x} ]; then
   export PATH=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH
 fi
 
-# Gcloud SDK
+# Gcloud SDK /Kube
+export USE_GKE_GCLOUD_AUTH_PLUGIN=True
+
 source "$BREW_PREFIXED/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/path.bash.inc"
 source "$BREW_PREFIXED/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/completion.bash.inc"
