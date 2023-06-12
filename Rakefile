@@ -78,7 +78,7 @@ end
 # Caveat - In root directory, it must be *either* a folder or file wanting to be symlinked
 def symlink_collection(source_directory, dotfiles_directory, running_process_to_kill = nil, file_exclusions = [])
   puts " -- Generating symlinks for '#{File.basename(dotfiles_directory)}' -> '#{File.basename(source_directory)}'"
-  FileUtils.mkdir_p(dotfiles_directory) unless File.exists?(dotfiles_directory)
+  FileUtils.mkdir_p(dotfiles_directory) unless File.exist?(dotfiles_directory)
   Dir.glob(File.join(source_directory, '*')).each do |file|
     if file_exclusions.include?(File.basename(file))
       puts "Skipping - #{file}"
@@ -90,22 +90,22 @@ def symlink_collection(source_directory, dotfiles_directory, running_process_to_
 
     source_path   = File.expand_path(file)
     dotfiles_path = File.join(File.expand_path(dotfiles_directory), File.basename(file))
-    if File.symlink?(source_path) && File.readlink(source_path) == dotfiles_path && File.exists?(dotfiles_path)
+    if File.symlink?(source_path) && File.readlink(source_path) == dotfiles_path && File.exist?(dotfiles_path)
       #Symlink already exists and content exists in dotfiles
       puts " --- Symlink exists already '#{dotfiles_path}' --> '#{source_path}'"
     else
       #Generate symlink
       kill_running_process(running_process_to_kill) if running_process_to_kill
 
-      if File.exists?(source_path) && !File.symlink?(source_path)
+      if File.exist?(source_path) && !File.symlink?(source_path)
         # First run
         puts "     - Removing existing source for '#{File.basename(file)}' and moving to dotfiles location."
-        if File.exists?(dotfiles_path)
+        if File.exist?(dotfiles_path)
           is_directory ? FileUtils.rm_rf(dotfiles_path) : FileUtils.rm(dotfiles_path)
         end
 
         FileUtils.mv(source_path, dotfiles_path)
-      elsif File.exists?(source_path)
+      elsif File.exist?(source_path)
         puts "     - Removing existing target for '#{File.basename(file)}'."
         is_directory ? FileUtils.rm_rf(source_path) : FileUtils.rm(source_path)
       end
@@ -129,7 +129,7 @@ end
 #Babushka loads in one ruby process, this will load any env file previously generated (like in private-dot-files)
 # Search and match on any variable assignment and ensure current ruby process has it loaded
 def preload_private_environment(private_file_location = File.join(ENV['HOME'], '.localrc'))
-  if File.exists?(private_file_location)
+  if File.exist?(private_file_location)
     File.open(private_file_location).read.scan(/^([\w_]+)\=["']?([^"']+)["']?$/) do |key, value|
       ENV[key] = value
     end
