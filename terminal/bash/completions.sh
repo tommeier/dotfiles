@@ -5,4 +5,4 @@ else
   echo '[dotfiles] Please install bash-completion: brew install git bash bash-completion'
 fi
 
-complete -C ~/.bash/completion_scripts/project_completion.rb -o default p
+complete -C ~/.terminal/completion_scripts/project_completion.rb -o default p

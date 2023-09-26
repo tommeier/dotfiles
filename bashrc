@@ -2,18 +2,18 @@
 export PATH="/opt/homebrew/bin:$PATH"
 export BREW_PREFIXED=$(brew --prefix)
 
-source ~/.bash/aliases.sh
-source ~/.bash/aliases_script.sh
-source ~/.bash/bash_commands.sh
-source ~/.bash/completions.sh
-source ~/.bash/exports.sh
-source ~/.bash/git_commands.sh
-source ~/.bash/log_commands.sh
-source ~/.bash/paths.sh
-source ~/.bash/prompt.sh
-source ~/.bash/rails_commands.sh
-source ~/.bash/server_commands.sh
-source ~/.bash/xcode_commands.sh
+source ~/.terminal/aliases.sh
+source ~/.terminal/aliases_script.sh
+source ~/.terminal/bash/bash_commands.sh
+source ~/.terminal/bash/completions.sh
+source ~/.terminal/exports.sh
+source ~/.terminal/git_commands.sh
+source ~/.terminal/log_commands.sh
+source ~/.terminal/paths.sh
+source ~/.terminal/bash/prompt.sh
+source ~/.terminal/rails_commands.sh
+source ~/.terminal/server_commands.sh
+source ~/.terminal/xcode_commands.sh
 
 export TERM="xterm-256color"
 

@@ -2,7 +2,7 @@
 
 class ProjectCompletion
   #Edit file with one line per root directory for auto project completion
-  PROJECT_ROOTS_PATH = '~/.bash/completion_scripts/project_completion_roots'.freeze
+  PROJECT_ROOTS_PATH = '~/.terminal/completion_scripts/project_completion_roots'.freeze
   ROOT_PROJECTS_PATH = begin
     path = File.expand_path(PROJECT_ROOTS_PATH)
     path = File.readlink(path) if File.symlink?(path)
@@ -36,7 +36,7 @@ class ProjectCompletion
   end
 
   def typed
-    @typed ||= @command[/\s(.+?)$/, 1] || ''
+    @typed ||= @command && @command[/\s(.+?)$/, 1] || ''
   end
 end
 

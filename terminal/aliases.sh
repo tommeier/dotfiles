@@ -9,7 +9,7 @@ function p {
 			cd $project_file;
 			break;
 		fi
-	done < ~/.bash/completion_scripts/project_completion_roots
+	done < ~/.terminal/completion_scripts/project_completion_roots
 }
 
 #System commands
