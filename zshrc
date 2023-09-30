@@ -5,7 +5,7 @@
 # install powerlevl9k zsh theme: "git clone https://github.com/bhilburn/powerlevel9k.git ~/.oh-my-zsh/custom/themes/powerlevel9k"
 
 export BREW_BIN='/opt/homebrew/bin/brew'
-[ -f '/usr/local/bin/brew' ]; export BREW_BIN='/usr/local/bin/brew'
+[ -f '/usr/local/bin/brew' ] && export BREW_BIN='/usr/local/bin/brew'
 eval "$($BREW_BIN shellenv)"
 export BREW_PREFIXED=$(brew --prefix)
 
