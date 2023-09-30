@@ -3,7 +3,7 @@
 
 
 if [ -f "$BREW_PREFIXED/share/zsh-autocomplete/zsh-autocomplete.plugin.zsh" ]; then
-    source /opt/homebrew/share/zsh-autocomplete/zsh-autocomplete.plugin.zsh
+    source $BREW_PREFIXED/share/zsh-autocomplete/zsh-autocomplete.plugin.zsh
 else
   echo '[dotfiles] Please install zsh-completions: brew install git zsh zsh-autocomplete'
 fi
