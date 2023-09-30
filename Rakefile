@@ -58,7 +58,7 @@ def setup_symlinks
   puts "Setting up symlinks..."
   #Sublime text 3
   #Package Control.sublime-settings + Preferences.sublime-settings
-  symlinks_source_directory = "#{ENV['HOME']}/Library/Application Support/Sublime Text 3/Packages/User/"
+  symlinks_source_directory = "#{ENV['HOME']}/Library/Application Support/Sublime Text/Packages/User/"
   symlinks_dotfiles_directory = File.join('symlinks', 'Sublime Text User Settings')
   symlink_collection(
     symlinks_source_directory,
