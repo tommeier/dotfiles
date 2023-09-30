@@ -9,5 +9,5 @@ else
 fi
 
 +autocomplete:recent-directories() {
-  typeset -ga reply=( $( cat ~/.terminal/completion_scripts/project_completion_roots ) )
+  typeset -ga reply=( $( ruby ~/.terminal/zsh/zsh_recent_directories.rb ) )
 }
