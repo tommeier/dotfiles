@@ -31,3 +31,6 @@ export TERM="xterm-256color"
 if [ -d $HOME/.asdf/plugins/java/ ]; then
   source $HOME/.asdf/plugins/java/set-java-home.zsh
 fi
+
+# Added by OrbStack: command-line tools and integration
+source ~/.orbstack/shell/init.zsh 2>/dev/null || :

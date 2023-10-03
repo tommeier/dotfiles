@@ -117,3 +117,6 @@ source $ZSH/oh-my-zsh.sh
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
+
+# for pattern search (the wildcard `*` will use zsh completion)
+bindkey "^R" history-incremental-pattern-search-backward
