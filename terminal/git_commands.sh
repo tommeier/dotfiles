@@ -4,17 +4,17 @@
 alias git_commits_in_dates_with_author='git log --pretty=format:"%h%x09%an%x09%ad%x09%s" --date=local --before="Nov 01 2009" --after="Jul 1 2009" > git_output.txt'
 alias git_commits_in_dates_without_author='git log --pretty=format:"%h%x09%ad%x09%s" --date=local --before="Nov 01 2009" --after="Jul 1 2009" > git_output.txt'
 alias git_commits_in_dates_with_name_and_date='git log --pretty=format:"%ad%x09%s" --date=local --before="Nov 01 2009" --after="Jul 1 2009" > git_output.txt'
-alias sup='startup'
-alias remote_sup="startup 'remove_remote_branches'"
 export clean_all_git_command='cd "${0}/../" && git gc --aggressive | pwd'
 alias clean_all_git_directories="find . -type d -iname '.git' -maxdepth 10 -exec sh -c '${clean_all_git_command}' \"{}\" \;"
+alias sup="startup"
+alias remote_sup="startup 'remove_remote_branches'"
 
-function git_default_branch() {
+git_default_branch() {
   git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@'
 }
 
 #Delete any passed branch name except protected
-function delete_local_branch {
+delete_local_branch() {
 if [[ $1 =~ ^([* ]+)?(master|main|production)$ ]]; then
   echo "- [skipped] ${1}"
 else
@@ -81,7 +81,7 @@ git branch -r --merged | while read merged_branch; do
 done
 }
 
-function startup {
+startup() {
 #Quick function to start the day and grab the latest info, fetch all open pull requests, and remove merged branches
 # Dependencies :
 #    - gem install git-pulls
@@ -92,7 +92,7 @@ function startup {
 # TODO: Crash out of script if the current branch, or default branch is in a dirty state
 local remove_remote_branches=false
 local default_branch="$(git_default_branch)";
-if [ "$1" == "remove_remote_branches" ]; then
+if [[ "${1}" == "remove_remote_branches" ]]; then
   remove_remote_branches=true
 fi;
 for remote in $(git remote); do
@@ -130,7 +130,7 @@ echo "==> Checking GIT, pruning to 2 weeks"
 git gc --auto
 }
 
-function git_commits_by_user {
+git_commits_by_user() {
 git log --pretty=format:%an | awk '{ ++c[$0]; } END { for(cc in c) printf "%5d %s\n",c[cc],cc; }'| sort -r
 }
 
@@ -151,7 +151,7 @@ git log --pretty=format:%an | awk '{ ++c[$0]; } END { for(cc in c) printf "%5d %
 ##########################
 # Analysis               #
 ##########################
-function analyse_remote_branches {
+analyse_remote_branches() {
   local default_branch="$(git_default_branch)";
   printf "\n\n== Loading remote branches..\n"
   git gc --prune=now
@@ -176,7 +176,7 @@ function analyse_remote_branches {
 
 #Thanks to Nathan DeVries
 #https://gist.github.com/190002
-function clear_gitignored_files {
+clear_gitignored_files() {
   cat .gitignore | egrep -v "^#|^$" | while read line; do
   if [ -s "$line" ]; then
   OLD_IFS=$IFS; IFS=""
@@ -192,7 +192,7 @@ function clear_gitignored_files {
 # Destructive            #
 ##########################
 
-function delete_file_from_all_git_history {
+delete_file_from_all_git_history() {
   local file=$1
 
   git filter-branch --force --index-filter \
@@ -200,7 +200,7 @@ function delete_file_from_all_git_history {
   --prune-empty --tag-name-filter cat -- --all
 }
 
-function delete_all_local_tags {
+delete_all_local_tags() {
   git-for-each-ref --shell --format="%(refname)" refs/tags | \
   while read tag
   do
@@ -209,7 +209,7 @@ function delete_all_local_tags {
   done
 }
 
-function delete_all_local_branches {
+delete_all_local_branches() {
   local default_branch="$(git_default_branch)";
 
   printf "\n\n\n\n== Would you like to delete ALL local branches? \nTHIS ACTION CANNOT BE UNDONE WITHOUT A WIZARDS HAT\nPlease select option (or any key to skip):\n"
