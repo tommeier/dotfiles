@@ -22,7 +22,7 @@ class ZshRecentDirectories
     end
   end.freeze
   PROJECTS = begin
-    `ls -d #{ROOT_PROJECTS.join('* ')} 2> /dev/null`.split
+    `ls -d #{ROOT_PROJECTS.map {|path| path << '*' }.join(' ') } 2> /dev/null`.split
   end.freeze
 
   def initialize(command)
