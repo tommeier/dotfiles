@@ -1,46 +1,17 @@
 {
-	"bootstrapped": true,
-	"in_process_packages":
-	[
-	],
 	"installed_packages":
 	[
 		"A File Icon",
-		"Ansible",
-		"Ansible Vault",
-		"Babel",
-		"Base Encoder",
-		"BeautifyRuby",
-		"Better CoffeeScript",
-		"CFG Configuration Syntax Highlighting",
-		"Cucumber",
 		"Dockerfile Syntax Highlighting",
-		"Flow",
 		"Git",
-		"GraphQL",
-		"HTML-CSS-JS Prettify",
-		"Jinja2",
-		"JSON Reindent",
-		"JsPrettier",
 		"Material Theme",
 		"Package Control",
 		"Pretty YAML",
-		"Puppet",
 		"RSpec",
-		"RuboCop",
-		"Ruby Slim",
-		"Sass",
-		"Schema Validator",
-		"SCSS",
-		"SublimeLinter",
-		"SublimeLinter-contrib-swiftlint",
-		"SublimeLinter-flow",
 		"SublimeLinter-shellcheck",
-		"Swift",
 		"Terraform",
-		"ZSH",
 	],
-	"repositories":
+	"in_process_packages":
 	[
 	],
 }
