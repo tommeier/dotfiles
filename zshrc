@@ -11,8 +11,7 @@ export BREW_PREFIXED=$(brew --prefix)
 
 source ~/.terminal/aliases.sh
 source ~/.terminal/aliases_script.sh
-source ~/.terminal/zsh/zsh_commands.sh
-source ~/.terminal/zsh/completions.sh
+source ~/.terminal/docker_commands.sh
 source ~/.terminal/exports.sh
 source ~/.terminal/git_commands.sh
 source ~/.terminal/log_commands.sh
@@ -21,6 +20,8 @@ source ~/.terminal/zsh/theme.sh
 source ~/.terminal/rails_commands.sh
 source ~/.terminal/server_commands.sh
 source ~/.terminal/xcode_commands.sh
+source ~/.terminal/zsh/zsh_commands.sh
+source ~/.terminal/zsh/completions.sh
 
 export TERM="xterm-256color"
 

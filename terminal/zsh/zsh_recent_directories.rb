@@ -10,8 +10,6 @@ class ZshRecentDirectories
   end.freeze
   ROOT_PROJECTS = begin
     if File.exist?(ROOT_PROJECTS_PATH)
-      # paths = File.open(ROOT_PROJECTS_PATH, 'r').readlines.collect(&:strip)
-      # Dir.glob(paths) # Not switching folder when globs exist in project_completion_roots
       File.open(ROOT_PROJECTS_PATH, 'r').readlines.inject([]) do |result, root_path|
         cleaned_path = root_path.strip
         result << cleaned_path if Dir.exist?(cleaned_path)
