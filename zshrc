@@ -27,11 +27,13 @@ export TERM="xterm-256color"
 
 # Load ASDF (https://github.com/asdf-vm/asdf)
 # Location: $(brew --prefix asdf)
-. $(brew --prefix asdf)/libexec/asdf.sh
+# . $(brew --prefix asdf)/libexec/asdf.sh
 
-if [ -d $HOME/.asdf/plugins/java/ ]; then
-  source $HOME/.asdf/plugins/java/set-java-home.zsh
-fi
+eval "$(rbenv init -)"
+
+# if [ -d $HOME/.asdf/plugins/java/ ]; then
+#   source $HOME/.asdf/plugins/java/set-java-home.zsh
+# fi
 
 # Added by OrbStack: command-line tools and integration
 source ~/.orbstack/shell/init.zsh 2>/dev/null || :

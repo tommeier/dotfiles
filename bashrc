@@ -25,15 +25,15 @@ fi
 
 # Load ASDF (https://github.com/asdf-vm/asdf)
 # Location: $(brew --prefix asdf)
-. $(brew --prefix asdf)/libexec/asdf.sh
+# . $(brew --prefix asdf)/libexec/asdf.sh
 
-if [ -d $HOME/.asdf/plugins/java/ ]; then
-  source $HOME/.asdf/plugins/java/set-java-home.bash
-  #source $HOME/.asdf/plugins/java/set-java-home.zsh
-fi
+# if [ -d $HOME/.asdf/plugins/java/ ]; then
+#   source $HOME/.asdf/plugins/java/set-java-home.bash
+#   #source $HOME/.asdf/plugins/java/set-java-home.zsh
+# fi
 
 # Ruby via Rbenv (deprecated - use asdf)
-# eval "$(rbenv init -)"
+eval "$(rbenv init -)"
 
 # Node
 eval "$(nodenv init -)"
