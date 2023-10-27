@@ -29,7 +29,11 @@ export TERM="xterm-256color"
 # Location: $(brew --prefix asdf)
 # . $(brew --prefix asdf)/libexec/asdf.sh
 
-eval "$(rbenv init -)"
+eval "$(rbenv init -)" # Ruby
+
+if command -v pyenv 1>/dev/null 2>&1; then # Python
+  eval "$(pyenv init -)"
+fi
 
 # if [ -d $HOME/.asdf/plugins/java/ ]; then
 #   source $HOME/.asdf/plugins/java/set-java-home.zsh
