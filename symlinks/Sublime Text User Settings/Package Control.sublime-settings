@@ -8,6 +8,8 @@
 		"Package Control",
 		"Pretty YAML",
 		"RSpec",
+		"SCSS",
+		"SublimeLinter-contrib-scss-lint",
 		"SublimeLinter-shellcheck",
 		"Terraform",
 	],
