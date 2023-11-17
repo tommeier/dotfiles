@@ -41,3 +41,6 @@ fi
 
 # Added by OrbStack: command-line tools and integration
 source ~/.orbstack/shell/init.zsh 2>/dev/null || :
+
+# Used in computology/packagecloud.io project
+export SEED_ENRICHED=set

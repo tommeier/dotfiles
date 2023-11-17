@@ -15,7 +15,7 @@ function p {
 #System commands
 alias cls='tput clear'
 alias flushdns='dscacheutil -flushcache'
-alias reload="source ~/.bash_profile"
+alias reload="source ~/.zshrc"
 alias edit_hostfile="$EDITOR /private/etc/hosts"
 alias current_time='echo $(date +%H:%M:%S)'
 alias please='sudo $(fc -ln -1)' # sudo last command
