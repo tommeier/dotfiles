@@ -10,6 +10,7 @@ alias sup="startup"
 alias remote_sup="startup 'remove_remote_branches'"
 
 git_default_branch() {
+  # git remote set-head origin main
   git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@'
 }
 
