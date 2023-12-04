@@ -83,3 +83,9 @@ function outdated {
   check_pods_outdated
   check_yarn_outdated
 }
+
+function webpack_nuke {
+  rm -rf tmp/cache
+  rm -rf public/assets
+  bin/rails webpacker:clobber
+}
