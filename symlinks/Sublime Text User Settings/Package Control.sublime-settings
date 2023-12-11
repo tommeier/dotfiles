@@ -11,11 +11,12 @@
 		"SCSS",
 		"SublimeLinter-contrib-scss-lint",
 		"SublimeLinter-shellcheck",
+		"Tailwind CSS",
 		"Terraform",
+		"Theme - Dark Material",
 	],
 	"in_process_packages":
 	[
-		"Package Control",
 	],
 	"bootstrapped": true,
 }

@@ -9,8 +9,8 @@
 	"auto_complete": true,
 	"auto_complete_commit_on_tab": true,
 	"auto_complete_with_fields": true,
-	"color_scheme": "Packages/Material Theme/schemes/Material-Theme.tmTheme",
-	"theme": "Material-Theme.sublime-theme",
+	"color_scheme": "Packages/Theme - Dark Material/schemes/Dark-Material.tmTheme",
+	"theme": "Dark-Material.sublime-theme",
 	"bold_folder_labels": true,
 	"caret_style": "wide",
 	"default_encoding": "UTF-8",
@@ -78,7 +78,7 @@
 	"hot_exit": false,
 	"ignored_packages":
 	[
-		"Package Control",
+		"A File Icon",
 		"Vintage",
 	],
 	"line_padding_bottom": 1,
