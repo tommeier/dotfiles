@@ -1,3 +1,5 @@
+#!/bin/bash -e
+
 #Build path params
 export PATH=$PATH:/usr/bin
 #Path helper

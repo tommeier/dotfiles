@@ -1,3 +1,5 @@
+#!/bin/bash -e
+
 #Auto alias each folder within a passed folder
 #eg. generate_alias ~/Development/Projects/
 #eg. generate_alias ~/Development/Projects/Clear/

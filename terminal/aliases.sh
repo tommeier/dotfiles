@@ -1,3 +1,5 @@
+#!/bin/bash -e
+
 #If you want more project root directories : Update /bash/completion_scripts/project_completion_roots
 
 function p {

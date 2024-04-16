@@ -31,6 +31,8 @@ export TERM="xterm-256color"
 
 eval "$(rbenv init -)" # Ruby
 
+eval "$(nodenv init -)" # Node
+
 if command -v pyenv 1>/dev/null 2>&1; then # Python
   eval "$(pyenv init -)"
 fi

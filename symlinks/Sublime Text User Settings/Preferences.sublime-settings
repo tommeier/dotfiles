@@ -72,13 +72,14 @@
 	[
 		"subpixel_antialias"
 	],
-	"font_size": 17.0,
+	"font_size": 14.0,
 	"highlight_line": true,
 	"highlight_modified_tabs": true,
 	"hot_exit": false,
 	"ignored_packages":
 	[
 		"A File Icon",
+		"Terraform",
 		"Vintage",
 	],
 	"line_padding_bottom": 1,
@@ -95,5 +96,5 @@
 	"trim_trailing_white_space_on_save": true,
 	"use_simple_full_screen": true,
 	"word_wrap": true,
-	"index_files": true,
+	"index_files": false,
 }

@@ -9,6 +9,8 @@
 		"Pretty YAML",
 		"RSpec",
 		"SCSS",
+		"sublime-terraform",
+		"SublimeLinter",
 		"SublimeLinter-contrib-scss-lint",
 		"SublimeLinter-shellcheck",
 		"Tailwind CSS",
@@ -19,4 +21,8 @@
 	[
 	],
 	"bootstrapped": true,
+	"repositories":
+	[
+		"https://github.com/tmichel/sublime-terraform"
+	],
 }

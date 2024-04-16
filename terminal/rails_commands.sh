@@ -1,3 +1,5 @@
+#!/bin/bash -e
+
 #Rails commands
 
 #Rails - Bundler commands

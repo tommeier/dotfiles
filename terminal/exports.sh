@@ -1,3 +1,5 @@
+#!/bin/bash -e
+
 export EDITOR='subl --wait'
 # export ARCHFLAGS="-arch x86_64";
 
