@@ -4,6 +4,10 @@
 # install oh-my-zsh: sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 # install powerlevl9k zsh theme: "git clone https://github.com/bhilburn/powerlevel9k.git ~/.oh-my-zsh/custom/themes/powerlevel9k"
 
+if [ -f ~/.localrc ]; then
+  source ~/.localrc
+fi
+
 export BREW_BIN='/opt/homebrew/bin/brew'
 [ -f '/usr/local/bin/brew' ] && export BREW_BIN='/usr/local/bin/brew'
 eval "$($BREW_BIN shellenv)"
