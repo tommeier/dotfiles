@@ -1,3 +1,8 @@
+# Enable gpg signing with gitconfig commit.gpgsign
+# Note - _must_ be above powerlevel10k instant prompt init
+# https://unix.stackexchange.com/a/608921
+export GPG_TTY=$(tty)
+
 # https://medium.com/@Clovis_app/configuration-of-a-beautiful-efficient-terminal-and-prompt-on-osx-in-7-minutes-827c29391961
 # brew install git zsh-autocomplete zsh zsh-completions
 # install oh-my-zsh: sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
@@ -57,9 +62,6 @@ source ~/.orbstack/shell/init.zsh 2>/dev/null || :
 
 # Used in computology/packagecloud.io project
 export SEED_ENRICHED=set
-
-# Enable gpg signing with gitconfig commit.gpgsign
-export GPG_TTY=$(tty)
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
