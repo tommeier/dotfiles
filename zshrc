@@ -65,3 +65,7 @@ export SEED_ENRICHED=set
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+
+# Bug fix for zsh-autocomplete
+# https://github.com/marlonrichert/zsh-autocomplete/issues/750
+setopt interactive_comments

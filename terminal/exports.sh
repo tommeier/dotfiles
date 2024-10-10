@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-export EDITOR='subl --wait'
+export EDITOR='code --wait'
 # export ARCHFLAGS="-arch x86_64";
 
 # Prefer AU English and use UTF-8
