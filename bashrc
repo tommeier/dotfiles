@@ -32,14 +32,16 @@ fi
 #   #source $HOME/.asdf/plugins/java/set-java-home.zsh
 # fi
 
-# Ruby via Rbenv (deprecated - use asdf)
-eval "$(rbenv init -)"
+eval "$(/Users/tom/.local/bin/mise activate bash)"
 
-# Node
-eval "$(nodenv init -)"
-export PATH=$PATH:./node_modules/.bin #Application wide NPM modules
-# Yarn
-export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"
+# Ruby via Rbenv (deprecated - use asdf)
+# eval "$(rbenv init -)"
+
+# # Node
+# eval "$(nodenv init -)"
+# export PATH=$PATH:./node_modules/.bin #Application wide NPM modules
+# # Yarn
+# export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"
 
 ### Android Studio for React Native
 if [ -x /usr/libexec/java_home ]; then

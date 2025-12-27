@@ -3,18 +3,22 @@
 # https://unix.stackexchange.com/a/608921
 export GPG_TTY=$(tty)
 
+
+
 # https://medium.com/@Clovis_app/configuration-of-a-beautiful-efficient-terminal-and-prompt-on-osx-in-7-minutes-827c29391961
 # brew install git zsh-autocomplete zsh zsh-completions
 # install oh-my-zsh: sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 # install powerlevl10k zsh theme: "git clone --depth=1 https://github.com/romkatv/powerlevel10k.git $ZSH_CUSTOM/themes/powerlevel10k"
 #   - configure: `p10k configure`
 
-# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
-# Initialization code that may require console input (password prompts, [y/n]
-# confirmations, etc.) must go above this block; everything else may go below.
-if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
-  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
-fi
+typeset -g POWERLEVEL9K_INSTANT_PROMPT=off
+
+# # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
+# # Initialization code that may require console input (password prompts, [y/n]
+# # confirmations, etc.) must go above this block; everything else may go below.
+# if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+#   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+# fi
 
 if [ -f ~/.localrc ]; then
   source ~/.localrc
@@ -45,13 +49,16 @@ export TERM="xterm-256color"
 # Location: $(brew --prefix asdf)
 # . $(brew --prefix asdf)/libexec/asdf.sh
 
-eval "$(rbenv init -)" # Ruby
+# Load Mise
+eval "$(/Users/tom/.local/bin/mise activate zsh)"
 
-eval "$(nodenv init -)" # Node
+# eval "$(rbenv init -)" # Ruby
 
-if command -v pyenv 1>/dev/null 2>&1; then # Python
-  eval "$(pyenv init -)"
-fi
+# eval "$(nodenv init -)" # Node
+
+# if command -v pyenv 1>/dev/null 2>&1; then # Python
+#   eval "$(pyenv init -)"
+# fi
 
 # if [ -d $HOME/.asdf/plugins/java/ ]; then
 #   source $HOME/.asdf/plugins/java/set-java-home.zsh
@@ -65,3 +72,4 @@ export SEED_ENRICHED=set
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+
