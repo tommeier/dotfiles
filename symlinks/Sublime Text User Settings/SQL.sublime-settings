@@ -1,8 +1,0 @@
-{
-	"extensions":
-	[
-		".psqlrc",
-		"local",
-		"psqlrc"
-	]
-}
