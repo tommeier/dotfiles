@@ -1,5 +1,3 @@
-#!/bin/bash -e
-
 alias delete_unavailable_simulators='xcrun simctl delete unavailable'
 
 function close_simulators {

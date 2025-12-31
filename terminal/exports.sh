@@ -1,5 +1,3 @@
-#!/bin/bash -e
-
 export EDITOR='code --wait'
 # export ARCHFLAGS="-arch x86_64";
 
@@ -7,5 +5,5 @@ export EDITOR='code --wait'
 export LANG="en_AU"
 export LC_ALL="en_AU.UTF-8"
 
-# Disable docker for local dev and use asdf
+# Disable docker for local dev and use mise
 export DEV_DOCKER="false"

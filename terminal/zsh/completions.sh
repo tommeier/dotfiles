@@ -12,5 +12,5 @@ zstyle -e ':completion:*:directories' fake '[[ -z $PREFIX$SUFFIX || -d $PREFIX$S
 zstyle ':completion:*:directories' sort no
 
 +autocomplete:recent-directories() {
-  typeset -ga reply=( $( ruby /Users/tom/.terminal/zsh/zsh_recent_directories.rb ) )
+  typeset -ga reply=( $( ruby $HOME/.terminal/zsh/zsh_recent_directories.rb ) )
 }

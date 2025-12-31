@@ -1,5 +1,3 @@
-#!/bin/bash -e
-
 alias list_free_space="df -h"
 alias list_folders_by_size="du -h | sort -n"
 alias list_specific_root_folders_by_size="du -ks /folder_name/* | sort -n"

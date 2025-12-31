@@ -1,8 +1,5 @@
-#!/bin/bash -e
-
-#Auto alias each folder within a passed folder
-#eg. generate_alias ~/Development/Projects/
-#eg. generate_alias ~/Development/Projects/Clear/
+# Auto-create aliases for each folder within a given directory
+# Usage: generate_alias ~/src/personal/
 
 function generate_alias {
 FOLDER=$@

@@ -1,5 +1,3 @@
-#!/bin/bash -e
-
 docker_prune_all() {
   docker image prune --all --force
   docker container prune --force
