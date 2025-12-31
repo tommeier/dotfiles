@@ -1,44 +1,42 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
 
 class ProjectCompletion
-  #Edit file with one line per root directory for auto project completion
-  PROJECT_ROOTS_PATH = '~/.terminal/completion_scripts/project_completion_roots'.freeze
+  PROJECT_ROOTS_PATH = '~/.terminal/completion_scripts/project_completion_roots'
+
   ROOT_PROJECTS_PATH = begin
     path = File.expand_path(PROJECT_ROOTS_PATH)
-    path = File.readlink(path) if File.symlink?(path)
-    path
+    File.symlink?(path) ? File.readlink(path) : path
   end.freeze
+
   ROOT_PROJECTS = begin
     if File.exist?(ROOT_PROJECTS_PATH)
-      # paths = File.open(ROOT_PROJECTS_PATH, 'r').readlines.collect(&:strip)
-      # Dir.glob(paths) # Not switching folder when globs exist in project_completion_roots
-      File.open(ROOT_PROJECTS_PATH, 'r').readlines.inject([]) do |result, root_path|
-        cleaned_path = root_path.strip
-        result << cleaned_path if Dir.exist?(cleaned_path)
-        result
+      File.readlines(ROOT_PROJECTS_PATH).filter_map do |line|
+        expanded = File.expand_path(line.strip)
+        expanded if Dir.exist?(expanded)
       end
     else
       []
     end
   end.freeze
-  PROJECTS = begin
-    `ls #{ROOT_PROJECTS.join(' ')}`.split
-  end.freeze
+
+  PROJECTS = ROOT_PROJECTS.flat_map do |root|
+    Dir.children(root)
+  end.uniq.freeze
 
   def initialize(command)
     @command = command
   end
 
   def matches
-    PROJECTS.select do |task|
-      task[0, typed.length] == typed
+    PROJECTS.select do |project|
+      project.start_with?(typed)
     end
   end
 
   def typed
-    @typed ||= @command && @command[/\s(.+?)$/, 1] || ''
+    @typed ||= @command&.[](/\s(.+?)$/, 1) || ''
   end
 end
 
-puts ProjectCompletion.new(ENV["COMP_LINE"]).matches
-exit 0
+puts ProjectCompletion.new(ENV['COMP_LINE']).matches
