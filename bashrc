@@ -1,7 +1,12 @@
-# Homebrew bin locations
+# =============================================================================
+# Homebrew
+# =============================================================================
 export PATH="/opt/homebrew/bin:$PATH"
 export BREW_PREFIXED=$(brew --prefix)
 
+# =============================================================================
+# Terminal Configuration
+# =============================================================================
 source ~/.terminal/aliases.sh
 source ~/.terminal/aliases_script.sh
 source ~/.terminal/docker_commands.sh
@@ -18,32 +23,23 @@ source ~/.terminal/bash/completions.sh
 
 export TERM="xterm-256color"
 
-# use .localrc for settings specific to one system
+# =============================================================================
+# Local Configuration
+# =============================================================================
 if [ -f ~/.localrc ]; then
   source ~/.localrc
 fi
 
-# Load ASDF (https://github.com/asdf-vm/asdf)
-# Location: $(brew --prefix asdf)
-# . $(brew --prefix asdf)/libexec/asdf.sh
+# =============================================================================
+# Mise (Runtime Version Manager)
+# =============================================================================
+if command -v mise &> /dev/null; then
+  eval "$(mise activate bash)"
+fi
 
-# if [ -d $HOME/.asdf/plugins/java/ ]; then
-#   source $HOME/.asdf/plugins/java/set-java-home.bash
-#   #source $HOME/.asdf/plugins/java/set-java-home.zsh
-# fi
-
-eval "$(/Users/tom/.local/bin/mise activate bash)"
-
-# Ruby via Rbenv (deprecated - use asdf)
-# eval "$(rbenv init -)"
-
-# # Node
-# eval "$(nodenv init -)"
-# export PATH=$PATH:./node_modules/.bin #Application wide NPM modules
-# # Yarn
-# export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"
-
-### Android Studio for React Native
+# =============================================================================
+# Android Studio / React Native
+# =============================================================================
 if [ -x /usr/libexec/java_home ]; then
   export JAVA_HOME=`/usr/libexec/java_home -v 15`
   if [[ "$JAVA_HOME" != "" ]]; then
@@ -60,8 +56,15 @@ if [ -z ${ANDROID_HOME+x} ]; then
   export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$PATH
 fi
 
-# Gcloud SDK /Kube
+# =============================================================================
+# Google Cloud SDK / Kubernetes
+# =============================================================================
 export USE_GKE_GCLOUD_AUTH_PLUGIN=True
 
-source "$BREW_PREFIXED/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/path.bash.inc"
-source "$BREW_PREFIXED/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/completion.bash.inc"
+if [ -f "$BREW_PREFIXED/opt/google-cloud-sdk/path.bash.inc" ]; then
+  source "$BREW_PREFIXED/opt/google-cloud-sdk/path.bash.inc"
+fi
+
+if [ -f "$BREW_PREFIXED/opt/google-cloud-sdk/completion.bash.inc" ]; then
+  source "$BREW_PREFIXED/opt/google-cloud-sdk/completion.bash.inc"
+fi

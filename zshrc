@@ -1,10 +1,14 @@
+# ==============================================================================
+# GPG Configuration
+# ==============================================================================
 # Enable gpg signing with gitconfig commit.gpgsign
 # Note - _must_ be above powerlevel10k instant prompt init
 # https://unix.stackexchange.com/a/608921
 export GPG_TTY=$(tty)
 
-
-
+# ==============================================================================
+# Powerlevel10k Configuration
+# ==============================================================================
 # https://medium.com/@Clovis_app/configuration-of-a-beautiful-efficient-terminal-and-prompt-on-osx-in-7-minutes-827c29391961
 # brew install git zsh-autocomplete zsh zsh-completions
 # install oh-my-zsh: sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
@@ -13,22 +17,24 @@ export GPG_TTY=$(tty)
 
 typeset -g POWERLEVEL9K_INSTANT_PROMPT=off
 
-# # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
-# # Initialization code that may require console input (password prompts, [y/n]
-# # confirmations, etc.) must go above this block; everything else may go below.
-# if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
-#   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
-# fi
-
+# ==============================================================================
+# Local Configuration
+# ==============================================================================
 if [ -f ~/.localrc ]; then
   source ~/.localrc
 fi
 
+# ==============================================================================
+# Homebrew
+# ==============================================================================
 export BREW_BIN='/opt/homebrew/bin/brew'
 [ -f '/usr/local/bin/brew' ] && export BREW_BIN='/usr/local/bin/brew'
 eval "$($BREW_BIN shellenv)"
 export BREW_PREFIXED=$(brew --prefix)
 
+# ==============================================================================
+# Shell Configuration Sources
+# ==============================================================================
 source ~/.terminal/aliases.sh
 source ~/.terminal/aliases_script.sh
 source ~/.terminal/docker_commands.sh
@@ -45,31 +51,26 @@ source ~/.terminal/zsh/completions.sh
 
 export TERM="xterm-256color"
 
-# Load ASDF (https://github.com/asdf-vm/asdf)
-# Location: $(brew --prefix asdf)
-# . $(brew --prefix asdf)/libexec/asdf.sh
+# ==============================================================================
+# Mise (Runtime Version Manager)
+# ==============================================================================
+if command -v mise &>/dev/null; then
+  eval "$(mise activate zsh)"
+fi
 
-# Load Mise
-eval "$(/Users/tom/.local/bin/mise activate zsh)"
-
-# eval "$(rbenv init -)" # Ruby
-
-# eval "$(nodenv init -)" # Node
-
-# if command -v pyenv 1>/dev/null 2>&1; then # Python
-#   eval "$(pyenv init -)"
-# fi
-
-# if [ -d $HOME/.asdf/plugins/java/ ]; then
-#   source $HOME/.asdf/plugins/java/set-java-home.zsh
-# fi
-
-# Added by OrbStack: command-line tools and integration
+# ==============================================================================
+# OrbStack Integration
+# ==============================================================================
 source ~/.orbstack/shell/init.zsh 2>/dev/null || :
 
+# ==============================================================================
+# Environment Variables
+# ==============================================================================
 # Used in computology/packagecloud.io project
 export SEED_ENRICHED=set
 
+# ==============================================================================
+# Prompt Customization
+# ==============================================================================
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
-
