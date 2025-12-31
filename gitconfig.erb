@@ -9,11 +9,10 @@
   co = checkout
   df = diff
   lg = log -p
-  df = !git diff | subl
   praise = blame
-  edit-unmerged = "!f() { git ls-files --unmerged | cut -f2 | sort -u ; }; subl `f`"
+  edit-unmerged = "!f() { git ls-files --unmerged | cut -f2 | sort -u ; }; code `f`"
   add-unmerged = "!f() { git ls-files --unmerged | cut -f2 | sort -u ; }; git add `f`"
-  edit-modified = "!f() { git ls-files --modified | cut -f2 | sort -u ; }; subl `f`"
+  edit-modified = "!f() { git ls-files --modified | cut -f2 | sort -u ; }; code `f`"
 
 [color]
   ui = auto
