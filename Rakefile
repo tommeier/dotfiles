@@ -35,11 +35,12 @@ task :install do
   replace_all = ENV['REPLACE_ALL'] == 'true'
 
   preload_private_environment
+  ensure_gpg_signing_key
 
   DOTFILES.each do |file|
     next unless File.exist?(file)
 
-    install_dotfile(file, replace_all:)
+    install_dotfile(file, replace_all: replace_all)
   end
 
   puts "\nDotfiles installed successfully."
@@ -111,7 +112,76 @@ end
 def preload_private_environment(file_path = File.join(HOME, '.localrc'))
   return unless File.exist?(file_path)
 
-  File.read(file_path).scan(/^([\w_]+)=["']?([^"']+)["']?$/) do |key, value|
+  File.read(file_path).scan(/^export\s+([\w_]+)=["']?([^"'\n]+)["']?$/) do |key, value|
     ENV[key] = value
   end
+end
+
+# Ensure GPG_SIGNING_KEY is set, auto-detecting or prompting if needed
+def ensure_gpg_signing_key
+  return if ENV['GPG_SIGNING_KEY'] && !ENV['GPG_SIGNING_KEY'].empty?
+
+  puts "\n⚠️  GPG_SIGNING_KEY not set. Detecting available keys..."
+
+  keys = detect_gpg_keys
+  if keys.empty?
+    puts "  No GPG keys found. Skipping (run 'gpg --gen-key' to create one)."
+    return
+  end
+
+  selected_key = if keys.length == 1
+                   puts "  Found: #{keys.first[:id]} (#{keys.first[:uid]})"
+                   keys.first[:id]
+                 else
+                   prompt_for_gpg_key(keys)
+                 end
+
+  return unless selected_key
+
+  ENV['GPG_SIGNING_KEY'] = selected_key
+  save_gpg_key_to_localrc(selected_key)
+end
+
+def detect_gpg_keys
+  output = `gpg --list-secret-keys --keyid-format LONG 2>/dev/null`
+  keys = []
+
+  output.scan(/^sec\s+\w+\/(\w+).*?\nuid\s+\[.*?\]\s+(.+)$/m) do |id, uid|
+    keys << { id: id, uid: uid.strip }
+  end
+
+  keys
+end
+
+def prompt_for_gpg_key(keys)
+  puts "  Multiple GPG keys found:"
+  keys.each_with_index do |key, i|
+    puts "    #{i + 1}) #{key[:id]} - #{key[:uid]}"
+  end
+
+  print "  Select key [1]: "
+  choice = $stdin.gets.chomp
+  choice = '1' if choice.empty?
+
+  index = choice.to_i - 1
+  if index >= 0 && index < keys.length
+    keys[index][:id]
+  else
+    puts "  Invalid choice, skipping."
+    nil
+  end
+end
+
+def save_gpg_key_to_localrc(key)
+  localrc_path = File.join(HOME, '.localrc')
+  content = File.exist?(localrc_path) ? File.read(localrc_path) : ''
+
+  if content.match?(/^export GPG_SIGNING_KEY=/)
+    content.gsub!(/^export GPG_SIGNING_KEY=.*$/, "export GPG_SIGNING_KEY=\"#{key}\"")
+  else
+    content += "\nexport GPG_SIGNING_KEY=\"#{key}\"\n"
+  end
+
+  File.write(localrc_path, content)
+  puts "  ✅ Saved GPG_SIGNING_KEY=#{key} to ~/.localrc"
 end

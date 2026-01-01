@@ -1,3 +1,84 @@
+##########################
+# GPG Signing Setup      #
+##########################
+
+# Auto-detect GPG signing key if not set
+# Call this during shell init or manually to fix GPG signing issues
+setup_gpg_signing_key() {
+  # Skip if already set and valid
+  if [[ -n "$GPG_SIGNING_KEY" ]]; then
+    if gpg --list-secret-keys "$GPG_SIGNING_KEY" &>/dev/null; then
+      return 0
+    fi
+  fi
+
+  # Find available secret keys
+  local keys=($(gpg --list-secret-keys --keyid-format LONG 2>/dev/null | grep -E "^sec" | sed -E 's/.*\/([A-F0-9]+).*/\1/'))
+
+  if [[ ${#keys[@]} -eq 0 ]]; then
+    echo "⚠️  No GPG keys found. Run 'gpg --gen-key' to create one."
+    return 1
+  elif [[ ${#keys[@]} -eq 1 ]]; then
+    export GPG_SIGNING_KEY="${keys[0]}"
+    _save_gpg_key_to_localrc "${keys[0]}"
+  else
+    echo "Multiple GPG keys found. Select one:"
+    local i=1
+    for key in "${keys[@]}"; do
+      local uid=$(gpg --list-secret-keys "$key" 2>/dev/null | grep -E "^uid" | head -1 | sed 's/uid\s*\[.*\]\s*//')
+      echo "  $i) $key - $uid"
+      ((i++))
+    done
+    printf "Choice [1]: "
+    read -r choice
+    choice=${choice:-1}
+    if [[ $choice -ge 1 && $choice -le ${#keys[@]} ]]; then
+      export GPG_SIGNING_KEY="${keys[$((choice-1))]}"
+      _save_gpg_key_to_localrc "${keys[$((choice-1))]}"
+    else
+      echo "Invalid choice"
+      return 1
+    fi
+  fi
+}
+
+_save_gpg_key_to_localrc() {
+  local key="$1"
+  local localrc="$HOME/.localrc"
+
+  # Create .localrc if it doesn't exist
+  [[ ! -f "$localrc" ]] && touch "$localrc"
+
+  # Remove any existing GPG_SIGNING_KEY line and add new one
+  if grep -q "^export GPG_SIGNING_KEY=" "$localrc" 2>/dev/null; then
+    sed -i '' "s/^export GPG_SIGNING_KEY=.*/export GPG_SIGNING_KEY=\"$key\"/" "$localrc"
+    echo "✅ Updated GPG_SIGNING_KEY in ~/.localrc"
+  else
+    echo "export GPG_SIGNING_KEY=\"$key\"" >> "$localrc"
+    echo "✅ Added GPG_SIGNING_KEY to ~/.localrc"
+  fi
+
+  echo "ℹ️  Run 'REPLACE_ALL=true rake install' in your dotfiles to regenerate gitconfig"
+}
+
+# Check if GPG signing is properly configured (for shell startup)
+check_gpg_signing() {
+  local signing_key=$(git config --global user.signingkey 2>/dev/null)
+
+  if [[ -z "$signing_key" ]]; then
+    echo "⚠️  Git GPG signing key not configured. Run 'setup_gpg_signing_key' to fix."
+    return 1
+  fi
+
+  if ! gpg --list-secret-keys "$signing_key" &>/dev/null; then
+    echo "⚠️  Git signing key '$signing_key' not found in GPG. Run 'setup_gpg_signing_key' to fix."
+    return 1
+  fi
+
+  return 0
+}
+
+##########################
 #Git Helpers (#TODO : Parameterize this)
 alias git_commits_in_dates_with_author='git log --pretty=format:"%h%x09%an%x09%ad%x09%s" --date=local --before="Nov 01 2009" --after="Jul 1 2009" > git_output.txt'
 alias git_commits_in_dates_without_author='git log --pretty=format:"%h%x09%ad%x09%s" --date=local --before="Nov 01 2009" --after="Jul 1 2009" > git_output.txt'

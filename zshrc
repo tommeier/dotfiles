@@ -70,6 +70,12 @@ source ~/.orbstack/shell/init.zsh 2>/dev/null || :
 export SEED_ENRICHED=set
 
 # ==============================================================================
+# GPG Signing Check
+# ==============================================================================
+# Warn on shell startup if GPG signing is misconfigured
+check_gpg_signing
+
+# ==============================================================================
 # Prompt Customization
 # ==============================================================================
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
