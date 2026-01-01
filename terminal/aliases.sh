@@ -1,6 +1,13 @@
 # Project root directories: Edit ~/.terminal/completion_scripts/project_completion_roots
 
 function p {
+	# If argument is already a valid directory (e.g., from tab completion), go directly
+	if [ -d "$1" ]; then
+		cd "$1"
+		return
+	fi
+
+	# Otherwise, search project roots for a matching project name
 	while read line; do
 		# Expand ~ to $HOME (tilde expansion doesn't work in variable values)
 		case "$line" in
@@ -12,7 +19,7 @@ function p {
 
 		if [ -d "$project_file" ]; then
 			cd "$project_file"
-			break
+			return
 		fi
 	done < ~/.terminal/completion_scripts/project_completion_roots
 }
