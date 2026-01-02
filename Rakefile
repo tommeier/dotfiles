@@ -108,9 +108,16 @@ def link_file(file)
   end
 end
 
-# Load environment variables from private file (e.g., ~/.localrc)
+# Load environment variables from private files
 # Used to populate ERB templates with private values
-def preload_private_environment(file_path = File.join(HOME, '.localrc'))
+def preload_private_environment
+  # Load base private config (symlinked from private-dotfiles)
+  load_env_from_file(File.join(HOME, '.localrc'))
+  # Load machine-local overrides (not tracked in git)
+  load_env_from_file(File.join(HOME, '.localrc.local'))
+end
+
+def load_env_from_file(file_path)
   return unless File.exist?(file_path)
 
   File.read(file_path).scan(/^export\s+([\w_]+)=["']?([^"'\n]+)["']?$/) do |key, value|
@@ -174,7 +181,8 @@ def prompt_for_gpg_key(keys)
 end
 
 def save_gpg_key_to_localrc(key)
-  localrc_path = File.join(HOME, '.localrc')
+  # Use .localrc.local for machine-specific settings (not tracked in git)
+  localrc_path = File.join(HOME, '.localrc.local')
   content = File.exist?(localrc_path) ? File.read(localrc_path) : ''
 
   if content.match?(/^export GPG_SIGNING_KEY=/)
@@ -185,6 +193,6 @@ def save_gpg_key_to_localrc(key)
 
   File.write(localrc_path, content)
   File.chmod(0o600, localrc_path)
-  puts "  ✅ Saved GPG_SIGNING_KEY=#{key} to ~/.localrc"
+  puts "  ✅ Saved GPG_SIGNING_KEY=#{key} to ~/.localrc.local"
   puts "  ℹ️  Run 'REPLACE_ALL=true rake install' to regenerate ~/.gitconfig with the new key."
 end
