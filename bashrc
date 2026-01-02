@@ -2,7 +2,10 @@
 # Homebrew
 # =============================================================================
 export PATH="/opt/homebrew/bin:$PATH"
-export BREW_PREFIXED=$(brew --prefix)
+
+if command -v brew >/dev/null 2>&1; then
+  export BREW_PREFIXED=$(brew --prefix)
+fi
 
 # =============================================================================
 # Terminal Configuration

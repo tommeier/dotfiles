@@ -6,8 +6,13 @@ alias list_inodes_ufs="df -F ufs -i"
 alias list_inodes_ext3="df -F ext3 -i"
 alias list_inodes_from_folder="ls -i /"
 
-alias zip_file="gzip --best $1 > $1.gz"
-alias mail_attachment="echo -e 'Email attachment of $1' | mutt -s 'Emailing attachment : $1' -a $1 'tom@venombytes.com'"
+zip_file() {
+  gzip --best "$1" > "$1.gz"
+}
+
+mail_attachment() {
+  echo -e "Email attachment of $1" | mutt -s "Emailing attachment : $1" -a "$1" 'tom@venombytes.com'
+}
 
 function list_largest_files {
  #note - Ubuntu file name $8, mac osx : $9

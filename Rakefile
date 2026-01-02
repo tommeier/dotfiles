@@ -183,5 +183,7 @@ def save_gpg_key_to_localrc(key)
   end
 
   File.write(localrc_path, content)
+  File.chmod(0o600, localrc_path)
   puts "  ✅ Saved GPG_SIGNING_KEY=#{key} to ~/.localrc"
+  puts "  ℹ️  Run 'REPLACE_ALL=true rake install' to regenerate ~/.gitconfig with the new key."
 end

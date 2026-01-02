@@ -28,9 +28,12 @@ fi
 # Homebrew
 # ==============================================================================
 export BREW_BIN='/opt/homebrew/bin/brew'
-[ -f '/usr/local/bin/brew' ] && export BREW_BIN='/usr/local/bin/brew'
-eval "$($BREW_BIN shellenv)"
-export BREW_PREFIXED=$(brew --prefix)
+[ -x '/usr/local/bin/brew' ] && export BREW_BIN='/usr/local/bin/brew'
+
+if [ -x "$BREW_BIN" ]; then
+  eval "$($BREW_BIN shellenv)"
+  export BREW_PREFIXED=$(brew --prefix)
+fi
 
 # ==============================================================================
 # Shell Configuration Sources

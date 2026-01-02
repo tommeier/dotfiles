@@ -45,9 +45,10 @@
   whitespace = nowarn
 [format]
   pretty = %C(yellow)%h%Creset %s %C(red)(%an, %cr)%Creset
-[github]
-  user = <%= ENV['GITHUB_USER'] %>
-  token = <%= ENV['GITHUB_TOKEN'] %>
+# [github]
+#   Deprecated: Do not store GitHub tokens in gitconfig.
+#   Use `gh auth login` or git credential helpers instead.
+#   See: https://cli.github.com/
 [diff]
   renamelimit=0
   rename-threshold=80

@@ -7,6 +7,9 @@ function p {
 		return
 	fi
 
+	local roots_file="$HOME/.terminal/completion_scripts/project_completion_roots"
+	[[ -f "$roots_file" ]] || return 0
+
 	# Otherwise, search project roots for a matching project name
 	while read line; do
 		# Expand ~ to $HOME (tilde expansion doesn't work in variable values)
@@ -21,7 +24,7 @@ function p {
 			cd "$project_file"
 			return
 		fi
-	done < ~/.terminal/completion_scripts/project_completion_roots
+	done < "$roots_file"
 }
 
 #System commands

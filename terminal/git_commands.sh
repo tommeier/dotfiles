@@ -5,6 +5,12 @@
 # Auto-detect GPG signing key if not set
 # Call this during shell init or manually to fix GPG signing issues
 setup_gpg_signing_key() {
+  # Skip if gpg is not installed
+  command -v gpg >/dev/null 2>&1 || {
+    echo "⚠️  gpg is not installed. Install GnuPG to configure signing."
+    return 1
+  }
+
   # Skip if already set and valid
   if [[ -n "$GPG_SIGNING_KEY" ]]; then
     if gpg --list-secret-keys "$GPG_SIGNING_KEY" &>/dev/null; then
@@ -13,7 +19,7 @@ setup_gpg_signing_key() {
   fi
 
   # Find available secret keys
-  local keys=($(gpg --list-secret-keys --keyid-format LONG 2>/dev/null | grep -E "^sec" | sed -E 's/.*\/([A-F0-9]+).*/\1/'))
+  local keys=($(gpg --list-secret-keys --keyid-format LONG 2>/dev/null | grep -E "^sec" | sed -E 's/.*\/([A-Fa-f0-9]+).*/\1/'))
 
   if [[ ${#keys[@]} -eq 0 ]]; then
     echo "⚠️  No GPG keys found. Run 'gpg --gen-key' to create one."
@@ -46,8 +52,11 @@ _save_gpg_key_to_localrc() {
   local key="$1"
   local localrc="$HOME/.localrc"
 
-  # Create .localrc if it doesn't exist
-  [[ ! -f "$localrc" ]] && touch "$localrc"
+  # Create .localrc if it doesn't exist with secure permissions
+  if [[ ! -f "$localrc" ]]; then
+    touch "$localrc"
+    chmod 600 "$localrc"
+  fi
 
   # Remove any existing GPG_SIGNING_KEY line and add new one
   if grep -q "^export GPG_SIGNING_KEY=" "$localrc" 2>/dev/null; then
@@ -63,7 +72,11 @@ _save_gpg_key_to_localrc() {
 
 # Check if GPG signing is properly configured (for shell startup)
 check_gpg_signing() {
-  local signing_key=$(git config --global user.signingkey 2>/dev/null)
+  # Skip silently if gpg is not installed
+  command -v gpg >/dev/null 2>&1 || return 0
+
+  local signing_key
+  signing_key=$(git config --global user.signingkey 2>/dev/null)
 
   if [[ -z "$signing_key" ]]; then
     echo "⚠️  Git GPG signing key not configured. Run 'setup_gpg_signing_key' to fix."
