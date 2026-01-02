@@ -101,6 +101,17 @@ else
 fi
 
 # =============================================================================
+# VSCode Settings Sync
+# =============================================================================
+if command -v code &>/dev/null; then
+  echo "🔄 Enabling VSCode Settings Sync..."
+  code --sync on
+  echo "   Settings Sync enabled. Sign in via: Cmd+Shift+P → 'Settings Sync: Turn On'"
+else
+  echo "⚠️  VSCode CLI not found. Install VSCode and run 'Shell Command: Install code command'"
+fi
+
+# =============================================================================
 # Set zsh as default shell
 # =============================================================================
 ZSH_PATH="$(which zsh)"
