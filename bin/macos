@@ -84,15 +84,7 @@ defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadThreeF
 defaults write com.apple.screensaver askForPassword -int 1
 defaults write com.apple.screensaver askForPasswordDelay -int 0
 
-# Save screenshots to ~/Screenshots
-mkdir -p "${HOME}/Screenshots"
-defaults write com.apple.screencapture location -string "${HOME}/Screenshots"
-
-# Save screenshots in PNG format
-defaults write com.apple.screencapture type -string "png"
-
-# Disable shadow in screenshots
-defaults write com.apple.screencapture disable-shadow -bool true
+# Keep default screenshot settings (Desktop location, PNG format, shadows enabled)
 
 ###############################################################################
 # Finder                                                                      #
@@ -170,14 +162,7 @@ defaults write com.apple.dock expose-animation-duration -float 0.1
 # Don't automatically rearrange Spaces based on most recent use
 defaults write com.apple.dock mru-spaces -bool false
 
-# Auto-hide the Dock
-defaults write com.apple.dock autohide -bool true
 
-# Remove auto-hide delay
-defaults write com.apple.dock autohide-delay -float 0
-
-# Speed up auto-hide animation
-defaults write com.apple.dock autohide-time-modifier -float 0.3
 
 # Don't show recent applications in Dock
 defaults write com.apple.dock show-recents -bool false
@@ -216,18 +201,7 @@ defaults write com.apple.dock wvous-bl-modifier -int 0
 defaults write com.apple.dock wvous-br-corner -int 14
 defaults write com.apple.dock wvous-br-modifier -int 0
 
-###############################################################################
-# Window Management / Stage Manager                                          #
-###############################################################################
 
-# Enable Stage Manager (macOS 13+)
-defaults write com.apple.WindowManager GloballyEnabled -bool true
-
-# Keep desktop icons visible in Stage Manager
-defaults write com.apple.WindowManager HideDesktop -bool false
-
-# Group app windows together in Stage Manager
-defaults write com.apple.WindowManager AppWindowGroupingBehavior -int 1
 
 ###############################################################################
 # Developer Extras                                                            #
@@ -239,27 +213,7 @@ defaults write -g NSDisableAutomaticTermination -bool true
 # Show detailed crash reports instead of simple dialogs
 defaults write com.apple.CrashReporter DialogType -string "developer"
 
-###############################################################################
-# Safari & WebKit                                                             #
-###############################################################################
-
-# Privacy: don't send search queries to Apple
-defaults write com.apple.Safari UniversalSearchEnabled -bool false
-defaults write com.apple.Safari SuppressSearchSuggestions -bool true
-
-# Show full URL in address bar
-defaults write com.apple.Safari ShowFullURLInSmartSearchField -bool true
-
-# Enable Safari's debug menu
-defaults write com.apple.Safari IncludeInternalDebugMenu -bool true
-
-# Enable "Develop" menu and Web Inspector
-defaults write com.apple.Safari IncludeDevelopMenu -bool true
-defaults write com.apple.Safari WebKitDeveloperExtrasEnabledPreferenceKey -bool true
-defaults write com.apple.Safari com.apple.Safari.ContentPageGroupIdentifier.WebKit2DeveloperExtrasEnabled -bool true
-
-# Add context menu item for showing Web Inspector in web views
-defaults write NSGlobalDomain WebKitDeveloperExtras -bool true
+# Safari settings removed - sandboxed app prevents defaults write
 
 ###############################################################################
 # Terminal                                                                    #
@@ -330,10 +284,8 @@ for app in "Activity Monitor" \
   "Dock" \
   "Finder" \
   "Photos" \
-  "Safari" \
   "SystemUIServer" \
-  "Terminal" \
-  "WindowManager"; do
+  "Terminal"; do
   killall "${app}" &> /dev/null || true
 done
 
