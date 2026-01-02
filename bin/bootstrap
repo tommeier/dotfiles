@@ -50,7 +50,7 @@ brew update
 # =============================================================================
 if [[ -f "${DOTFILES_DIR}/Brewfile" ]]; then
   echo "📦 Installing packages from Brewfile..."
-  brew bundle --file="${DOTFILES_DIR}/Brewfile" --no-lock
+  brew bundle --file="${DOTFILES_DIR}/Brewfile"
 else
   echo "⚠️  Brewfile not found at ${DOTFILES_DIR}/Brewfile"
   echo "   Installing essential packages manually..."

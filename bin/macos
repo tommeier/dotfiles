@@ -155,7 +155,6 @@ defaults write com.apple.dock tilesize -int 40
 defaults write com.apple.dock magnification -bool true
 defaults write com.apple.dock largesize -int 64
 
-
 # Minimize windows into application icon
 defaults write com.apple.dock minimize-to-application -bool true
 

@@ -52,24 +52,30 @@ brew "curl"
 brew "wget"
 brew "openssl"
 brew "libpq"                   # PostgreSQL client libraries
-brew "imagemagick"
-brew "ffmpeg"
 
 # =============================================================================
 # Docker & Containers
 # =============================================================================
-cask "docker"                  # Docker Desktop
-brew "docker-compose"          # Docker Compose (if not using Docker Desktop)
+cask "orbstack"
 
 # =============================================================================
 # Applications (Casks)
 # =============================================================================
 cask "visual-studio-code"
+cask "claude-code"
 cask "1password"
 cask "1password-cli"
 cask "slack"
+cask "signal"
 cask "zoom"
 cask "notion"
+
+# =============================================================================
+# AI
+# =============================================================================
+brew "amp"
+cask "chatgpt"
+cask "claude-code"
 
 # =============================================================================
 # Fonts
