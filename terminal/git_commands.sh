@@ -50,8 +50,8 @@ setup_gpg_signing_key() {
 
 _save_gpg_key_to_localrc() {
   local key="$1"
-  # Use .localrc.local for machine-specific settings (not tracked in git)
-  local localrc="$HOME/.localrc.local"
+  # Use .localrc for machine-specific settings (not tracked in git)
+  local localrc="$HOME/.localrc"
 
   # Create file if it doesn't exist with secure permissions
   if [[ ! -f "$localrc" ]]; then
@@ -62,10 +62,10 @@ _save_gpg_key_to_localrc() {
   # Remove any existing GPG_SIGNING_KEY line and add new one
   if grep -q "^export GPG_SIGNING_KEY=" "$localrc" 2>/dev/null; then
     sed -i '' "s/^export GPG_SIGNING_KEY=.*/export GPG_SIGNING_KEY=\"$key\"/" "$localrc"
-    echo "✅ Updated GPG_SIGNING_KEY in ~/.localrc.local"
+    echo "✅ Updated GPG_SIGNING_KEY in ~/.localrc"
   else
     echo "export GPG_SIGNING_KEY=\"$key\"" >> "$localrc"
-    echo "✅ Added GPG_SIGNING_KEY to ~/.localrc.local"
+    echo "✅ Added GPG_SIGNING_KEY to ~/.localrc"
   fi
 
   echo "ℹ️  Run 'REPLACE_ALL=true rake install' in your dotfiles to regenerate gitconfig"

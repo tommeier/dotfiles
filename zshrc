@@ -44,11 +44,12 @@ setopt NO_BEEP                # Disable terminal beep
 typeset -g POWERLEVEL9K_INSTANT_PROMPT=off
 
 # ==============================================================================
-# Local Configuration
+# Private & Local Configuration
 # ==============================================================================
-if [ -f ~/.localrc ]; then
-  source ~/.localrc
-fi
+# ~/.privaterc - synced private config (from private-dotfiles repo)
+# ~/.localrc   - machine-specific config (not tracked in git)
+[[ -f ~/.privaterc ]] && source ~/.privaterc
+[[ -f ~/.localrc ]] && source ~/.localrc
 
 # ==============================================================================
 # Homebrew
