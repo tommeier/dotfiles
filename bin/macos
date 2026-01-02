@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # macOS Defaults
-# Sensible hacker defaults for macOS
+# Sensible hacker defaults for macOS (Sonoma/Sequoia compatible)
 # Inspired by https://github.com/mathiasbynens/dotfiles
 #
 # Run once after fresh macOS install, then restart computer
@@ -10,8 +10,8 @@ set -euo pipefail
 
 echo "Setting macOS defaults..."
 
-# Close System Preferences to prevent overriding changes
-osascript -e 'tell application "System Preferences" to quit' 2>/dev/null || true
+# Close System Settings to prevent overriding changes
+osascript -e 'tell application "System Settings" to quit' 2>/dev/null || true
 
 # Ask for administrator password upfront
 sudo -v
@@ -22,9 +22,6 @@ while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
 ###############################################################################
 # General UI/UX                                                               #
 ###############################################################################
-
-# Disable the sound effects on boot
-sudo nvram SystemAudioVolume=" "
 
 # Expand save panel by default
 defaults write NSGlobalDomain NSNavPanelExpandedStateForSaveMode -bool true
@@ -113,14 +110,17 @@ defaults write com.apple.finder ShowStatusBar -bool true
 # Show path bar
 defaults write com.apple.finder ShowPathbar -bool true
 
+# Show full POSIX path in Finder window titles
+defaults write com.apple.finder _FXShowPosixPathInTitle -bool true
+
 # Keep folders on top when sorting by name
 defaults write com.apple.finder _FXSortFoldersFirst -bool true
 
 # When performing a search, search the current folder by default
 defaults write com.apple.finder FXDefaultSearchScope -string "SCcf"
 
-# Disable warning when changing file extension
-defaults write com.apple.finder FXEnableExtensionChangeWarning -bool false
+# Keep extension change warning enabled (prevents accidental file corruption)
+defaults write com.apple.finder FXEnableExtensionChangeWarning -bool true
 
 # Enable spring loading for directories
 defaults write NSGlobalDomain com.apple.springing.enabled -bool true
@@ -181,6 +181,63 @@ defaults write com.apple.dock autohide-time-modifier -float 0.3
 
 # Don't show recent applications in Dock
 defaults write com.apple.dock show-recents -bool false
+
+###############################################################################
+# Hot Corners                                                                 #
+###############################################################################
+
+# Hot corner actions:
+#  0: no-op
+#  2: Mission Control
+#  3: Application Windows
+#  4: Desktop
+#  5: Start Screen Saver
+#  6: Disable Screen Saver
+#  7: Dashboard (deprecated)
+# 10: Put Display to Sleep
+# 11: Launchpad
+# 12: Notification Center
+# 13: Lock Screen
+# 14: Quick Note
+
+# Top left: Mission Control
+defaults write com.apple.dock wvous-tl-corner -int 2
+defaults write com.apple.dock wvous-tl-modifier -int 0
+
+# Top right: Notification Center
+defaults write com.apple.dock wvous-tr-corner -int 12
+defaults write com.apple.dock wvous-tr-modifier -int 0
+
+# Bottom left: Desktop
+defaults write com.apple.dock wvous-bl-corner -int 4
+defaults write com.apple.dock wvous-bl-modifier -int 0
+
+# Bottom right: Quick Note
+defaults write com.apple.dock wvous-br-corner -int 14
+defaults write com.apple.dock wvous-br-modifier -int 0
+
+###############################################################################
+# Window Management / Stage Manager                                          #
+###############################################################################
+
+# Enable Stage Manager (macOS 13+)
+defaults write com.apple.WindowManager GloballyEnabled -bool true
+
+# Keep desktop icons visible in Stage Manager
+defaults write com.apple.WindowManager HideDesktop -bool false
+
+# Group app windows together in Stage Manager
+defaults write com.apple.WindowManager AppWindowGroupingBehavior -int 1
+
+###############################################################################
+# Developer Extras                                                            #
+###############################################################################
+
+# Prevent macOS from automatically terminating inactive apps
+defaults write -g NSDisableAutomaticTermination -bool true
+
+# Show detailed crash reports instead of simple dialogs
+defaults write com.apple.CrashReporter DialogType -string "developer"
 
 ###############################################################################
 # Safari & WebKit                                                             #
@@ -249,9 +306,6 @@ defaults write com.apple.TextEdit PlainTextEncodingForWrite -int 4
 # Enable automatic update check
 defaults write com.apple.SoftwareUpdate AutomaticCheckEnabled -bool true
 
-# Check for software updates daily
-defaults write com.apple.SoftwareUpdate ScheduleFrequency -int 1
-
 # Download newly available updates in background
 defaults write com.apple.SoftwareUpdate AutomaticDownload -int 1
 
@@ -278,7 +332,8 @@ for app in "Activity Monitor" \
   "Photos" \
   "Safari" \
   "SystemUIServer" \
-  "Terminal"; do
+  "Terminal" \
+  "WindowManager"; do
   killall "${app}" &> /dev/null || true
 done
 

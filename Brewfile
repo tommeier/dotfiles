@@ -1,9 +1,6 @@
 # Brewfile - Homebrew Bundle
 # Install with: brew bundle --file=~/src/personal/dotfiles/Brewfile
 
-# Taps
-tap "homebrew/bundle"
-
 # =============================================================================
 # Core Shell & Terminal
 # =============================================================================

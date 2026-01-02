@@ -129,7 +129,7 @@ fi
 # macOS Defaults (optional)
 # =============================================================================
 echo ""
-read "apply_macos?Apply macOS defaults? (requires restart) [y/N] " || apply_macos="n"
+read -p "Apply macOS defaults? (requires restart) [y/N] " apply_macos || apply_macos="n"
 if [[ "${apply_macos}" =~ ^[Yy]$ ]]; then
   echo "🍎 Applying macOS defaults..."
   "${DOTFILES_DIR}/bin/macos"
