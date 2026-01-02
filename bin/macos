@@ -34,9 +34,6 @@ defaults write NSGlobalDomain NSNavPanelExpandedStateForSaveMode2 -bool true
 defaults write NSGlobalDomain PMPrintingExpandedStateForPrint -bool true
 defaults write NSGlobalDomain PMPrintingExpandedStateForPrint2 -bool true
 
-# Save to disk (not to iCloud) by default
-defaults write NSGlobalDomain NSDocumentSaveNewDocumentsToCloud -bool false
-
 # Automatically quit printer app once print jobs complete
 defaults write com.apple.print.PrintingPrefs "Quit When Finished" -bool true
 
@@ -158,8 +155,6 @@ defaults write com.apple.dock tilesize -int 40
 defaults write com.apple.dock magnification -bool true
 defaults write com.apple.dock largesize -int 64
 
-# Position Dock on left side
-defaults write com.apple.dock orientation -string "left"
 
 # Minimize windows into application icon
 defaults write com.apple.dock minimize-to-application -bool true

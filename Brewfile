@@ -67,12 +67,9 @@ brew "docker-compose"          # Docker Compose (if not using Docker Desktop)
 cask "visual-studio-code"
 cask "1password"
 cask "1password-cli"
-cask "rectangle"               # Window management
-cask "raycast"                 # Spotlight replacement
 cask "slack"
 cask "zoom"
 cask "notion"
-cask "obsidian"
 
 # =============================================================================
 # Fonts
