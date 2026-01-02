@@ -19,6 +19,7 @@ DOTFILES = %w[
   gemrc
   railsrc
   ackrc
+  editorconfig
   terminal
   bin
   .tool-versions

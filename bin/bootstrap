@@ -1,0 +1,137 @@
+#!/usr/bin/env bash
+#
+# Bootstrap script for fresh macOS install
+# Sets up development environment from scratch
+#
+# Usage: ./bin/bootstrap
+
+set -euo pipefail
+
+DOTFILES_DIR="${HOME}/src/personal/dotfiles"
+
+echo "🚀 Starting macOS bootstrap..."
+echo ""
+
+# =============================================================================
+# Xcode Command Line Tools
+# =============================================================================
+if ! xcode-select -p &>/dev/null; then
+  echo "📦 Installing Xcode Command Line Tools..."
+  xcode-select --install
+  echo "   Please complete the installation and run this script again."
+  exit 0
+else
+  echo "✅ Xcode Command Line Tools already installed"
+fi
+
+# =============================================================================
+# Homebrew
+# =============================================================================
+if ! command -v brew &>/dev/null; then
+  echo "🍺 Installing Homebrew..."
+  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+  # Add Homebrew to PATH for this session
+  if [[ -f /opt/homebrew/bin/brew ]]; then
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+  elif [[ -f /usr/local/bin/brew ]]; then
+    eval "$(/usr/local/bin/brew shellenv)"
+  fi
+else
+  echo "✅ Homebrew already installed"
+fi
+
+# Update Homebrew
+echo "🔄 Updating Homebrew..."
+brew update
+
+# =============================================================================
+# Brewfile
+# =============================================================================
+if [[ -f "${DOTFILES_DIR}/Brewfile" ]]; then
+  echo "📦 Installing packages from Brewfile..."
+  brew bundle --file="${DOTFILES_DIR}/Brewfile" --no-lock
+else
+  echo "⚠️  Brewfile not found at ${DOTFILES_DIR}/Brewfile"
+  echo "   Installing essential packages manually..."
+  brew install git zsh mise gnupg
+fi
+
+# =============================================================================
+# Oh My Zsh
+# =============================================================================
+if [[ ! -d "${HOME}/.oh-my-zsh" ]]; then
+  echo "🐚 Installing Oh My Zsh..."
+  sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+else
+  echo "✅ Oh My Zsh already installed"
+fi
+
+# =============================================================================
+# Powerlevel10k
+# =============================================================================
+P10K_DIR="${ZSH_CUSTOM:-${HOME}/.oh-my-zsh/custom}/themes/powerlevel10k"
+if [[ ! -d "${P10K_DIR}" ]]; then
+  echo "⚡ Installing Powerlevel10k..."
+  git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "${P10K_DIR}"
+else
+  echo "✅ Powerlevel10k already installed"
+fi
+
+# =============================================================================
+# fzf
+# =============================================================================
+if command -v fzf &>/dev/null; then
+  echo "🔧 Setting up fzf key bindings..."
+  "$(brew --prefix)/opt/fzf/install" --key-bindings --completion --no-update-rc --no-bash --no-fish 2>/dev/null || true
+fi
+
+# =============================================================================
+# Dotfiles
+# =============================================================================
+if [[ -d "${DOTFILES_DIR}" ]]; then
+  echo "🔗 Installing dotfiles..."
+  cd "${DOTFILES_DIR}"
+  REPLACE_ALL=true rake install
+else
+  echo "⚠️  Dotfiles directory not found at ${DOTFILES_DIR}"
+  echo "   Clone dotfiles first:"
+  echo "   git clone git@github.com:tommeier/dotfiles.git ${DOTFILES_DIR}"
+  exit 1
+fi
+
+# =============================================================================
+# Set zsh as default shell
+# =============================================================================
+ZSH_PATH="$(which zsh)"
+if [[ "${SHELL}" != "${ZSH_PATH}" ]]; then
+  echo "🐚 Setting zsh as default shell..."
+  if ! grep -q "${ZSH_PATH}" /etc/shells; then
+    echo "${ZSH_PATH}" | sudo tee -a /etc/shells
+  fi
+  chsh -s "${ZSH_PATH}"
+else
+  echo "✅ zsh is already the default shell"
+fi
+
+# =============================================================================
+# macOS Defaults (optional)
+# =============================================================================
+echo ""
+read "apply_macos?Apply macOS defaults? (requires restart) [y/N] " || apply_macos="n"
+if [[ "${apply_macos}" =~ ^[Yy]$ ]]; then
+  echo "🍎 Applying macOS defaults..."
+  "${DOTFILES_DIR}/bin/macos"
+fi
+
+# =============================================================================
+# Done
+# =============================================================================
+echo ""
+echo "✅ Bootstrap complete!"
+echo ""
+echo "Next steps:"
+echo "  1. Restart your terminal (or run: exec zsh)"
+echo "  2. Run 'p10k configure' to customize your prompt"
+echo "  3. Add any secrets to ~/.localrc"
+echo ""

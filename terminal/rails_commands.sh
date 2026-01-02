@@ -1,11 +1,33 @@
-#Rails commands
+# =============================================================================
+# Rails Commands
+# =============================================================================
 
-#Rails - Bundler commands
+# Bundler
 alias be="bundle exec"
 alias bec='bundle exec c'
 alias bes='bundle exec s'
+alias bi='bundle install'
+alias bu='bundle update'
+alias bo='bundle outdated'
 
-#Rails - Foreman commands
+# Rails console/server
+alias brc='bundle exec rails console'
+alias brs='bundle exec rails server'
+alias brdb='bundle exec rails db:migrate'
+alias brdbs='bundle exec rails db:migrate:status'
+alias brdbr='bundle exec rails db:rollback'
+alias brdbc='bundle exec rails db:create'
+alias brdbd='bundle exec rails db:drop'
+alias brdbrs='bundle exec rails db:reset'
+alias brr='bundle exec rails routes'
+
+# RSpec
+alias ber='bundle exec rspec'
+alias berf='bundle exec rspec --fail-fast'
+alias berff='bundle exec rspec --fail-fast --only-failures'
+
+# Foreman
+# =============================================================================
 alias fs="bundle exec foreman start"
 function fr {
   bundle exec foreman run $@

@@ -27,15 +27,41 @@ function p {
 	done < "$roots_file"
 }
 
-#System commands
+# =============================================================================
+# Navigation
+# =============================================================================
+alias ..='cd ..'
+alias ...='cd ../..'
+alias ....='cd ../../..'
+alias .....='cd ../../../..'
+
+# Make directory and cd into it
+mkcd() { mkdir -p "$1" && cd "$1"; }
+
+# =============================================================================
+# System commands
+# =============================================================================
 alias cls='tput clear'
-alias flushdns='dscacheutil -flushcache'
+alias flushdns='dscacheutil -flushcache && sudo killall -HUP mDNSResponder'
 alias reload="source ~/.zshrc"
 alias edit_hostfile="$EDITOR /private/etc/hosts"
 alias current_time='echo $(date +%H:%M:%S)'
 alias please='sudo $(fc -ln -1)' # sudo last command
 
-#User commands
+# macOS specific
+alias o='open .'
+alias of='open -a Finder .'
+alias showfiles='defaults write com.apple.finder AppleShowAllFiles YES && killall Finder'
+alias hidefiles='defaults write com.apple.finder AppleShowAllFiles NO && killall Finder'
+
+# Network utilities
+alias ip='curl -s ifconfig.me'
+alias localip='ipconfig getifaddr en0'
+portused() { lsof -i tcp:"$1" | head -10; }
+
+# =============================================================================
+# User commands
+# =============================================================================
 alias rsync_qnap="$HOME/development/scripts/backup/rsync_backup.sh"
 alias killall_ruby="ps aux | grep ruby | grep -v grep | awk '{print $2}' | xargs kill"
 
