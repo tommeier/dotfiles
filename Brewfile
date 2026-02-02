@@ -23,6 +23,7 @@ brew "git-delta"               # Better git diff
 brew "lazygit"                 # Terminal UI for git
 brew "gnupg"                   # GPG for commit signing
 brew "pinentry-mac"            # GPG pinentry for macOS
+brew "diffr"
 
 # =============================================================================
 # Modern CLI Replacements
@@ -94,3 +95,7 @@ cask "qlstephen"               # Preview plain text files without extension
 # brew "mas"
 # mas "1Password for Safari", id: 1569813296
 # mas "Xcode", id: 497799835
+
+
+cask "google-chrome"
+cask "iterm2"
