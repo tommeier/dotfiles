@@ -43,14 +43,8 @@ fi
 # =============================================================================
 # Android Studio / React Native
 # =============================================================================
-if [ -x /usr/libexec/java_home ]; then
-  export JAVA_HOME=`/usr/libexec/java_home -v 15`
-  if [[ "$JAVA_HOME" != "" ]]; then
-    export PATH=$JAVA_HOME/bin:$PATH
-  fi
-fi
-
-if [ -z ${ANDROID_HOME+x} ]; then
+# Java version managed by mise via .tool-versions
+if [ -z "${ANDROID_HOME+x}" ]; then
   export ANDROID_HOME=$HOME/Library/Android/sdk
   export PATH=$ANDROID_HOME/emulator:$PATH
   export PATH=$ANDROID_HOME/tools:$PATH

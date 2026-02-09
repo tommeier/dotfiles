@@ -93,12 +93,7 @@ check_gpg_signing() {
 }
 
 ##########################
-#Git Helpers (#TODO : Parameterize this)
-alias git_commits_in_dates_with_author='git log --pretty=format:"%h%x09%an%x09%ad%x09%s" --date=local --before="Nov 01 2009" --after="Jul 1 2009" > git_output.txt'
-alias git_commits_in_dates_without_author='git log --pretty=format:"%h%x09%ad%x09%s" --date=local --before="Nov 01 2009" --after="Jul 1 2009" > git_output.txt'
-alias git_commits_in_dates_with_name_and_date='git log --pretty=format:"%ad%x09%s" --date=local --before="Nov 01 2009" --after="Jul 1 2009" > git_output.txt'
-export clean_all_git_command='cd "${0}/../" && git gc --aggressive | pwd'
-alias clean_all_git_directories="find . -type d -iname '.git' -maxdepth 10 -exec sh -c '${clean_all_git_command}' \"{}\" \;"
+#Git Helpers
 alias sup="startup"
 alias remote_sup="startup 'remove_remote_branches'"
 
@@ -112,7 +107,7 @@ delete_local_branch() {
 if [[ $1 =~ ^([* ]+)?(master|main|production)$ ]]; then
   echo "- [skipped] ${1}"
 else
-  git branch $1 -D -q
+  git branch -D -q "$1"
   echo "x [deleted] ${1}"
 fi
 }
@@ -153,7 +148,7 @@ git branch -r --merged | while read merged_branch; do
     local branch_name="${BASH_REMATCH[2]}";
     local default_branch="$(git_default_branch)";
 
-    if [[ $branch_name = "default_branch" || $branch_name = 'production' ||  $branch_name = 'HEAD' ]]; then
+    if [[ $branch_name = "$default_branch" || $branch_name = 'production' ||  $branch_name = 'HEAD' ]]; then
       echo "- [skipped] ${remote_name}/${branch_name}";
     else
       local git_head_descriptor="^HEAD -> (.*)$"
@@ -176,71 +171,35 @@ done
 }
 
 startup() {
-#Quick function to start the day and grab the latest info, fetch all open pull requests, and remove merged branches
-# Dependencies :
-#    - gem install git-pulls
-#    - For private repos :
-#     - Environment variables : GITHUB_USER + GITHUB_TOKEN
-#     - https://help.github.com/articles/creating-an-oauth-token-for-command-line-use
-# TODO: Remove git-pulls dependency and make a bash only system
-# TODO: Crash out of script if the current branch, or default branch is in a dirty state
 local remove_remote_branches=false
 local default_branch="$(git_default_branch)";
 if [[ "${1}" == "remove_remote_branches" ]]; then
   remove_remote_branches=true
 fi;
 for remote in $(git remote); do
-  echo "==> ($remote) Fetching & Sweeping merged remote tags"
-  git fetch $remote --prune --tags --force
-  echo "==> ($remote) Fetching & Sweeping merged remote branches"
-  git fetch $remote --prune
+  echo "==> ($remote) Fetching & pruning remote refs"
+  git fetch "$remote" --prune --tags --force
 done
 if [[ "$remove_remote_branches" == true ]]; then
   echo "==> Removing any merged remote branches"
   delete_merged_remote_branches
 fi
 echo "==> Updating ${default_branch}"
-git checkout $default_branch
+git checkout "$default_branch"
 git pull
-# Disabled as git-pulls is failing with octokit for un-debugged reason
-# echo "==> Fetching any open pull requests"
-# git-pulls update
-# git-pulls checkout --force
 echo "==> Removing any local branches merged into $default_branch"
-git branch --merged $default_branch | while read i; do delete_local_branch "$i"; done
-# echo "==> Clearing any logs"
-# for f in $(find . -name "*.log" -type f -exec ls {} \;)
-# do
-#   if [ -f $f ]; then
-#     echo "Nulling ${f}"
-#     cat /dev/null > $f
-#   fi
-# done
+git branch --merged "$default_branch" | while read i; do delete_local_branch "$i"; done
 if [[ -e ".gitmodules" ]]; then
   echo "==> Updating git submodules"
   git submodule update --init
 fi;
-echo "==> Checking GIT, pruning to 2 weeks"
+echo "==> Running git gc"
 git gc --auto
 }
 
 git_commits_by_user() {
 git log --pretty=format:%an | awk '{ ++c[$0]; } END { for(cc in c) printf "%5d %s\n",c[cc],cc; }'| sort -r
 }
-
-##########################
-#Display                 #
-##########################
-# function parse_git_branch {
-#   git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e "s/* \(.*\)/\1$(parse_git_dirty)/"
-# }
-
-# function parse_git_dirty {
-#   [[ $(git status --porcelain 2> /dev/null | tail -n1) != "" ]] && echo "(☠ )"
-# }
-
-# # Display custom dirty git branch items
-# export PS1='\[\033[01;32m\]\w $(git branch &>/dev/null; if [ $? -eq 0 ]; then echo "\[\033[01;34m\]$(parse_git_branch)"; fi) \$ \[\033[00m\]'
 
 ##########################
 # Analysis               #
@@ -271,7 +230,7 @@ analyse_remote_branches() {
 #Thanks to Nathan DeVries
 #https://gist.github.com/190002
 clear_gitignored_files() {
-  cat .gitignore | egrep -v "^#|^$" | while read line; do
+  grep -Ev "^#|^$" .gitignore | while read line; do
   if [ -s "$line" ]; then
   OLD_IFS=$IFS; IFS=""
       for ignored_file in $( git ls-files "$line" ); do
@@ -295,7 +254,7 @@ delete_file_from_all_git_history() {
 }
 
 delete_all_local_tags() {
-  git-for-each-ref --shell --format="%(refname)" refs/tags | \
+  git for-each-ref --shell --format="%(refname)" refs/tags | \
   while read tag
   do
           tag_name=${tag/refs\/tags\//}

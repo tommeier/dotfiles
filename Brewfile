@@ -57,10 +57,11 @@ brew "libpq"                   # PostgreSQL client libraries
 cask "orbstack"
 
 # =============================================================================
-# Applications (Casks)
+# Applications
 # =============================================================================
 cask "visual-studio-code"
-cask "claude-code"
+cask "google-chrome"
+cask "iterm2"
 cask "1password"
 cask "1password-cli"
 cask "slack"
@@ -88,14 +89,3 @@ cask "font-jetbrains-mono-nerd-font"
 cask "qlmarkdown"              # Preview Markdown
 cask "syntax-highlight"        # Preview code with syntax highlighting
 cask "qlstephen"               # Preview plain text files without extension
-
-# =============================================================================
-# Mac App Store (requires `mas` CLI)
-# =============================================================================
-# brew "mas"
-# mas "1Password for Safari", id: 1569813296
-# mas "Xcode", id: 497799835
-
-
-cask "google-chrome"
-cask "iterm2"

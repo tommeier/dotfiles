@@ -39,14 +39,14 @@ function clear_xcode_data {
   echo "Removing all the simulator data and logs:"
   rm -rf ~/Library/*/CoreSimulator
 
-  echo "Removing XCode 6 old locations:"
+  echo "Removing Xcode caches:"
   rm -rf ~/Library/Caches/com.apple.dt.Xcode
 
   echo "Removing old mobile archives:"
-  rm -rf "~/Library/Application\ Support/MobileSync/Backup/*"
+  rm -rf "$HOME/Library/Application Support/MobileSync/Backup/"*
 
   echo "Removing device logs:"
-  rm -rf "~/Library/Developer/Xcode/iOS\ Device\ Logs/*"
+  rm -rf "$HOME/Library/Developer/Xcode/iOS Device Logs/"*
 
   echo "Done"
 

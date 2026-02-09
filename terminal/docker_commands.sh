@@ -49,7 +49,7 @@ docker_prune_all() {
   echo "Pruning images..."
   docker image prune --all --force
   echo "Pruning volumes..."
-  docker volume prune --all --force
+  docker volume prune --force
   echo "Pruning builder cache..."
   docker builder prune --all --force
   echo "Final system prune..."

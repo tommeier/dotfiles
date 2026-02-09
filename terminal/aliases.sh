@@ -44,7 +44,7 @@ mkcd() { mkdir -p "$1" && cd "$1"; }
 alias cls='tput clear'
 alias flushdns='dscacheutil -flushcache && sudo killall -HUP mDNSResponder'
 alias reload="source ~/.zshrc"
-alias edit_hostfile="$EDITOR /private/etc/hosts"
+alias edit_hostfile='$EDITOR /private/etc/hosts'
 alias current_time='echo $(date +%H:%M:%S)'
 alias please='sudo $(fc -ln -1)' # sudo last command
 
@@ -63,7 +63,7 @@ portused() { lsof -i tcp:"$1" | head -10; }
 # User commands
 # =============================================================================
 alias rsync_qnap="$HOME/development/scripts/backup/rsync_backup.sh"
-alias killall_ruby="ps aux | grep ruby | grep -v grep | awk '{print $2}' | xargs kill"
+alias killall_ruby='pkill -f ruby'
 
 #Editor
 alias m=$EDITOR

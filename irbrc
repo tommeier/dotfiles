@@ -60,7 +60,7 @@ def source_for(object, method_sym)
     method = object.instance_method(method_sym)
   end
   location = method.source_location
-  `code --goto #{location[0]}:#{location[1]}` if location
+  system('code', '--goto', "#{location[0]}:#{location[1]}") if location
   location
 rescue
   nil
@@ -125,14 +125,8 @@ extend_console 'ap' do
   alias pp ap
 end
 
-# When you're using Rails 2 console, show queries in the console
-extend_console 'rails2', (ENV.include?('RAILS_ENV') && !Object.const_defined?('RAILS_DEFAULT_LOGGER')), false do
-  require 'logger'
-  RAILS_DEFAULT_LOGGER = Logger.new(STDOUT)
-end
-
-# When you're using Rails 3 console, show queries in the console
-extend_console 'rails3', defined?(ActiveSupport::Notifications), false do
+# When you're using Rails console, show queries in the console
+extend_console 'rails', defined?(ActiveSupport::Notifications), false do
   $odd_or_even_queries = false
   ActiveSupport::Notifications.subscribe('sql.active_record') do |*args|
     $odd_or_even_queries = !$odd_or_even_queries

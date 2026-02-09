@@ -90,15 +90,10 @@ Pry.hooks.add_hook :before_session, :rails do |output, target, pry|
     end
 
     # load Rails console commands
-    if Rails::VERSION::MAJOR >= 3
-      require 'rails/console/app'
-      require 'rails/console/helpers'
-      if Rails.const_defined? :ConsoleMethods
-        extend Rails::ConsoleMethods
-      end
-    else
-      require 'console_app'
-      require 'console_with_helpers'
+    require 'rails/console/app'
+    require 'rails/console/helpers'
+    if Rails.const_defined? :ConsoleMethods
+      extend Rails::ConsoleMethods
     end
   end
 end

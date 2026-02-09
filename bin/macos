@@ -162,8 +162,6 @@ defaults write com.apple.dock expose-animation-duration -float 0.1
 # Don't automatically rearrange Spaces based on most recent use
 defaults write com.apple.dock mru-spaces -bool false
 
-
-
 # Don't show recent applications in Dock
 defaults write com.apple.dock show-recents -bool false
 
@@ -200,8 +198,6 @@ defaults write com.apple.dock wvous-bl-modifier -int 0
 # Bottom right: Quick Note
 defaults write com.apple.dock wvous-br-corner -int 14
 defaults write com.apple.dock wvous-br-modifier -int 0
-
-
 
 ###############################################################################
 # Developer Extras                                                            #
