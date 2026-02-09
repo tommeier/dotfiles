@@ -8,6 +8,7 @@ This repository contains personal dotfiles for macOS with zsh.
 - `bashrc` - Bash configuration (secondary)
 - `Rakefile` - Installation script (Ruby)
 - `terminal/` - Shell functions and aliases
+- `claude/` - Claude Code config (individual files symlinked into `~/.claude/`)
 
 ## Installation
 

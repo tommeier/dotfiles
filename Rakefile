@@ -25,6 +25,8 @@ DOTFILES = %w[
   .tool-versions
   .ruby-version
   git-prompt-colors.sh
+  claude/settings.json
+  claude/CLAUDE.md
 ].freeze
 
 HOME = ENV.fetch('HOME')
@@ -96,15 +98,15 @@ end
 def link_file(file)
   target_name = file.delete_prefix('.').sub(/\.erb$/, '')
 
+  target_path = File.join(HOME, ".#{target_name}")
+  FileUtils.mkdir_p(File.dirname(target_path))
+
   if file.end_with?('.erb')
     puts "  generating ~/.#{target_name}"
-    File.write(
-      File.join(HOME, ".#{target_name}"),
-      ERB.new(File.read(file)).result(binding)
-    )
+    File.write(target_path, ERB.new(File.read(file)).result(binding))
   else
     puts "  linking ~/.#{target_name}"
-    FileUtils.ln_sf(File.expand_path(file), File.join(HOME, ".#{target_name}"))
+    FileUtils.ln_sf(File.expand_path(file), target_path)
   end
 end
 
