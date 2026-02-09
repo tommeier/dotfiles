@@ -6,3 +6,6 @@ vim/.VimballRecord
 # Local secrets (never commit)
 .localrc
 *.local
+
+# Claude Code local settings
+.claude/
