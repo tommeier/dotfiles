@@ -9,9 +9,9 @@ This repository contains personal dotfiles for macOS with zsh.
 - `Rakefile` - Installation script (Ruby) — symlinks dotfiles to `~/`
 - `terminal/` - Shell functions and aliases (sourced by both zsh and bash)
 - `claude/` - Claude Code config (individual files symlinked into `~/.claude/`)
-- `Brewfile` - Homebrew packages
+- `Brewfile` - Homebrew packages (includes `duti` for default app management)
 - `bin/bootstrap` - Fresh machine setup script
-- `bin/macos` - macOS system defaults
+- `bin/macos` - macOS system defaults (includes setting VS Code as default editor for code files)
 
 ## Installation
 

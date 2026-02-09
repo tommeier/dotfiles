@@ -270,6 +270,83 @@ defaults write com.apple.SoftwareUpdate CriticalUpdateInstall -int 1
 defaults -currentHost write com.apple.ImageCapture disableHotPlug -bool true
 
 ###############################################################################
+# Default Applications                                                        #
+###############################################################################
+
+echo "Setting VS Code as default editor for code files..."
+
+# Check if duti and VS Code are installed
+if ! command -v duti &> /dev/null; then
+  echo "⚠️  duti not found. Install with: brew install duti"
+else
+  if [ -d "/Applications/Visual Studio Code.app" ]; then
+    # Elixir files
+    duti -s com.microsoft.VSCode .ex all 2>/dev/null || true
+    duti -s com.microsoft.VSCode .exs all 2>/dev/null || true
+    duti -s com.microsoft.VSCode .eex all 2>/dev/null || true
+    duti -s com.microsoft.VSCode .heex all 2>/dev/null || true
+    duti -s com.microsoft.VSCode .leex all 2>/dev/null || true
+    duti -s com.microsoft.VSCode .sface all 2>/dev/null || true
+
+    # JavaScript / TypeScript / React Native
+    duti -s com.microsoft.VSCode .js all 2>/dev/null || true
+    duti -s com.microsoft.VSCode .jsx all 2>/dev/null || true
+    duti -s com.microsoft.VSCode .ts all 2>/dev/null || true
+    duti -s com.microsoft.VSCode .tsx all 2>/dev/null || true
+    duti -s com.microsoft.VSCode .mjs all 2>/dev/null || true
+    duti -s com.microsoft.VSCode .cjs all 2>/dev/null || true
+
+    # Ruby
+    duti -s com.microsoft.VSCode .rb all 2>/dev/null || true
+
+    # Config & data files
+    duti -s com.microsoft.VSCode .json all 2>/dev/null || true
+    duti -s com.microsoft.VSCode .json5 all 2>/dev/null || true
+    duti -s com.microsoft.VSCode .jsonc all 2>/dev/null || true
+    duti -s com.microsoft.VSCode .yml all 2>/dev/null || true
+    duti -s com.microsoft.VSCode .yaml all 2>/dev/null || true
+    duti -s com.microsoft.VSCode .toml all 2>/dev/null || true
+    duti -s com.microsoft.VSCode .xml all 2>/dev/null || true
+    duti -s com.microsoft.VSCode .env all 2>/dev/null || true
+
+    # Documentation
+    duti -s com.microsoft.VSCode .md all 2>/dev/null || true
+    duti -s com.microsoft.VSCode .txt all 2>/dev/null || true
+    duti -s com.microsoft.VSCode .log all 2>/dev/null || true
+
+    # Shell scripts
+    duti -s com.microsoft.VSCode .sh all 2>/dev/null || true
+    duti -s com.microsoft.VSCode .zsh all 2>/dev/null || true
+    duti -s com.microsoft.VSCode .bash all 2>/dev/null || true
+
+    # Web files
+    duti -s com.microsoft.VSCode .css all 2>/dev/null || true
+    duti -s com.microsoft.VSCode .scss all 2>/dev/null || true
+    duti -s com.microsoft.VSCode .sass all 2>/dev/null || true
+    duti -s com.microsoft.VSCode .less all 2>/dev/null || true
+
+    # Config files (no extension)
+    duti -s com.microsoft.VSCode .babelrc all 2>/dev/null || true
+    duti -s com.microsoft.VSCode .eslintrc all 2>/dev/null || true
+    duti -s com.microsoft.VSCode .prettierrc all 2>/dev/null || true
+    duti -s com.microsoft.VSCode .nvmrc all 2>/dev/null || true
+    duti -s com.microsoft.VSCode .npmrc all 2>/dev/null || true
+    duti -s com.microsoft.VSCode .yarnrc all 2>/dev/null || true
+    duti -s com.microsoft.VSCode .gitignore all 2>/dev/null || true
+    duti -s com.microsoft.VSCode .gitattributes all 2>/dev/null || true
+    duti -s com.microsoft.VSCode .editorconfig all 2>/dev/null || true
+
+    # Generic text and data files (covers unregistered extensions)
+    duti -s com.microsoft.VSCode public.plain-text all 2>/dev/null || true
+    duti -s com.microsoft.VSCode public.data all 2>/dev/null || true
+
+    echo "✅ VS Code set as default editor for code files"
+  else
+    echo "⚠️  VS Code not found at /Applications/Visual Studio Code.app"
+  fi
+fi
+
+###############################################################################
 # Kill affected applications                                                  #
 ###############################################################################
 

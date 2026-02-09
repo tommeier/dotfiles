@@ -50,6 +50,7 @@ brew "curl"
 brew "wget"
 brew "openssl"
 brew "libpq"                   # PostgreSQL client libraries
+brew "duti"                    # Set default applications for file types
 
 # =============================================================================
 # Docker & Containers
