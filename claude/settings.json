@@ -1,4 +1,5 @@
 {
+  "respectGitignore": true,
   "permissions": {
     "allow": [
       "Read",
@@ -52,5 +53,8 @@
       "Read(.env.*)"
     ]
   },
-  "respectGitignore": true
+  "model": "opus",
+  "enabledPlugins": {
+    "superpowers@claude-plugins-official": true
+  }
 }
