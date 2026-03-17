@@ -111,3 +111,13 @@ check_gpg_signing
 # ==============================================================================
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+
+# ==============================================================================
+# zoxide - Smarter cd command
+# ==============================================================================
+# Must be initialized AFTER mise, orbstack, and p10k to avoid hook conflicts
+if command -v zoxide >/dev/null 2>&1; then
+  eval "$(zoxide init zsh)"
+  alias cd='z'
+  alias cdi='zi'  # Interactive selection
+fi
