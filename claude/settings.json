@@ -53,7 +53,7 @@
       "Read(.env.*)"
     ]
   },
-  "model": "opus",
+  "model": "opus[1m]",
   "enabledPlugins": {
     "superpowers@claude-plugins-official": true,
     "github@claude-plugins-official": true
