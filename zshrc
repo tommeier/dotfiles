@@ -85,8 +85,12 @@ export TERM="xterm-256color"
 # ==============================================================================
 # Mise (Runtime Version Manager)
 # ==============================================================================
-if command -v mise &>/dev/null; then
+# Guard prevents double activation — .zprofile sources .zshrc, then zsh sources
+# it again for interactive login shells. Shims are added in .zprofile as a
+# fallback for non-interactive contexts and freshly-installed tools.
+if command -v mise &>/dev/null && [[ -z "$__MISE_ACTIVATED" ]]; then
   eval "$(mise activate zsh)"
+  __MISE_ACTIVATED=1
 fi
 
 # ==============================================================================
