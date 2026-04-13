@@ -119,9 +119,17 @@ check_gpg_signing
 # ==============================================================================
 # zoxide - Smarter cd command
 # ==============================================================================
-# Must be initialized AFTER mise, orbstack, and p10k to avoid hook conflicts
-if command -v zoxide >/dev/null 2>&1; then
-  eval "$(zoxide init zsh)"
-  alias cd='z'
-  alias cdi='zi'  # Interactive selection
+# Must be initialized AFTER mise, orbstack, and p10k to avoid hook conflicts.
+# Guard prevents double init (.zprofile sources .zshrc, then zsh sources it again).
+# _ZO_DOCTOR=0 silences a false positive — init IS last, doctor gets confused by
+# the double-source path.
+#
+# --cmd cd: replaces `cd` with a function that does `builtin cd` when the arg
+# is an existing directory, falls back to zoxide frecent matching otherwise.
+# This avoids the footgun where `cd relative/path` jumps to a different
+# checkout because zoxide ranked it higher. Also provides `cdi` for interactive.
+if command -v zoxide >/dev/null 2>&1 && [[ -z "$__ZOXIDE_INITIALIZED" ]]; then
+  export _ZO_DOCTOR=0
+  eval "$(zoxide init zsh --cmd cd)"
+  __ZOXIDE_INITIALIZED=1
 fi
