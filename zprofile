@@ -1,9 +1,10 @@
 # ==============================================================================
-# Mise shims (fallback for non-interactive shells and newly-installed tools)
+# Mise shims (fallback for non-interactive contexts)
 # ==============================================================================
-# `mise activate zsh` in .zshrc prepends direct install paths that take
-# priority over shims in interactive shells. Shims cover scripts, subprocesses,
-# and tools installed mid-session before hooks re-evaluate.
+# For interactive shells, .zshrc handles shims via precmd/chpwd hooks that
+# re-inject after each mise hook-env PATH rebuild. This line covers
+# non-interactive login shells that source .zprofile but skip .zshrc
+# (cron jobs, scripts invoked via `zsh -l`).
 export PATH="$HOME/.local/share/mise/shims:$PATH"
 
 if [ -f ~/.zshrc ]; then

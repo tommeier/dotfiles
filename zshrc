@@ -85,11 +85,20 @@ export TERM="xterm-256color"
 # ==============================================================================
 # Mise (Runtime Version Manager)
 # ==============================================================================
-# Guard prevents double activation — .zprofile sources .zshrc, then zsh sources
-# it again for interactive login shells. Shims are added in .zprofile as a
-# fallback for non-interactive contexts and freshly-installed tools.
+# mise activate and shims are mutually exclusive — hook-env strips the shims
+# dir on every PATH rebuild. We use activate (needed for [env] support) and
+# re-inject shims as a low-priority fallback via precmd/chpwd hooks that run
+# AFTER mise's own hooks. This lets tools scoped to other directories (e.g.
+# gke-gcloud-auth-plugin from infra/.mise.toml) resolve via shim when cwd is
+# elsewhere — kubectl needs this for GKE auth regardless of working directory.
 if command -v mise &>/dev/null && [[ -z "$__MISE_ACTIVATED" ]]; then
   eval "$(mise activate zsh)"
+  _mise_shims_fallback() {
+    [[ ":$PATH:" != *":$HOME/.local/share/mise/shims:"* ]] && \
+      export PATH="$PATH:$HOME/.local/share/mise/shims"
+  }
+  precmd_functions+=(_mise_shims_fallback)
+  chpwd_functions+=(_mise_shims_fallback)
   __MISE_ACTIVATED=1
 fi
 
