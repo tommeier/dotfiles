@@ -54,6 +54,10 @@
     ]
   },
   "model": "opus[1m]",
+  "statusLine": {
+    "type": "command",
+    "command": "bash ~/.claude/statusline.sh"
+  },
   "enabledPlugins": {
     "superpowers@claude-plugins-official": true,
     "github@claude-plugins-official": true
