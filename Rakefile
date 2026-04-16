@@ -27,6 +27,7 @@ DOTFILES = %w[
   git-prompt-colors.sh
   claude/settings.json
   claude/CLAUDE.md
+  claude/setup-api-profile.sh
 ].freeze
 
 HOME = ENV.fetch('HOME')

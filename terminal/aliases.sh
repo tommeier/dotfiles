@@ -75,3 +75,16 @@ remove_ssh_host() {
 
 #alias otp generation for 1password via yubikey
 alias 1p="ykman oath code 1p"
+
+# =============================================================================
+# Claude Code — API billing profile
+# =============================================================================
+# Switches to API billing via a separate config dir (~/.claude-api).
+# First run creates the profile and prompts for /login.
+claude-api() {
+  if [[ ! -d "$HOME/.claude-api" ]]; then
+    "$HOME/.claude/setup-api-profile.sh"
+    echo "  🔑 Run /login in Claude Code to authenticate with your API key"
+  fi
+  CLAUDE_CONFIG_DIR="$HOME/.claude-api" command claude "$@"
+}
