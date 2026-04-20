@@ -60,6 +60,21 @@
   },
   "enabledPlugins": {
     "superpowers@claude-plugins-official": true,
-    "github@claude-plugins-official": true
+    "github@claude-plugins-official": true,
+    "slack@claude-plugins-official": true
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/standup-trigger.sh",
+            "timeout": 5000
+          }
+        ]
+      }
+    ]
   }
 }
