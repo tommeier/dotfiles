@@ -20,6 +20,7 @@ SHARED=(
   settings.json
   settings.local.json
   statusline.sh
+  commands
   hooks
   skills
   plugins
