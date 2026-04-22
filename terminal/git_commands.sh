@@ -102,14 +102,28 @@ git_default_branch() {
   git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@'
 }
 
-#Delete any passed branch name except protected
+# Delete any passed branch name except protected or occupied.
+# Handles `git branch --merged` output prefixes:
+#   '  foo' (plain), '* foo' (current), '+ foo' (in another worktree)
 delete_local_branch() {
-if [[ $1 =~ ^([* ]+)?(master|main|production)$ ]]; then
-  echo "- [skipped] ${1}"
-else
-  git branch -D -q "$1"
-  echo "x [deleted] ${1}"
-fi
+  local raw="$1"
+  local name
+  name=$(printf '%s' "$raw" | sed -E 's/^[*+[:space:]]+//')
+
+  case "$name" in
+    ""|master|main|production)
+      [[ -n "$name" ]] && echo "- [skipped] $name"
+      return
+      ;;
+  esac
+
+  case "$raw" in
+    \+*) echo "- [skipped worktree-occupied] $name"; return ;;
+    \**) echo "- [skipped current] $name"; return ;;
+  esac
+
+  git branch -D -q "$name"
+  echo "x [deleted] $name"
 }
 
 reset_submodules() {
@@ -170,31 +184,118 @@ git branch -r --merged | while read merged_branch; do
 done
 }
 
+# Remove any worktrees whose branch has been merged into $1 (default branch).
+# Skips the current worktree, the default branch itself, 'production', and any
+# dirty worktrees. Deletes the branch the worktree was on after successful
+# removal. Note: `merge-base --is-ancestor` does not catch squash-merges — this
+# matches the limitation of `git branch --merged` used for branch cleanup below.
+delete_merged_worktrees() {
+  local default_branch="$1"
+  local current_toplevel
+  current_toplevel=$(git rev-parse --show-toplevel 2>/dev/null)
+
+  local wt="" branch="" bare=0
+  local worktrees=()
+  while IFS= read -r line; do
+    case "$line" in
+      "worktree "*) wt="${line#worktree }"; branch=""; bare=0 ;;
+      "bare") bare=1 ;;
+      "branch refs/heads/"*) branch="${line#branch refs/heads/}" ;;
+      "")
+        if [[ -n "$wt" && $bare -eq 0 && -n "$branch" ]]; then
+          worktrees+=("${wt}|${branch}")
+        fi
+        wt=""; branch=""; bare=0
+        ;;
+    esac
+  done < <(git worktree list --porcelain)
+  # Flush trailing record (last block may not end in a blank line)
+  if [[ -n "$wt" && $bare -eq 0 && -n "$branch" ]]; then
+    worktrees+=("${wt}|${branch}")
+  fi
+
+  local entry wt_path wt_branch wt_status
+  for entry in "${worktrees[@]}"; do
+    wt_path="${entry%%|*}"
+    wt_branch="${entry##*|}"
+
+    if [[ "$wt_branch" == "$default_branch" || "$wt_branch" == "production" ]]; then
+      continue
+    fi
+    if [[ "$wt_path" == "$current_toplevel" ]]; then
+      echo "- [skipped current worktree] ${wt_path} (${wt_branch})"
+      continue
+    fi
+    if ! git merge-base --is-ancestor "$wt_branch" "$default_branch" 2>/dev/null; then
+      continue
+    fi
+    if ! wt_status=$(git -C "$wt_path" status --porcelain 2>/dev/null); then
+      echo "! [inaccessible] ${wt_path} (${wt_branch})"
+      continue
+    fi
+    if [[ -n "$wt_status" ]]; then
+      echo "- [skipped dirty] ${wt_path} (${wt_branch})"
+      continue
+    fi
+    if git worktree remove "$wt_path" 2>/dev/null; then
+      git branch -D -q "$wt_branch" 2>/dev/null
+      echo "x [removed worktree] ${wt_path} (${wt_branch})"
+    else
+      echo "! [failed to remove] ${wt_path} (${wt_branch})"
+    fi
+  done
+}
+
 startup() {
-local remove_remote_branches=false
-local default_branch="$(git_default_branch)";
-if [[ "${1}" == "remove_remote_branches" ]]; then
-  remove_remote_branches=true
-fi;
-for remote in $(git remote); do
-  echo "==> ($remote) Fetching & pruning remote refs"
-  git fetch "$remote" --prune --tags --force
-done
-if [[ "$remove_remote_branches" == true ]]; then
-  echo "==> Removing any merged remote branches"
-  delete_merged_remote_branches
-fi
-echo "==> Updating ${default_branch}"
-git checkout "$default_branch"
-git pull
-echo "==> Removing any local branches merged into $default_branch"
-git branch --merged "$default_branch" | while read i; do delete_local_branch "$i"; done
-if [[ -e ".gitmodules" ]]; then
-  echo "==> Updating git submodules"
-  git submodule update --init
-fi;
-echo "==> Running git gc"
-git gc --auto
+  local remove_remote_branches=false
+  local default_branch="$(git_default_branch)"
+  if [[ "${1}" == "remove_remote_branches" ]]; then
+    remove_remote_branches=true
+  fi
+
+  for remote in $(git remote); do
+    echo "==> ($remote) Fetching & pruning remote refs"
+    git fetch "$remote" --prune --tags --force
+  done
+
+  if [[ "$remove_remote_branches" == true ]]; then
+    echo "==> Removing any merged remote branches"
+    delete_merged_remote_branches
+  fi
+
+  echo "==> Pruning stale worktree admin data"
+  git worktree prune
+
+  echo "==> Updating ${default_branch}"
+  local current_branch main_wt
+  current_branch=$(git symbolic-ref --short HEAD 2>/dev/null)
+  if [[ "$current_branch" == "$default_branch" ]]; then
+    git pull --ff-only
+  else
+    main_wt=$(git worktree list --porcelain | awk -v b="refs/heads/$default_branch" '
+      /^worktree / { wt = substr($0, 10) }
+      $0 == "branch " b { print wt; exit }
+    ')
+    if [[ -n "$main_wt" ]]; then
+      git -C "$main_wt" pull --ff-only
+    else
+      git fetch origin "$default_branch:$default_branch"
+    fi
+  fi
+
+  echo "==> Removing worktrees merged into ${default_branch}"
+  delete_merged_worktrees "$default_branch"
+
+  echo "==> Removing any local branches merged into ${default_branch}"
+  git branch --merged "$default_branch" | while read -r i; do delete_local_branch "$i"; done
+
+  if [[ -e ".gitmodules" ]]; then
+    echo "==> Updating git submodules"
+    git submodule update --init
+  fi
+
+  echo "==> Running git gc"
+  git gc --auto
 }
 
 git_commits_by_user() {
