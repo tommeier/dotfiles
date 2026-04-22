@@ -51,18 +51,10 @@
       "Bash(wget:*)",
       "Read(.env)",
       "Read(.env.*)"
-    ]
+    ],
+    "defaultMode": "auto"
   },
   "model": "opus[1m]",
-  "statusLine": {
-    "type": "command",
-    "command": "bash ~/.claude/statusline.sh"
-  },
-  "enabledPlugins": {
-    "superpowers@claude-plugins-official": true,
-    "github@claude-plugins-official": true,
-    "slack@claude-plugins-official": true
-  },
   "hooks": {
     "SessionStart": [
       {
@@ -76,5 +68,15 @@
         ]
       }
     ]
-  }
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "bash ~/.claude/statusline.sh"
+  },
+  "enabledPlugins": {
+    "superpowers@claude-plugins-official": true,
+    "github@claude-plugins-official": true,
+    "slack@claude-plugins-official": true
+  },
+  "skipAutoPermissionPrompt": true
 }
