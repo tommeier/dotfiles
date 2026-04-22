@@ -102,6 +102,78 @@ git_default_branch() {
   git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@'
 }
 
+# Populate global associative array _PATCH_ID_CACHE with patch-ids from the
+# last N (default 500) non-merge commits on $1 (target). One batched
+# `git log -p | git patch-id` call — fast. Used by classify_merge() for O(1)
+# squash-merge detection. Tune via SUP_PATCH_ID_WINDOW.
+_sup_build_patch_id_cache() {
+  local target="$1"
+  local window="${SUP_PATCH_ID_WINDOW:-500}"
+  typeset -gA _PATCH_ID_CACHE=() 2>/dev/null || return 1
+  _PATCH_ID_CACHE_BUILT=1
+
+  local pid sha
+  while read -r pid sha; do
+    [[ -n "$pid" ]] && _PATCH_ID_CACHE[$pid]="$sha"
+  done < <(git log -p --format=medium --no-merges -n "$window" "$target" 2>/dev/null \
+          | git patch-id --stable 2>/dev/null)
+}
+
+_sup_clear_patch_id_cache() {
+  unset _PATCH_ID_CACHE _PATCH_ID_CACHE_BUILT
+}
+
+# Classify how $1 (branch) is merged into $2 (target):
+#   prints "ancestor" → regular merge / fast-forward / rebase
+#   prints "squash"   → patch-id match on a commit in target
+# Returns 0 when merged, 1 otherwise (silent).
+#
+# Uses _PATCH_ID_CACHE for fast lookups when populated by
+# _sup_build_patch_id_cache; otherwise walks target commits on demand.
+classify_merge() {
+  local branch="$1"
+  local target="$2"
+
+  if git merge-base --is-ancestor "$branch" "$target" 2>/dev/null; then
+    echo ancestor
+    return 0
+  fi
+
+  local merge_base branch_sha
+  merge_base=$(git merge-base "$branch" "$target" 2>/dev/null) || return 1
+  branch_sha=$(git rev-parse --verify --quiet "$branch") || return 1
+  [[ -z "$merge_base" ]] && return 1
+  if [[ "$merge_base" == "$branch_sha" ]]; then
+    echo ancestor
+    return 0
+  fi
+
+  local branch_pid
+  branch_pid=$(git diff "$merge_base" "$branch_sha" 2>/dev/null \
+              | git patch-id --stable 2>/dev/null | awk '{print $1}')
+  [[ -z "$branch_pid" ]] && return 1
+
+  if [[ -n "${_PATCH_ID_CACHE_BUILT:-}" ]]; then
+    if [[ -n "${_PATCH_ID_CACHE[$branch_pid]:-}" ]]; then
+      echo squash
+      return 0
+    fi
+    return 1
+  fi
+
+  local c c_pid
+  while IFS= read -r c; do
+    c_pid=$(git show --format= "$c" 2>/dev/null \
+           | git patch-id --stable 2>/dev/null | awk '{print $1}')
+    if [[ "$c_pid" == "$branch_pid" ]]; then
+      echo squash
+      return 0
+    fi
+  done < <(git rev-list "$merge_base".."$target" 2>/dev/null)
+
+  return 1
+}
+
 # Delete any passed branch name except protected or occupied.
 # Handles `git branch --merged` output prefixes:
 #   '  foo' (plain), '* foo' (current), '+ foo' (in another worktree)
@@ -184,15 +256,18 @@ git branch -r --merged | while read merged_branch; do
 done
 }
 
-# Remove any worktrees whose branch has been merged into $1 (default branch).
-# Skips the current worktree, the default branch itself, 'production', and any
-# dirty worktrees. Deletes the branch the worktree was on after successful
-# removal. Note: `merge-base --is-ancestor` does not catch squash-merges — this
-# matches the limitation of `git branch --merged` used for branch cleanup below.
+# Remove any worktrees whose branch has been merged (ancestor or squash) into
+# $1 (default branch). Skips the current worktree, the default branch itself,
+# 'production', and any dirty worktrees. Deletes the branch after successful
+# removal. Honors SUP_DRY_RUN.
 delete_merged_worktrees() {
   local default_branch="$1"
   local current_toplevel
   current_toplevel=$(git rev-parse --show-toplevel 2>/dev/null)
+
+  # Branches whose worktrees this function removes (or would remove in dry-run).
+  # delete_merged_branches() skips these to avoid redundant "skipped" output.
+  typeset -gA _SUP_HANDLED_BRANCHES=() 2>/dev/null || :
 
   local wt="" branch="" bare=0
   local worktrees=()
@@ -209,12 +284,14 @@ delete_merged_worktrees() {
         ;;
     esac
   done < <(git worktree list --porcelain)
-  # Flush trailing record (last block may not end in a blank line)
   if [[ -n "$wt" && $bare -eq 0 && -n "$branch" ]]; then
     worktrees+=("${wt}|${branch}")
   fi
 
-  local entry wt_path wt_branch wt_status
+  local verb
+  if [[ -n "$SUP_DRY_RUN" ]]; then verb="would remove"; else verb="removed"; fi
+
+  local entry wt_path wt_branch wt_status kind
   for entry in "${worktrees[@]}"; do
     wt_path="${entry%%|*}"
     wt_branch="${entry##*|}"
@@ -223,27 +300,79 @@ delete_merged_worktrees() {
       continue
     fi
     if [[ "$wt_path" == "$current_toplevel" ]]; then
-      echo "- [skipped current worktree] ${wt_path} (${wt_branch})"
+      echo "  - [skipped current worktree] ${wt_path} (${wt_branch})"
       continue
     fi
-    if ! git merge-base --is-ancestor "$wt_branch" "$default_branch" 2>/dev/null; then
+    if ! kind=$(classify_merge "$wt_branch" "$default_branch"); then
       continue
     fi
     if ! wt_status=$(git -C "$wt_path" status --porcelain 2>/dev/null); then
-      echo "! [inaccessible] ${wt_path} (${wt_branch})"
+      echo "  ! [inaccessible] ${wt_path} (${wt_branch})"
       continue
     fi
     if [[ -n "$wt_status" ]]; then
-      echo "- [skipped dirty] ${wt_path} (${wt_branch})"
+      echo "  - [skipped dirty] ${wt_path} (${wt_branch} [${kind}])"
       continue
     fi
-    if git worktree remove "$wt_path" 2>/dev/null; then
+
+    _SUP_HANDLED_BRANCHES[$wt_branch]=1
+    if [[ -n "$SUP_DRY_RUN" ]]; then
+      echo "  x [${verb}] ${wt_path} (${wt_branch} [${kind}])"
+      _SUP_WT_REMOVED=$((${_SUP_WT_REMOVED:-0} + 1))
+    elif git worktree remove "$wt_path" 2>/dev/null; then
       git branch -D -q "$wt_branch" 2>/dev/null
-      echo "x [removed worktree] ${wt_path} (${wt_branch})"
+      echo "  x [${verb}] ${wt_path} (${wt_branch} [${kind}])"
+      _SUP_WT_REMOVED=$((${_SUP_WT_REMOVED:-0} + 1))
     else
-      echo "! [failed to remove] ${wt_path} (${wt_branch})"
+      echo "  ! [failed to remove] ${wt_path} (${wt_branch})"
     fi
   done
+}
+
+# Delete local branches merged (ancestor or squash) into $1. Skips: protected
+# names (main/master/production), the current branch, and any branch checked
+# out in any worktree. Honors SUP_DRY_RUN.
+delete_merged_branches() {
+  local default_branch="$1"
+  local current_branch
+  current_branch=$(git symbolic-ref --short HEAD 2>/dev/null)
+
+  local occupied
+  occupied=$(git worktree list --porcelain | awk '/^branch refs\/heads\// { print substr($0, 19) }')
+
+  local verb
+  if [[ -n "$SUP_DRY_RUN" ]]; then verb="would delete"; else verb="deleted"; fi
+
+  local br kind
+  while IFS= read -r br; do
+    case "$br" in
+      ""|master|main|production)
+        [[ -n "$br" ]] && echo "  - [skipped protected] $br"
+        continue
+        ;;
+    esac
+    if [[ "$br" == "$current_branch" ]]; then
+      echo "  - [skipped current] $br"
+      continue
+    fi
+    # Already removed via delete_merged_worktrees in this run — silent.
+    if [[ -n "${_SUP_HANDLED_BRANCHES[$br]:-}" ]]; then
+      continue
+    fi
+    # Unmerged branches — silent.
+    if ! kind=$(classify_merge "$br" "$default_branch"); then
+      continue
+    fi
+    # Merged but stuck in a kept worktree (dirty/inaccessible) — surface this.
+    if printf '%s\n' "$occupied" | grep -qxF "$br"; then
+      echo "  - [skipped worktree-occupied] $br (${kind})"
+      continue
+    fi
+
+    [[ -z "$SUP_DRY_RUN" ]] && git branch -D -q "$br"
+    echo "  x [${verb}] $br (${kind})"
+    _SUP_BR_DELETED=$((${_SUP_BR_DELETED:-0} + 1))
+  done < <(git for-each-ref refs/heads/ --format='%(refname:short)')
 }
 
 startup() {
@@ -252,6 +381,13 @@ startup() {
   if [[ "${1}" == "remove_remote_branches" ]]; then
     remove_remote_branches=true
   fi
+
+  if [[ -z "$default_branch" ]]; then
+    echo "! Cannot determine default branch (no origin/HEAD). Aborting."
+    return 1
+  fi
+
+  [[ -n "$SUP_DRY_RUN" ]] && echo "==> DRY RUN — no destructive actions will be taken"
 
   for remote in $(git remote); do
     echo "==> ($remote) Fetching & pruning remote refs"
@@ -264,38 +400,66 @@ startup() {
   fi
 
   echo "==> Pruning stale worktree admin data"
-  git worktree prune
+  [[ -z "$SUP_DRY_RUN" ]] && git worktree prune
 
   echo "==> Updating ${default_branch}"
-  local current_branch main_wt
+  local current_branch main_wt tracking remote_ref
   current_branch=$(git symbolic-ref --short HEAD 2>/dev/null)
+  tracking=$(git rev-parse --abbrev-ref "${default_branch}@{upstream}" 2>/dev/null)
+  remote_ref="refs/remotes/${tracking:-origin/$default_branch}"
+
   if [[ "$current_branch" == "$default_branch" ]]; then
     git pull --ff-only
+  elif ! git rev-parse --verify --quiet "$remote_ref" >/dev/null 2>&1; then
+    echo "  (${remote_ref#refs/remotes/} not found — skipping update)"
   else
     main_wt=$(git worktree list --porcelain | awk -v b="refs/heads/$default_branch" '
       /^worktree / { wt = substr($0, 10) }
       $0 == "branch " b { print wt; exit }
     ')
     if [[ -n "$main_wt" ]]; then
-      git -C "$main_wt" pull --ff-only
+      git -C "$main_wt" merge --ff-only "$remote_ref"
     else
-      git fetch origin "$default_branch:$default_branch"
+      local local_sha remote_sha
+      local_sha=$(git rev-parse --verify --quiet "refs/heads/$default_branch" 2>/dev/null)
+      remote_sha=$(git rev-parse "$remote_ref")
+      if [[ -z "$local_sha" ]] || git merge-base --is-ancestor "$local_sha" "$remote_sha" 2>/dev/null; then
+        git update-ref -m "sup: fast-forward to ${remote_ref#refs/remotes/}" \
+          "refs/heads/$default_branch" "$remote_sha"
+        echo "  ${default_branch} → ${remote_sha:0:7}"
+      else
+        echo "  ⚠ local $default_branch has diverged from ${remote_ref#refs/remotes/} — not updating"
+      fi
     fi
   fi
+
+  _sup_build_patch_id_cache "$default_branch"
+  _SUP_WT_REMOVED=0
+  _SUP_BR_DELETED=0
 
   echo "==> Removing worktrees merged into ${default_branch}"
   delete_merged_worktrees "$default_branch"
 
-  echo "==> Removing any local branches merged into ${default_branch}"
-  git branch --merged "$default_branch" | while read -r i; do delete_local_branch "$i"; done
+  echo "==> Removing local branches merged into ${default_branch}"
+  delete_merged_branches "$default_branch"
+
+  _sup_clear_patch_id_cache
+  unset _SUP_HANDLED_BRANCHES
 
   if [[ -e ".gitmodules" ]]; then
     echo "==> Updating git submodules"
-    git submodule update --init
+    [[ -z "$SUP_DRY_RUN" ]] && git submodule update --init
   fi
 
   echo "==> Running git gc"
-  git gc --auto
+  [[ -z "$SUP_DRY_RUN" ]] && git gc --auto
+
+  if [[ -n "$SUP_DRY_RUN" ]]; then
+    echo "==> Summary (dry-run): would remove ${_SUP_WT_REMOVED} worktree(s), delete ${_SUP_BR_DELETED} branch(es)"
+    echo "==> Re-run without SUP_DRY_RUN to apply"
+  else
+    echo "==> Summary: removed ${_SUP_WT_REMOVED} worktree(s), deleted ${_SUP_BR_DELETED} branch(es)"
+  fi
 }
 
 git_commits_by_user() {
