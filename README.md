@@ -93,7 +93,7 @@ Configure project root directories in `terminal/completion_scripts/project_compl
 
 | Command | Description |
 |---------|-------------|
-| `sup` / `startup` | Fetch all remotes, prune branches, update default branch |
+| `sup` / `startup` | Switch to default branch (or main worktree), fetch all remotes, prune, update default branch, clean up merged worktrees/branches. Skips the switch with a loud error if the current worktree is dirty. |
 | `remote_sup` | Same as above, plus removes merged remote branches |
 | `lg` | Open lazygit |
 | `gcob` | Fuzzy checkout branch (fzf + git) |

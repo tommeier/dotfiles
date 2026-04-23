@@ -389,6 +389,31 @@ startup() {
 
   [[ -n "$SUP_DRY_RUN" ]] && echo "==> DRY RUN — no destructive actions will be taken"
 
+  # Return to the default branch before cleanup runs — sup is a clean start
+  # to the day. When dirty, skip the switch with a loud error but continue
+  # (fetch/prune/update are safe and still useful).
+  local _sup_cur_branch
+  _sup_cur_branch=$(git symbolic-ref --short HEAD 2>/dev/null)
+  if [[ -n "$_sup_cur_branch" && "$_sup_cur_branch" != "$default_branch" ]]; then
+    if [[ -n "$(git status --porcelain 2>/dev/null)" ]]; then
+      printf '\033[1;31m✋ uncommitted changes in %s (%s) — staying put\033[0m\n' \
+        "$(git rev-parse --show-toplevel)" "$_sup_cur_branch"
+    else
+      local _sup_main_wt
+      _sup_main_wt=$(git worktree list --porcelain | awk -v b="refs/heads/$default_branch" '
+        /^worktree / { wt = substr($0, 10) }
+        $0 == "branch " b { print wt; exit }
+      ')
+      if [[ -n "$_sup_main_wt" ]]; then
+        echo "==> Switching to ${default_branch} worktree at ${_sup_main_wt}"
+        [[ -z "$SUP_DRY_RUN" ]] && { cd "$_sup_main_wt" || return 1; }
+      else
+        echo "==> Switching to ${default_branch}"
+        [[ -z "$SUP_DRY_RUN" ]] && { git checkout "$default_branch" || return 1; }
+      fi
+    fi
+  fi
+
   for remote in $(git remote); do
     echo "==> ($remote) Fetching & pruning remote refs"
     git fetch "$remote" --prune --tags --force
