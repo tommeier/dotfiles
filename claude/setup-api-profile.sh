@@ -1,19 +1,18 @@
 #!/usr/bin/env bash
-# Set up ~/.claude-api as a secondary Claude Code config for API billing.
+# Set up a secondary Claude Code config dir that shares config with the primary
+# ~/.claude but keeps auth and runtime state separate, so multiple
+# logins / orgs / billing methods can coexist (and run concurrently).
 #
-# Shares config, plugins, projects, and history with the primary ~/.claude
-# directory but keeps auth and runtime state separate so both billing
-# methods can coexist.
-#
-# Usage: ~/.claude/setup-api-profile.sh
-# Then:  claude-api  (function defined in terminal/aliases.sh)
+# Default target ~/.claude-api (API billing); pass a dir for other profiles.
+#   Usage: ~/.claude/setup-api-profile.sh [target_dir]
+#   Then:  claude-api / claude-personal   (functions in terminal/aliases.sh)
 
 set -e
 
 CLAUDE_DIR="$HOME/.claude"
-API_DIR="$HOME/.claude-api"
+PROFILE_DIR="${1:-$HOME/.claude-api}"
 
-# Config and state to share between both profiles.
+# Config and state to share between profiles.
 # Everything else (sessions, caches, auth, telemetry) stays per-profile.
 SHARED=(
   CLAUDE.md
@@ -28,13 +27,13 @@ SHARED=(
   history.jsonl
 )
 
-echo "🔧 Setting up ~/.claude-api"
+echo "🔧 Setting up $PROFILE_DIR"
 
-mkdir -p "$API_DIR"
+mkdir -p "$PROFILE_DIR"
 
 for entry in "${SHARED[@]}"; do
   src="$CLAUDE_DIR/$entry"
-  dst="$API_DIR/$entry"
+  dst="$PROFILE_DIR/$entry"
 
   # Skip if source doesn't exist yet (e.g. settings.local.json before first override)
   if [[ ! -e "$src" && ! -L "$src" ]]; then
@@ -49,4 +48,4 @@ for entry in "${SHARED[@]}"; do
   fi
 done
 
-echo "✅ ~/.claude-api ready"
+echo "✅ $PROFILE_DIR ready"

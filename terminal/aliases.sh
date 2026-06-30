@@ -88,3 +88,16 @@ claude-api() {
   fi
   CLAUDE_CONFIG_DIR="$HOME/.claude-api" command claude "$@"
 }
+
+# Runs Claude Code under a separate "Personal" org via its own config dir
+# (~/.claude-personal): same login, different organization, isolated sessions,
+# but shares CLAUDE.md / skills / commands / plugins / projects+memory with ~/.claude.
+# First run creates the profile; then switch to the Personal workspace via the
+# org switcher (or /login). Runs concurrently with the default `claude`.
+claude-personal() {
+  if [[ ! -d "$HOME/.claude-personal" ]]; then
+    "$HOME/.claude/setup-api-profile.sh" "$HOME/.claude-personal"
+    echo "  👤 Switch to your Personal workspace via the org switcher (or /login)"
+  fi
+  CLAUDE_CONFIG_DIR="$HOME/.claude-personal" command claude "$@"
+}
