@@ -13,3 +13,5 @@ public/*/assets/source_maps/
 rerun.txt
 tmp/**/*
 vendor/bundle
+
+**/.claude/settings.local.json
