@@ -13,6 +13,7 @@ brew "zsh-syntax-highlighting"
 # Version Management
 # =============================================================================
 brew "mise"                    # Runtime version manager (Ruby, Node, Python, etc.)
+brew "uv"                      # Python package/tool manager (installs claude-swap)
 
 # =============================================================================
 # Git & Version Control

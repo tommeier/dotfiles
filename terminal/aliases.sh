@@ -77,27 +77,22 @@ remove_ssh_host() {
 alias 1p="ykman oath code 1p"
 
 # =============================================================================
-# Claude Code — API billing profile
+# Claude Code — personal account
 # =============================================================================
-# Switches to API billing via a separate config dir (~/.claude-api).
-# First run creates the profile and prompts for /login.
-claude-api() {
-  if [[ ! -d "$HOME/.claude-api" ]]; then
-    "$HOME/.claude/setup-api-profile.sh"
-    echo "  🔑 Run /login in Claude Code to authenticate with your API key"
-  fi
-  CLAUDE_CONFIG_DIR="$HOME/.claude-api" command claude "$@"
-}
-
-# Runs Claude Code under a separate "Personal" org via its own config dir
-# (~/.claude-personal): same login, different organization, isolated sessions,
-# but shares CLAUDE.md / skills / commands / plugins / projects+memory with ~/.claude.
-# First run creates the profile; then switch to the Personal workspace via the
-# org switcher (or /login). Runs concurrently with the default `claude`.
+# Work stays the default `claude`; this runs the personal account in the current
+# terminal only, so both work concurrently. claude-swap owns both logins, which
+# is what lets CodexBar show usage per account — it shells out to `cswap`.
+#   cswap list          usage for every account
+#   cswap switch work   restore the default login (undo an accidental switch)
 claude-personal() {
-  if [[ ! -d "$HOME/.claude-personal" ]]; then
-    "$HOME/.claude/setup-api-profile.sh" "$HOME/.claude-personal"
-    echo "  👤 Switch to your Personal workspace via the org switcher (or /login)"
+  local sessions="$HOME/.claude-swap-backup/sessions" profile
+  # cswap mirrors settings / CLAUDE.md / skills / commands into its session
+  # profiles, but not the plugin payloads enabledPlugins still points at.
+  if [[ -n "$(ls -A "$sessions" 2>/dev/null)" ]]; then
+    for profile in "$sessions"/*; do
+      [[ -d "$profile" && ! -e "$profile/plugins" ]] &&
+        ln -s "$HOME/.claude/plugins" "$profile/plugins"
+    done
   fi
-  CLAUDE_CONFIG_DIR="$HOME/.claude-personal" command claude "$@"
+  command cswap run personal --share-history -- "$@"
 }

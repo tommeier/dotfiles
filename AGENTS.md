@@ -9,6 +9,7 @@ This repository contains personal dotfiles for macOS with zsh.
 - `Rakefile` - Installation script (Ruby) — symlinks dotfiles to `~/`
 - `terminal/` - Shell functions and aliases (sourced by both zsh and bash)
 - `claude/` - Claude Code config (individual files symlinked into `~/.claude/`)
+  - Two accounts via [claude-swap](https://github.com/realiti4/claude-swap): work is the default `claude`; `claude-personal` runs the personal account in one terminal. `cswap list` shows usage per account; `cswap switch work` restores the default login.
 - `Brewfile` - Homebrew packages (includes `duti` for default app management)
 - `bin/bootstrap` - Fresh machine setup script
 - `bin/macos` - macOS system defaults (includes setting VS Code as default editor for code files)

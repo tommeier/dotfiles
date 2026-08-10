@@ -112,6 +112,21 @@ else
 fi
 
 # =============================================================================
+# Claude Code accounts (claude-swap)
+# =============================================================================
+# Work is the default `claude` login; `claude-personal` runs the second account
+# in one terminal. CodexBar reads per-account usage by shelling out to cswap.
+if ! command -v uv &>/dev/null; then
+  echo "⚠️  uv not found — skipping claude-swap (installed by brew bundle)"
+elif command -v cswap &>/dev/null; then
+  echo "✅ claude-swap already installed"
+else
+  echo "🔀 Installing claude-swap..."
+  uv tool install claude-swap
+  echo "   Register each account: log in as it, then run 'cswap add'"
+fi
+
+# =============================================================================
 # Set zsh as default shell
 # =============================================================================
 ZSH_PATH="$(which zsh)"
