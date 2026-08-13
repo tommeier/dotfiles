@@ -142,6 +142,3 @@ if command -v zoxide >/dev/null 2>&1 && [[ -z "$__ZOXIDE_INITIALIZED" ]]; then
   eval "$(zoxide init zsh --cmd cd)"
   __ZOXIDE_INITIALIZED=1
 fi
-
-# Added by Devin (Windsurf)
-export PATH="$HOME/.codeium/windsurf/bin:$PATH"
