@@ -77,14 +77,16 @@ remove_ssh_host() {
 alias 1p="ykman oath code 1p"
 
 # =============================================================================
-# Claude Code — personal account
+# Claude Code — account helpers
 # =============================================================================
-# Work stays the default `claude`; this runs the personal account in the current
+# Work stays the default `claude`; these run a specific account in the current
 # terminal only, so both work concurrently. claude-swap owns both logins, which
 # is what lets CodexBar show usage per account — it shells out to `cswap`.
+# The default login can drift if a run dies uncleanly, so claude-work exists to
+# force the work account rather than trusting the default.
 #   cswap list          usage for every account
 #   cswap switch work   restore the default login (undo an accidental switch)
-claude-personal() {
+_claude_swap_link_plugins() {
   local sessions="$HOME/.claude-swap-backup/sessions" profile
   # cswap mirrors settings / CLAUDE.md / skills / commands into its session
   # profiles, but not the plugin payloads enabledPlugins still points at.
@@ -94,5 +96,14 @@ claude-personal() {
         ln -s "$HOME/.claude/plugins" "$profile/plugins"
     done
   fi
+}
+
+claude-personal() {
+  _claude_swap_link_plugins
   command cswap run personal --share-history -- "$@"
+}
+
+claude-work() {
+  _claude_swap_link_plugins
+  command cswap run work --share-history -- "$@"
 }
