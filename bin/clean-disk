@@ -8,20 +8,24 @@
 #   clean-disk                 # report what would be removed
 #   clean-disk --run           # remove it
 #   clean-disk --keep-days 30  # keep more Codex session history (default 14)
+#   clean-disk --run --volumes # also delete task-pattern + anonymous volumes
 #
-# Never touched: ~/.codex/worktrees (Codex manages it), docker volumes,
-# db dumps, anything dirty/unpushed/recently-active in a git worktree.
+# Never touched: ~/.codex/worktrees (Codex manages it), named docker volumes
+# outside the task patterns, db dumps, anything dirty/unpushed/recently-active
+# in a git worktree.
 
 set -euo pipefail
 
 KEEP_DAYS=14
 RUN=false
+VOLUMES=false
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --run) RUN=true ;;
+    --volumes) VOLUMES=true ;;
     --keep-days) KEEP_DAYS="$2"; shift ;;
-    -h|--help) sed -n '3,14p' "$0"; exit 0 ;;
-    *) echo "usage: clean-disk [--run] [--keep-days N]" >&2; exit 1 ;;
+    -h|--help) sed -n '3,17p' "$0"; exit 0 ;;
+    *) echo "usage: clean-disk [--run] [--volumes] [--keep-days N]" >&2; exit 1 ;;
   esac
   shift
 done
@@ -54,12 +58,16 @@ section "Codex logs (~/.codex)"
 prune_files "sessions" "$HOME/.codex/sessions" "$KEEP_DAYS"
 prune_files "archived_sessions" "$HOME/.codex/archived_sessions" "$KEEP_DAYS"
 prune_files ".tmp" "$HOME/.codex/.tmp" 3
+# Total across all ages: heavy agent use can grow this faster than the age
+# gate drains it — if this stays large with few age-gated files, tighten
+# --keep-days rather than assuming it was already pruned.
+[[ -d $HOME/.codex/sessions ]] && echo "sessions total (all ages): $(human "$({ du -sk "$HOME/.codex/sessions" 2>/dev/null || true; } | awk '{print $1+0}')")"
 
 # --- Stale AI git worktrees -------------------------------------------------
 # Only removes a worktree when it is clean, its HEAD is on a remote, and it
 # has not been touched in 24h. Everything else is skipped with the reason.
-section "Stale git worktrees (~/src/**/.worktrees)"
-find "$HOME/src" -maxdepth 4 -type d -name .worktrees 2>/dev/null |
+section "Stale git worktrees (~/src/**/.worktrees, **/.claude/worktrees)"
+find "$HOME/src" -maxdepth 4 -type d \( -name .worktrees -o -path '*/.claude/worktrees' \) 2>/dev/null |
   while IFS= read -r base; do
     for wt in "$base"/*/; do
       wt="${wt%/}"
@@ -80,7 +88,9 @@ find "$HOME/src" -maxdepth 4 -type d -name .worktrees 2>/dev/null |
       fi
       kb=$({ du -sk "$wt" 2>/dev/null || true; } | awk '{print $1+0}')
       if [[ -n $reason ]]; then
-        echo "  skip ($reason): $wt ($(human "$kb"))"
+        ref=$(git -C "$wt" rev-parse --abbrev-ref HEAD 2>/dev/null || echo '?')
+        age=$(git -C "$wt" log -1 --format=%cr 2>/dev/null || echo '?')
+        echo "  skip ($reason): $wt ($(human "$kb"), $ref, last commit $age)"
       elif $RUN; then
         repo=$(dirname "$(git -C "$wt" rev-parse --path-format=absolute --git-common-dir)")
         if git -C "$repo" worktree remove "$wt" 2>/dev/null; then
@@ -106,16 +116,31 @@ else
   echo "  pnpm not installed, skipping"
 fi
 
-# --- Docker (stopped containers, dangling images, build cache; NOT volumes) -
+# --- Docker (stopped containers, dangling images, build cache) --------------
+# Volumes hold data, so they are report-only unless --volumes: task-pattern
+# volumes (codex-*, pr<N>_*, wt-* — per-task compose stacks leak one DB volume
+# each) and anonymous dangling volumes are deleted; every other named volume
+# is always kept.
 section "Docker"
 if docker info >/dev/null 2>&1; then
+  vol_pat='^(codex-|pr[0-9]+_|wt-)'
+  anon=$(docker volume ls -q --filter dangling=true 2>/dev/null | grep -cE '^[0-9a-f]{64}$' || true)
+  task=$(docker volume ls --format '{{.Name}}' 2>/dev/null | grep -cE "$vol_pat" || true)
   if $RUN; then
     docker container prune -f || true
     docker image prune -f || true
     docker builder prune -f || true
+    if $VOLUMES; then
+      docker volume ls --format '{{.Name}}' 2>/dev/null | grep -E "$vol_pat" |
+        xargs -n1 docker volume rm 2>/dev/null || true
+      docker volume prune -f || true
+    else
+      echo "  volumes kept: $anon anonymous dangling, $task task-pattern (pass --volumes to delete)"
+    fi
   else
     docker system df 2>/dev/null || true
-    echo "  would run: docker container/image/builder prune -f (volumes untouched)"
+    echo "  would run: docker container/image/builder prune -f"
+    echo "  volumes: $anon anonymous dangling, $task task-pattern — deleted only with --volumes"
   fi
 else
   echo "  daemon not running, skipping (largest win: prune + shrink VM when it is)"
@@ -132,6 +157,17 @@ if [[ -d $dd ]]; then
   fi
 else
   echo "  none"
+fi
+
+# --- Report-only: iOS simulator runtimes -----------------------------------
+# ~16G each and they accumulate with every Xcode/iOS bump. Deleting means
+# choosing which versions to lose, so that stays a human call:
+#   xcrun simctl runtime delete <uuid>   # keep the newest 2
+section "iOS simulator runtimes (report only — keep newest 2)"
+if command -v xcrun >/dev/null 2>&1; then
+  xcrun simctl runtime list 2>/dev/null | sed 's/^/  /' || echo "  none"
+else
+  echo "  xcrun unavailable"
 fi
 
 # --- Report-only: biggest app caches ---------------------------------------
