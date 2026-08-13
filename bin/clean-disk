@@ -1,0 +1,146 @@
+#!/usr/bin/env bash
+#
+# clean-disk
+# Reclaim disk from the usual suspects: old Codex session logs, stale AI git
+# worktrees, the pnpm store, docker leftovers, Xcode DerivedData.
+#
+# Dry-run by default; pass --run to actually delete.
+#   clean-disk                 # report what would be removed
+#   clean-disk --run           # remove it
+#   clean-disk --keep-days 30  # keep more Codex session history (default 14)
+#
+# Never touched: ~/.codex/worktrees (Codex manages it), docker volumes,
+# db dumps, anything dirty/unpushed/recently-active in a git worktree.
+
+set -euo pipefail
+
+KEEP_DAYS=14
+RUN=false
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --run) RUN=true ;;
+    --keep-days) KEEP_DAYS="$2"; shift ;;
+    -h|--help) sed -n '3,14p' "$0"; exit 0 ;;
+    *) echo "usage: clean-disk [--run] [--keep-days N]" >&2; exit 1 ;;
+  esac
+  shift
+done
+
+human() { awk -v k="$1" 'BEGIN { printf "%.1fG", k/1048576 }'; }
+free_kb() { df -k "$HOME" | tail -1 | awk '{print $4}'; }
+section() { printf '\n== %s ==\n' "$1"; }
+
+START_FREE=$(free_kb)
+$RUN && MODE="deleting" || MODE="dry-run (pass --run to delete)"
+echo "clean-disk: $MODE — $(human "$START_FREE") free"
+
+# --- Old Codex session transcripts -----------------------------------------
+prune_files() {
+  local label="$1" dir="$2" days="$3"
+  [[ -d $dir ]] || return 0
+  local count kb
+  count=$(find "$dir" -type f -mtime +"$days" 2>/dev/null | wc -l | tr -d ' ')
+  kb=$(find "$dir" -type f -mtime +"$days" -print0 2>/dev/null |
+    xargs -0 stat -f %z 2>/dev/null | awk '{s+=$1} END {printf "%d", s/1024}')
+  echo "$label: $count files >${days}d, $(human "$kb")"
+  if $RUN && [[ $count -gt 0 ]]; then
+    find "$dir" -type f -mtime +"$days" -delete 2>/dev/null || true
+    find "$dir" -mindepth 1 -type d -empty -delete 2>/dev/null || true
+    echo "  removed"
+  fi
+}
+
+section "Codex logs (~/.codex)"
+prune_files "sessions" "$HOME/.codex/sessions" "$KEEP_DAYS"
+prune_files "archived_sessions" "$HOME/.codex/archived_sessions" "$KEEP_DAYS"
+prune_files ".tmp" "$HOME/.codex/.tmp" 3
+
+# --- Stale AI git worktrees -------------------------------------------------
+# Only removes a worktree when it is clean, its HEAD is on a remote, and it
+# has not been touched in 24h. Everything else is skipped with the reason.
+section "Stale git worktrees (~/src/**/.worktrees)"
+find "$HOME/src" -maxdepth 4 -type d -name .worktrees 2>/dev/null |
+  while IFS= read -r base; do
+    for wt in "$base"/*/; do
+      wt="${wt%/}"
+      [[ -d $wt ]] || continue
+      if ! git -C "$wt" rev-parse --git-dir >/dev/null 2>&1; then
+        echo "  skip (not a worktree): $wt"
+        continue
+      fi
+      reason=""
+      [[ -n $(git -C "$wt" status --porcelain 2>/dev/null | head -1) ]] && reason="dirty"
+      if [[ -z $reason ]]; then
+        idx="$(git -C "$wt" rev-parse --absolute-git-dir 2>/dev/null)/index"
+        [[ -f $idx && -n $(find "$idx" -mtime -1 2>/dev/null) ]] && reason="active <24h"
+      fi
+      if [[ -z $reason ]]; then
+        git -C "$wt" branch -r --contains HEAD 2>/dev/null | grep -q . ||
+          reason="HEAD not on any remote"
+      fi
+      kb=$(du -sk "$wt" 2>/dev/null | awk '{print $1}')
+      if [[ -n $reason ]]; then
+        echo "  skip ($reason): $wt ($(human "$kb"))"
+      elif $RUN; then
+        repo=$(dirname "$(git -C "$wt" rev-parse --path-format=absolute --git-common-dir)")
+        if git -C "$repo" worktree remove "$wt" 2>/dev/null; then
+          git -C "$repo" worktree prune 2>/dev/null || true
+          echo "  removed: $wt ($(human "$kb"))"
+        else
+          echo "  FAILED (git refused, likely untracked files): $wt"
+        fi
+      else
+        echo "  would remove: $wt ($(human "$kb"))"
+      fi
+    done
+  done
+
+# --- pnpm store -------------------------------------------------------------
+section "pnpm store"
+if command -v pnpm >/dev/null 2>&1; then
+  store=$(pnpm store path 2>/dev/null || true)
+  [[ -d ${store:-/nonexistent} ]] &&
+    echo "store: $(human "$(du -sk "$store" | awk '{print $1}')") at $store"
+  if $RUN; then pnpm store prune || true; else echo "  would run: pnpm store prune"; fi
+else
+  echo "  pnpm not installed, skipping"
+fi
+
+# --- Docker (stopped containers, dangling images, build cache; NOT volumes) -
+section "Docker"
+if docker info >/dev/null 2>&1; then
+  if $RUN; then
+    docker container prune -f || true
+    docker image prune -f || true
+    docker builder prune -f || true
+  else
+    docker system df 2>/dev/null || true
+    echo "  would run: docker container/image/builder prune -f (volumes untouched)"
+  fi
+else
+  echo "  daemon not running, skipping (largest win: prune + shrink VM when it is)"
+fi
+
+# --- Xcode DerivedData ------------------------------------------------------
+section "Xcode DerivedData"
+dd="$HOME/Library/Developer/Xcode/DerivedData"
+if [[ -d $dd ]]; then
+  echo "DerivedData: $(human "$(du -sk "$dd" | awk '{print $1}')")"
+  if $RUN; then
+    find "$dd" -mindepth 1 -maxdepth 1 -exec rm -rf {} + 2>/dev/null || true
+    echo "  removed"
+  fi
+else
+  echo "  none"
+fi
+
+# --- Report-only: biggest app caches ---------------------------------------
+section "~/Library/Caches (report only — clean by hand if needed)"
+du -xk -d1 "$HOME/Library/Caches" 2>/dev/null | sort -rn | head -6 |
+  awk '{ printf "  %.1fG\t%s\n", $1/1048576, $2 }'
+
+if $RUN; then
+  END_FREE=$(free_kb)
+  printf '\nreclaimed %s — %s free now\n' \
+    "$(human $((END_FREE - START_FREE)))" "$(human "$END_FREE")"
+fi
