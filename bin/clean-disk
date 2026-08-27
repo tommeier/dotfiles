@@ -194,15 +194,27 @@ while IFS= read -r base; do
 done < <(find "$HOME/src" -maxdepth 4 -type d \( -name .worktrees -o -path '*/.claude/worktrees' \) 2>/dev/null)
 
 # --- pnpm store -------------------------------------------------------------
+# `pnpm store prune` crashes under the corepack shim (mise node 22 dies with
+# ERR_VM_DYNAMIC_IMPORT_CALLBACK_MISSING), and pnpm re-downloads packages on
+# demand anyway — so delete the store and cache outright instead of shelling
+# out to pnpm, and never let a pnpm failure abort the run.
 section "pnpm store"
-if command -v pnpm >/dev/null 2>&1; then
-  store=$(pnpm store path 2>/dev/null || true)
-  [[ -d ${store:-/nonexistent} ]] &&
-    echo "store: $(human "$(du -sk "$store" | awk '{print $1}')") at $store"
-  if $RUN; then pnpm store prune || true; else echo "  would run: pnpm store prune"; fi
-else
-  echo "  pnpm not installed, skipping"
-fi
+store=$(pnpm store path 2>/dev/null) || store=""
+[[ -d ${store:-} ]] || store="$HOME/Library/pnpm/store"
+pnpm_found=false
+for d in "$store" "$HOME/Library/Caches/pnpm"; do
+  [[ -d $d ]] || continue
+  pnpm_found=true
+  kb=$({ du -sk "$d" 2>/dev/null || true; } | awk '{print $1+0}')
+  if $RUN; then
+    rm -rf "$d" 2>/dev/null || true
+    echo "  removed: $d ($(human "$kb"))"
+  else
+    PROJ_KB=$((PROJ_KB + kb))
+    echo "  would remove: $d ($(human "$kb"))"
+  fi
+done
+$pnpm_found || echo "  none"
 
 # --- Docker (stopped containers, dangling images, build cache) --------------
 # Volumes hold data, so they are report-only unless --volumes: task-pattern
