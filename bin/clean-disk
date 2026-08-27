@@ -86,7 +86,10 @@ cap_sessions() {
   total_kb=$({ du -sk "$dir" 2>/dev/null || true; } | awk '{print $1+0}')
   local now aged_cutoff keep_cutoff n=0 freed_kb=0 mtime bytes path
   now=$(date +%s)
-  aged_cutoff=$((now - KEEP_DAYS * 86400)) # dry-run: age prune already claims these
+  # Dry-run: skip what the age prune already claims. find -mtime +N truncates
+  # age to whole days (matches only >=N+1d), so mirror that exactly or files
+  # sitting in the boundary day get attributed to a prune that won't take them.
+  aged_cutoff=$((now - (KEEP_DAYS + 1) * 86400))
   keep_cutoff=$((now - 3 * 86400))         # never delete files younger than 3 days
   while IFS=' ' read -r mtime bytes path; do
     if ! $RUN && [[ $mtime -lt $aged_cutoff ]]; then
