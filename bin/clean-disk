@@ -2,7 +2,7 @@
 #
 # clean-disk
 # Reclaim disk from the usual suspects: old Codex session logs, stale AI git
-# worktrees, the pnpm store, docker leftovers, Xcode DerivedData.
+# worktrees, the pnpm store, docker leftovers, Xcode DerivedData, app caches.
 #
 # Dry-run by default; pass --run to actually delete.
 #   clean-disk                        # report what would be removed
@@ -10,6 +10,7 @@
 #   clean-disk --keep-days 30         # keep more Codex session history (default 14)
 #   clean-disk --sessions-cap-gb 40   # cap ~/.codex/sessions size after age prune (default 20)
 #   clean-disk --stale-days 30        # purge worktrees untouched this long, even dirty (default 14)
+#   clean-disk --no-caches            # keep app caches (cleaned by default on --run)
 #   clean-disk --run --volumes        # also delete named task-pattern docker volumes
 #
 # Never touched: ~/.codex/worktrees (Codex manages it), session files younger
@@ -24,15 +25,17 @@ STALE_DAYS=14
 SESSIONS_CAP_GB=20
 RUN=false
 VOLUMES=false
+CACHES=true
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --run) RUN=true ;;
     --volumes) VOLUMES=true ;;
+    --no-caches) CACHES=false ;;
     --keep-days) KEEP_DAYS="$2"; shift ;;
     --stale-days) STALE_DAYS="$2"; shift ;;
     --sessions-cap-gb) SESSIONS_CAP_GB="$2"; shift ;;
     -h|--help) sed -n '3,/^$/p' "$0"; exit 0 ;;
-    *) echo "usage: clean-disk [--run] [--volumes] [--keep-days N] [--stale-days N] [--sessions-cap-gb N]" >&2; exit 1 ;;
+    *) echo "usage: clean-disk [--run] [--volumes] [--no-caches] [--keep-days N] [--stale-days N] [--sessions-cap-gb N]" >&2; exit 1 ;;
   esac
   shift
 done
@@ -272,7 +275,43 @@ else
   echo "  xcrun unavailable"
 fi
 
+# --- App caches ---------------------------------------------------------------
+# Known-safe rebuildable caches (pnpm's is handled with the store above);
+# everything here re-downloads or rebuilds itself on next use.
+section "App caches"
+if $CACHES; then
+  cache_dirs=(
+    "$HOME/Library/Caches/Homebrew"
+    "$HOME/Library/Caches/Google"
+    "$HOME/Library/Caches/com.openai.codex"
+    "$HOME/Library/Caches/com.spotify.client"
+    "$HOME/.cache/terraform-plugins"
+    "$HOME/.cache/buildkite"
+    "$HOME/.cache/codex-runtimes"
+    "$HOME/.cache/node"
+  )
+  for d in "${cache_dirs[@]}"; do
+    [[ -d $d ]] || continue
+    kb=$({ du -sk "$d" 2>/dev/null || true; } | awk '{print $1+0}')
+    if $RUN; then
+      rm -rf "$d" 2>/dev/null || true
+      echo "  removed: $d ($(human "$kb"))"
+    else
+      PROJ_KB=$((PROJ_KB + kb))
+      echo "  would remove: $d ($(human "$kb"))"
+    fi
+  done
+  if $RUN; then
+    brew cleanup --prune=all -s 2>/dev/null || true
+  else
+    echo "  would run: brew cleanup --prune=all -s"
+  fi
+else
+  echo "  skipped (--no-caches)"
+fi
+
 # --- Report-only: biggest app caches ---------------------------------------
+# shellcheck disable=SC2088 # the tilde is a label, not a path
 section "~/Library/Caches (report only — clean by hand if needed)"
 { du -xk -d1 "$HOME/Library/Caches" 2>/dev/null || true; } | sort -rn | head -6 |
   awk '{ printf "  %.1fG\t%s\n", $1/1048576, $2 }'
