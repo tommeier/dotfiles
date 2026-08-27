@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <!-- Absolute paths on purpose: launchd does not expand $HOME in
+       ProgramArguments. Install with `rake launchd` (copies, then bootstraps —
+       launchd rejects symlinked plists on recent macOS). -->
+  <key>Label</key>
+  <string>au.xmo.clean-disk</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/zsh</string>
+    <string>-lc</string>
+    <string>/Users/tom/src/personal/dotfiles/bin/clean-disk --run >> /Users/tom/.cache/xmo-cleanup/launchd.log 2>&amp;1</string>
+  </array>
+  <key>StartCalendarInterval</key>
+  <array>
+    <dict>
+      <key>Weekday</key>
+      <integer>1</integer>
+      <key>Hour</key>
+      <integer>12</integer>
+      <key>Minute</key>
+      <integer>30</integer>
+    </dict>
+    <dict>
+      <key>Weekday</key>
+      <integer>4</integer>
+      <key>Hour</key>
+      <integer>12</integer>
+      <key>Minute</key>
+      <integer>30</integer>
+    </dict>
+  </array>
+  <key>RunAtLoad</key>
+  <false/>
+</dict>
+</plist>

@@ -49,6 +49,27 @@ task :install do
   puts "\nDotfiles installed successfully."
 end
 
+# Schedule clean-disk (Mon + Thu 12:30) as a launchd user agent.
+# Copied, not symlinked — launchd rejects symlinked plists on recent macOS.
+desc 'Install the clean-disk launchd schedule (Mon + Thu 12:30)'
+task :launchd do
+  label = 'au.xmo.clean-disk'
+  target = File.join(HOME, 'Library/LaunchAgents', "#{label}.plist")
+
+  FileUtils.mkdir_p(File.join(HOME, '.cache/xmo-cleanup')) # log destination
+  FileUtils.mkdir_p(File.dirname(target))
+  FileUtils.cp("launchd/#{label}.plist", target)
+
+  uid = Process.uid
+  system("launchctl bootout gui/#{uid}/#{label} 2>/dev/null") # reload if present
+  if system("launchctl bootstrap gui/#{uid} #{target}")
+    puts "✅ #{label} loaded — Mon + Thu 12:30, logs in ~/.cache/xmo-cleanup/launchd.log"
+    puts "   Watch a manual `clean-disk --run` once before trusting the schedule."
+  else
+    abort "❌ launchctl bootstrap failed for #{target}"
+  end
+end
+
 task default: :install
 
 private

@@ -89,6 +89,30 @@ Configure project root directories in `terminal/completion_scripts/project_compl
 ~/src/work/
 ```
 
+### Disk Cleanup
+
+`clean-disk` reclaims disk from the usual suspects: Codex session logs
+(age-pruned, then size-capped at 20G), stale AI git worktrees (untouched
+≥14 days — even dirty/unpushed; anything touched in the last 7 days is always
+kept), the pnpm store, docker leftovers, DerivedData, and app caches.
+
+```bash
+clean-disk          # dry-run: shows what would go + projected reclaim
+clean-disk --run    # actually delete
+clean-disk --help   # all flags (--stale-days, --sessions-cap-gb, --no-caches, --volumes)
+```
+
+Schedule it for Mon + Thu 12:30 (watch one manual `--run` first — the first
+aggressive pass deletes a lot):
+
+```bash
+rake launchd
+```
+
+This copies `launchd/au.xmo.clean-disk.plist` into `~/Library/LaunchAgents`
+(copied, not symlinked — launchd rejects symlinked plists) and loads it via
+`launchctl bootstrap`. Logs land in `~/.cache/xmo-cleanup/launchd.log`.
+
 ### Git Helpers
 
 | Command | Description |
