@@ -7,16 +7,18 @@
 # Dry-run by default; pass --run to actually delete.
 #   clean-disk                 # report what would be removed
 #   clean-disk --run           # remove it
-#   clean-disk --keep-days 30  # keep more Codex session history (default 14)
-#   clean-disk --run --volumes # also delete task-pattern + anonymous volumes
+#   clean-disk --keep-days 30   # keep more Codex session history (default 14)
+#   clean-disk --stale-days 30  # purge worktrees untouched this long, even dirty (default 14)
+#   clean-disk --run --volumes  # also delete task-pattern + anonymous volumes
 #
-# Never touched: ~/.codex/worktrees (Codex manages it), named docker volumes
-# outside the task patterns, db dumps, anything dirty/unpushed/recently-active
-# in a git worktree.
+# Never touched: ~/.codex/worktrees (Codex manages it), the xmo_pr_refresh
+# worktree, named docker volumes outside the task patterns, db dumps, any
+# worktree with a file touched in the last 7 days, anything active <24h.
 
 set -euo pipefail
 
 KEEP_DAYS=14
+STALE_DAYS=14
 RUN=false
 VOLUMES=false
 while [[ $# -gt 0 ]]; do
@@ -24,8 +26,9 @@ while [[ $# -gt 0 ]]; do
     --run) RUN=true ;;
     --volumes) VOLUMES=true ;;
     --keep-days) KEEP_DAYS="$2"; shift ;;
-    -h|--help) sed -n '3,17p' "$0"; exit 0 ;;
-    *) echo "usage: clean-disk [--run] [--volumes] [--keep-days N]" >&2; exit 1 ;;
+    --stale-days) STALE_DAYS="$2"; shift ;;
+    -h|--help) sed -n '3,/^$/p' "$0"; exit 0 ;;
+    *) echo "usage: clean-disk [--run] [--volumes] [--keep-days N] [--stale-days N]" >&2; exit 1 ;;
   esac
   shift
 done
@@ -35,6 +38,7 @@ free_kb() { df -k "$HOME" | tail -1 | awk '{print $4}'; }
 section() { printf '\n== %s ==\n' "$1"; }
 
 START_FREE=$(free_kb)
+PROJ_KB=0
 $RUN && MODE="deleting" || MODE="dry-run (pass --run to delete)"
 echo "clean-disk: $MODE — $(human "$START_FREE") free"
 
@@ -47,6 +51,7 @@ prune_files() {
   kb=$({ find "$dir" -type f -mtime +"$days" -print0 2>/dev/null |
     xargs -0 stat -f %z 2>/dev/null || true; } | awk '{s+=$1} END {printf "%d", s/1024}')
   echo "$label: $count files >${days}d, $(human "$kb")"
+  $RUN || PROJ_KB=$((PROJ_KB + kb))
   if $RUN && [[ $count -gt 0 ]]; then
     find "$dir" -type f -mtime +"$days" -delete 2>/dev/null || true
     find "$dir" -mindepth 1 -type d -empty -delete 2>/dev/null || true
@@ -64,46 +69,87 @@ prune_files ".tmp" "$HOME/.codex/.tmp" 3
 [[ -d $HOME/.codex/sessions ]] && echo "sessions total (all ages): $(human "$({ du -sk "$HOME/.codex/sessions" 2>/dev/null || true; } | awk '{print $1+0}')")"
 
 # --- Stale AI git worktrees -------------------------------------------------
-# Only removes a worktree when it is clean, its HEAD is on a remote, and it
-# has not been touched in 24h. Everything else is skipped with the reason.
+# Removes a worktree when it is clean, its HEAD is on a remote, and it has not
+# been touched in 24h. On top of that, a worktree whose newest file (outside
+# .git) is older than --stale-days is purged even when dirty or unpushed.
+# Staleness is judged by tree mtime, not commit age — a branch updated from
+# another worktree makes the last commit look fresh while the tree itself sat
+# idle for months. A tree with any file touched in the last 7 days is never
+# purged, whatever --stale-days says.
 section "Stale git worktrees (~/src/**/.worktrees, **/.claude/worktrees)"
-find "$HOME/src" -maxdepth 4 -type d \( -name .worktrees -o -path '*/.claude/worktrees' \) 2>/dev/null |
-  while IFS= read -r base; do
-    for wt in "$base"/*/; do
-      wt="${wt%/}"
-      [[ -d $wt ]] || continue
-      if ! git -C "$wt" rev-parse --git-dir >/dev/null 2>&1; then
-        echo "  skip (not a worktree): $wt"
-        continue
-      fi
-      reason=""
-      [[ -n $(git -C "$wt" status --porcelain 2>/dev/null | head -1) ]] && reason="dirty"
-      if [[ -z $reason ]]; then
-        idx="$(git -C "$wt" rev-parse --absolute-git-dir 2>/dev/null)/index"
-        [[ -f $idx && -n $(find "$idx" -mtime -1 2>/dev/null) ]] && reason="active <24h"
-      fi
-      if [[ -z $reason ]]; then
-        git -C "$wt" branch -r --contains HEAD 2>/dev/null | grep -q . ||
-          reason="HEAD not on any remote"
-      fi
-      kb=$({ du -sk "$wt" 2>/dev/null || true; } | awk '{print $1+0}')
-      if [[ -n $reason ]]; then
-        ref=$(git -C "$wt" rev-parse --abbrev-ref HEAD 2>/dev/null || echo '?')
-        age=$(git -C "$wt" log -1 --format=%cr 2>/dev/null || echo '?')
-        echo "  skip ($reason): $wt ($(human "$kb"), $ref, last commit $age)"
-      elif $RUN; then
+STALE_GUARD_DAYS=$STALE_DAYS
+[[ $STALE_GUARD_DAYS -lt 7 ]] && STALE_GUARD_DAYS=7
+STALE_CUTOFF=$(date -v-"${STALE_GUARD_DAYS}"d '+%Y-%m-%dT%H:%M:%S')
+NOW_EPOCH=$(date +%s)
+while IFS= read -r base; do
+  for wt in "$base"/*/; do
+    wt="${wt%/}"
+    [[ -d $wt ]] || continue
+    if [[ $wt == "$HOME/src/extraordinary-money/xmo_pr_refresh" ]]; then
+      echo "  skip (protected — /pr-refresh owns it): $wt"
+      continue
+    fi
+    # Require $wt/.git (worktrees carry a .git file): `git -C` alone would
+    # discover a parent repo by walking up and misclassify — or worse, purge —
+    # a plain directory that was never a worktree.
+    if [[ ! -e $wt/.git ]] || ! git -C "$wt" rev-parse --git-dir >/dev/null 2>&1; then
+      echo "  skip (not a worktree): $wt"
+      continue
+    fi
+    reason=""
+    [[ -n $(git -C "$wt" status --porcelain 2>/dev/null | head -1) ]] && reason="dirty"
+    if [[ -z $reason ]]; then
+      idx="$(git -C "$wt" rev-parse --absolute-git-dir 2>/dev/null)/index"
+      [[ -f $idx && -n $(find "$idx" -mtime -1 2>/dev/null) ]] && reason="active <24h"
+    fi
+    if [[ -z $reason ]]; then
+      git -C "$wt" branch -r --contains HEAD 2>/dev/null | grep -q . ||
+        reason="HEAD not on any remote"
+    fi
+    kb=$({ du -sk "$wt" 2>/dev/null || true; } | awk '{print $1+0}')
+    stale=""
+    if [[ $reason == "dirty" || $reason == "HEAD not on any remote" ]]; then
+      [[ -z $(find "$wt" -type f -not -path '*/.git/*' -newermt "$STALE_CUTOFF" -print -quit 2>/dev/null) ]] &&
+        stale=1
+    fi
+    if [[ -n $stale ]]; then
+      ref=$(git -C "$wt" rev-parse --abbrev-ref HEAD 2>/dev/null || echo '?')
+      age=$(git -C "$wt" log -1 --format=%cr 2>/dev/null || echo '?')
+      newest=$({ find "$wt" -type f -not -path '*/.git/*' -print0 2>/dev/null |
+        xargs -0 stat -f %m 2>/dev/null || true; } | sort -n | tail -1)
+      touch_age='?'
+      [[ -n $newest ]] && touch_age="$(((NOW_EPOCH - newest) / 86400))d ago"
+      detail="$(human "$kb"), $ref, last commit $age, last touch $touch_age"
+      if $RUN; then
         repo=$(dirname "$(git -C "$wt" rev-parse --path-format=absolute --git-common-dir)")
-        if git -C "$repo" worktree remove "$wt" 2>/dev/null; then
+        if git -C "$repo" worktree remove --force --force "$wt" 2>/dev/null || rm -rf "$wt" 2>/dev/null; then
           git -C "$repo" worktree prune 2>/dev/null || true
-          echo "  removed: $wt ($(human "$kb"))"
+          echo "  purged (stale ${STALE_DAYS}d, was $reason): $wt ($detail)"
         else
-          echo "  FAILED (git refused, likely untracked files): $wt"
+          echo "  FAILED (could not purge): $wt"
         fi
       else
-        echo "  would remove: $wt ($(human "$kb"))"
+        PROJ_KB=$((PROJ_KB + kb))
+        echo "  would purge (stale ${STALE_DAYS}d, was $reason): $wt ($detail)"
       fi
-    done
+    elif [[ -n $reason ]]; then
+      ref=$(git -C "$wt" rev-parse --abbrev-ref HEAD 2>/dev/null || echo '?')
+      age=$(git -C "$wt" log -1 --format=%cr 2>/dev/null || echo '?')
+      echo "  skip ($reason): $wt ($(human "$kb"), $ref, last commit $age)"
+    elif $RUN; then
+      repo=$(dirname "$(git -C "$wt" rev-parse --path-format=absolute --git-common-dir)")
+      if git -C "$repo" worktree remove "$wt" 2>/dev/null; then
+        git -C "$repo" worktree prune 2>/dev/null || true
+        echo "  removed: $wt ($(human "$kb"))"
+      else
+        echo "  FAILED (git refused, likely untracked files): $wt"
+      fi
+    else
+      PROJ_KB=$((PROJ_KB + kb))
+      echo "  would remove: $wt ($(human "$kb"))"
+    fi
   done
+done < <(find "$HOME/src" -maxdepth 4 -type d \( -name .worktrees -o -path '*/.claude/worktrees' \) 2>/dev/null)
 
 # --- pnpm store -------------------------------------------------------------
 section "pnpm store"
@@ -179,4 +225,6 @@ if $RUN; then
   END_FREE=$(free_kb)
   printf '\nreclaimed %s — %s free now\n' \
     "$(human $((END_FREE - START_FREE)))" "$(human "$END_FREE")"
+else
+  printf '\nprojected reclaim: ~%s on --run (docker not counted — see system df above)\n' "$(human "$PROJ_KB")"
 fi
