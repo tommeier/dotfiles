@@ -92,7 +92,8 @@ Configure project root directories in `terminal/completion_scripts/project_compl
 ### Disk Cleanup
 
 `clean-disk` reclaims disk from the usual suspects: Codex session logs
-(age-pruned, then size-capped at 20G), stale AI git worktrees (untouched
+(age-pruned; an optional `--sessions-cap-gb N` tier for emergencies deletes
+oldest-first to a size cap), stale AI git worktrees (untouched
 ≥14 days — even dirty/unpushed; anything touched in the last 7 days is always
 kept), the pnpm store, docker leftovers, DerivedData, and app caches.
 

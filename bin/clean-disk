@@ -8,7 +8,8 @@
 #   clean-disk                        # report what would be removed
 #   clean-disk --run                  # remove it
 #   clean-disk --keep-days 30         # keep more Codex session history (default 14)
-#   clean-disk --sessions-cap-gb 40   # cap ~/.codex/sessions size after age prune (default 20)
+#   clean-disk --sessions-cap-gb 20   # AGGRESSIVE opt-in, off by default: after the age
+#                                     # prune, delete oldest sessions until they fit N GB
 #   clean-disk --stale-days 30        # purge worktrees untouched this long, even dirty (default 14)
 #   clean-disk --no-caches            # keep app caches (cleaned by default on --run)
 #   clean-disk --run --volumes        # also delete named task-pattern docker volumes
@@ -22,7 +23,7 @@ set -euo pipefail
 
 KEEP_DAYS=14
 STALE_DAYS=14
-SESSIONS_CAP_GB=20
+SESSIONS_CAP_GB=0 # 0 = cap off; only --sessions-cap-gb N enables the aggressive tier
 RUN=false
 VOLUMES=false
 CACHES=true
@@ -75,13 +76,19 @@ prune_files ".tmp" "$HOME/.codex/.tmp" 3
 # --keep-days rather than assuming it was already pruned.
 [[ -d $HOME/.codex/sessions ]] && echo "sessions total (all ages): $(human "$({ du -sk "$HOME/.codex/sessions" 2>/dev/null || true; } | awk '{print $1+0}')")"
 
-# Size cap: heavy agent use (~16G/day) outruns any sane age gate, so after the
-# age prune delete oldest session files until the directory fits the cap.
-# Files younger than 3 days are never deleted, and nothing outside sessions/
-# (auth.json, config.toml, skills, plugins, sqlite, ...) is ever touched.
+# Optional size cap (OFF by default — opt in with --sessions-cap-gb N): age
+# and staleness are the normal levers, but heavy agent use (~16G/day) can
+# outrun the age gate; when invoked, delete oldest session files until the
+# directory fits the cap. Files younger than 3 days are never deleted, and
+# nothing outside sessions/ (auth.json, config.toml, skills, plugins,
+# sqlite, ...) is ever touched. Prefer tightening --keep-days first.
 cap_sessions() {
   local dir="$HOME/.codex/sessions"
   [[ -d $dir ]] || return 0
+  if [[ $SESSIONS_CAP_GB -le 0 ]]; then
+    echo "⏭️ size cap off — age prune only (opt in with --sessions-cap-gb N)"
+    return 0
+  fi
   local cap_kb=$((SESSIONS_CAP_GB * 1048576)) total_kb
   total_kb=$({ du -sk "$dir" 2>/dev/null || true; } | awk '{print $1+0}')
   local now aged_cutoff keep_cutoff n=0 freed_kb=0 mtime bytes path
