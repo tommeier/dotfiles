@@ -47,7 +47,7 @@ section() { printf '\n== %s ==\n' "$1"; }
 START_FREE=$(free_kb)
 PROJ_KB=0
 $RUN && MODE="deleting" || MODE="dry-run (pass --run to delete)"
-echo "clean-disk: $MODE — $(human "$START_FREE") free"
+echo "🧹 clean-disk: $MODE — $(human "$START_FREE") free"
 
 # --- Old Codex session transcripts -----------------------------------------
 prune_files() {
@@ -62,11 +62,11 @@ prune_files() {
   if $RUN && [[ $count -gt 0 ]]; then
     find "$dir" -type f -mtime +"$days" -delete 2>/dev/null || true
     find "$dir" -mindepth 1 -type d -empty -delete 2>/dev/null || true
-    echo "  removed"
+    echo "  🗑️ removed"
   fi
 }
 
-section "Codex logs (~/.codex)"
+section "📜 Codex logs (~/.codex)"
 prune_files "sessions" "$HOME/.codex/sessions" "$KEEP_DAYS"
 prune_files "archived_sessions" "$HOME/.codex/archived_sessions" "$KEEP_DAYS"
 prune_files ".tmp" "$HOME/.codex/.tmp" 3
@@ -99,16 +99,16 @@ cap_sessions() {
     n=$((n + 1)); freed_kb=$((freed_kb + bytes / 1024))
   done < <({ find "$dir" -type f -print0 2>/dev/null | xargs -0 stat -f '%m %z %N' 2>/dev/null || true; } | sort -n)
   if [[ $((total_kb - freed_kb)) -gt $cap_kb && $n -eq 0 ]]; then
-    echo "sessions: $(human "$total_kb") over ${SESSIONS_CAP_GB}G cap — nothing old enough to delete (<3d kept)"
+    echo "⚠️ sessions: $(human "$total_kb") over ${SESSIONS_CAP_GB}G cap — nothing old enough to delete (<3d kept)"
   elif $RUN && [[ $n -gt 0 ]]; then
     find "$dir" -mindepth 1 -type d -empty -delete 2>/dev/null || true
     total_kb=$({ du -sk "$dir" 2>/dev/null || true; } | awk '{print $1+0}')
-    echo "sessions: capped to $(human "$total_kb") (deleted $n files, $(human "$freed_kb"))"
+    echo "🗑️ sessions: capped to $(human "$total_kb") (deleted $n files, $(human "$freed_kb"))"
   elif [[ $n -gt 0 ]]; then
     PROJ_KB=$((PROJ_KB + freed_kb))
-    echo "sessions: would cap to $(human "$((total_kb - freed_kb))") (delete $n files, $(human "$freed_kb"))"
+    echo "🔍 sessions: would cap to $(human "$((total_kb - freed_kb))") (delete $n files, $(human "$freed_kb"))"
   else
-    echo "sessions: $(human "$total_kb") within ${SESSIONS_CAP_GB}G cap"
+    echo "✅ sessions: $(human "$total_kb") within ${SESSIONS_CAP_GB}G cap"
   fi
 }
 cap_sessions
@@ -121,24 +121,27 @@ cap_sessions
 # another worktree makes the last commit look fresh while the tree itself sat
 # idle for months. A tree with any file touched in the last 7 days is never
 # purged, whatever --stale-days says.
-section "Stale git worktrees (~/src/**/.worktrees, **/.claude/worktrees)"
+section "🌳 Stale git worktrees (~/src/**/.worktrees, **/.claude/worktrees)"
 STALE_GUARD_DAYS=$STALE_DAYS
 [[ $STALE_GUARD_DAYS -lt 7 ]] && STALE_GUARD_DAYS=7
 STALE_CUTOFF=$(date -v-"${STALE_GUARD_DAYS}"d '+%Y-%m-%dT%H:%M:%S')
 NOW_EPOCH=$(date +%s)
+WT_DEL=0 WT_DEL_KB=0 WT_KEEP=0 WT_FAIL=0
 while IFS= read -r base; do
   for wt in "$base"/*/; do
     wt="${wt%/}"
     [[ -d $wt ]] || continue
     if [[ $wt == "$HOME/src/extraordinary-money/xmo_pr_refresh" ]]; then
-      echo "  skip (protected — /pr-refresh owns it): $wt"
+      echo "  ⏭️ skip (protected — /pr-refresh owns it): $wt"
+      WT_KEEP=$((WT_KEEP + 1))
       continue
     fi
     # Require $wt/.git (worktrees carry a .git file): `git -C` alone would
     # discover a parent repo by walking up and misclassify — or worse, purge —
     # a plain directory that was never a worktree.
     if [[ ! -e $wt/.git ]] || ! git -C "$wt" rev-parse --git-dir >/dev/null 2>&1; then
-      echo "  skip (not a worktree): $wt"
+      echo "  ⏭️ skip (not a worktree): $wt"
+      WT_KEEP=$((WT_KEEP + 1))
       continue
     fi
     reason=""
@@ -169,39 +172,51 @@ while IFS= read -r base; do
         repo=$(dirname "$(git -C "$wt" rev-parse --path-format=absolute --git-common-dir)")
         if git -C "$repo" worktree remove --force --force "$wt" 2>/dev/null || rm -rf "$wt" 2>/dev/null; then
           git -C "$repo" worktree prune 2>/dev/null || true
-          echo "  purged (stale ${STALE_DAYS}d, was $reason): $wt ($detail)"
+          echo "  🗑️ purged (stale ${STALE_DAYS}d, was $reason): $wt ($detail)"
+          WT_DEL=$((WT_DEL + 1)); WT_DEL_KB=$((WT_DEL_KB + kb))
         else
-          echo "  FAILED (could not purge): $wt"
+          echo "  ❌ FAILED (could not purge): $wt"
+          WT_FAIL=$((WT_FAIL + 1))
         fi
       else
         PROJ_KB=$((PROJ_KB + kb))
-        echo "  would purge (stale ${STALE_DAYS}d, was $reason): $wt ($detail)"
+        WT_DEL=$((WT_DEL + 1)); WT_DEL_KB=$((WT_DEL_KB + kb))
+        echo "  🔍 would purge (stale ${STALE_DAYS}d, was $reason): $wt ($detail)"
       fi
     elif [[ -n $reason ]]; then
       ref=$(git -C "$wt" rev-parse --abbrev-ref HEAD 2>/dev/null || echo '?')
       age=$(git -C "$wt" log -1 --format=%cr 2>/dev/null || echo '?')
-      echo "  skip ($reason): $wt ($(human "$kb"), $ref, last commit $age)"
+      echo "  ⏭️ skip ($reason): $wt ($(human "$kb"), $ref, last commit $age)"
+      WT_KEEP=$((WT_KEEP + 1))
     elif $RUN; then
       repo=$(dirname "$(git -C "$wt" rev-parse --path-format=absolute --git-common-dir)")
       if git -C "$repo" worktree remove "$wt" 2>/dev/null; then
         git -C "$repo" worktree prune 2>/dev/null || true
-        echo "  removed: $wt ($(human "$kb"))"
+        echo "  🗑️ removed: $wt ($(human "$kb"))"
+        WT_DEL=$((WT_DEL + 1)); WT_DEL_KB=$((WT_DEL_KB + kb))
       else
-        echo "  FAILED (git refused, likely untracked files): $wt"
+        echo "  ❌ FAILED (git refused, likely untracked files): $wt"
+        WT_FAIL=$((WT_FAIL + 1))
       fi
     else
       PROJ_KB=$((PROJ_KB + kb))
-      echo "  would remove: $wt ($(human "$kb"))"
+      WT_DEL=$((WT_DEL + 1)); WT_DEL_KB=$((WT_DEL_KB + kb))
+      echo "  🔍 would remove: $wt ($(human "$kb"))"
     fi
   done
 done < <(find "$HOME/src" -maxdepth 4 -type d \( -name .worktrees -o -path '*/.claude/worktrees' \) 2>/dev/null)
+if $RUN; then
+  echo "  Σ deleted $WT_DEL ($(human "$WT_DEL_KB")) · kept $WT_KEEP · failed $WT_FAIL"
+else
+  echo "  Σ would delete $WT_DEL ($(human "$WT_DEL_KB")) · kept $WT_KEEP"
+fi
 
 # --- pnpm store -------------------------------------------------------------
 # `pnpm store prune` crashes under the corepack shim (mise node 22 dies with
 # ERR_VM_DYNAMIC_IMPORT_CALLBACK_MISSING), and pnpm re-downloads packages on
 # demand anyway — so delete the store and cache outright instead of shelling
 # out to pnpm, and never let a pnpm failure abort the run.
-section "pnpm store"
+section "📦 pnpm store"
 store=$(pnpm store path 2>/dev/null) || store=""
 [[ -d ${store:-} ]] || store="$HOME/Library/pnpm/store"
 pnpm_found=false
@@ -211,13 +226,13 @@ for d in "$store" "$HOME/Library/Caches/pnpm"; do
   kb=$({ du -sk "$d" 2>/dev/null || true; } | awk '{print $1+0}')
   if $RUN; then
     rm -rf "$d" 2>/dev/null || true
-    echo "  removed: $d ($(human "$kb"))"
+    echo "  🗑️ removed: $d ($(human "$kb"))"
   else
     PROJ_KB=$((PROJ_KB + kb))
-    echo "  would remove: $d ($(human "$kb"))"
+    echo "  🔍 would remove: $d ($(human "$kb"))"
   fi
 done
-$pnpm_found || echo "  none"
+$pnpm_found || echo "  ✅ nothing to clean"
 
 # --- Docker (stopped containers, dangling images, build cache, volumes) -----
 # Build cache is capped at 2GB. Anonymous dangling volumes are unused by
@@ -225,7 +240,7 @@ $pnpm_found || echo "  none"
 # named task-pattern volumes (codex-*, pr<N>_*, wt-* — per-task compose stacks
 # leak one DB volume each). Active-project db volumes (the allowlist) and
 # every other named volume are always kept.
-section "Docker"
+section "🐳 Docker"
 if docker info >/dev/null 2>&1; then
   vol_pat='^(codex-|pr[0-9]+_|wt-)'
   vol_keep='^(dataco-platform_postgres_data|dataco_postgres_data|quarterback_postgres_data)$'
@@ -240,45 +255,49 @@ if docker info >/dev/null 2>&1; then
       docker volume ls --format '{{.Name}}' 2>/dev/null | grep -E "$vol_pat" |
         grep -Ev "$vol_keep" | xargs -n1 docker volume rm 2>/dev/null || true
     else
-      echo "  named task-pattern volumes kept: $task (pass --volumes to delete)"
+      echo "  ⏭️ named task-pattern volumes kept: $task (pass --volumes to delete)"
     fi
   else
     docker system df 2>/dev/null || true
-    echo "  would run: docker container/image prune -f, builder prune --max-used-space 2GB"
-    echo "  would prune $anon anonymous dangling volumes; $task task-pattern kept unless --volumes"
+    echo "  🔍 would run: docker container/image prune -f, builder prune --max-used-space 2GB"
+    echo "  🔍 would prune $anon anonymous dangling volumes; $task task-pattern kept unless --volumes"
   fi
 else
-  echo "  daemon not running, skipping (largest win: prune + shrink VM when it is)"
+  echo "  ⚠️ daemon not running, skipping (largest win: prune + shrink VM when it is)"
 fi
 
 # --- Xcode DerivedData ------------------------------------------------------
-section "Xcode DerivedData"
+section "🏗 Xcode DerivedData"
 dd="$HOME/Library/Developer/Xcode/DerivedData"
 if [[ -d $dd ]]; then
-  echo "DerivedData: $(human "$(du -sk "$dd" | awk '{print $1}')")"
+  dd_kb=$({ du -sk "$dd" 2>/dev/null || true; } | awk '{print $1+0}')
+  echo "DerivedData: $(human "$dd_kb")"
   if $RUN; then
     find "$dd" -mindepth 1 -maxdepth 1 -exec rm -rf {} + 2>/dev/null || true
-    echo "  removed"
+    echo "  🗑️ removed"
+  else
+    PROJ_KB=$((PROJ_KB + dd_kb))
+    echo "  🔍 would remove"
   fi
 else
-  echo "  none"
+  echo "  ✅ none"
 fi
 
 # --- Report-only: iOS simulator runtimes -----------------------------------
 # ~16G each and they accumulate with every Xcode/iOS bump. Deleting means
 # choosing which versions to lose, so that stays a human call:
 #   xcrun simctl runtime delete <uuid>   # keep the newest 2
-section "iOS simulator runtimes (report only — keep newest 2)"
+section "📱 iOS simulator runtimes (report only — keep newest 2)"
 if command -v xcrun >/dev/null 2>&1; then
   xcrun simctl runtime list 2>/dev/null | sed 's/^/  /' || echo "  none"
 else
-  echo "  xcrun unavailable"
+  echo "  ⚠️ xcrun unavailable"
 fi
 
 # --- App caches ---------------------------------------------------------------
 # Known-safe rebuildable caches (pnpm's is handled with the store above);
 # everything here re-downloads or rebuilds itself on next use.
-section "App caches"
+section "🧺 App caches"
 if $CACHES; then
   cache_dirs=(
     "$HOME/Library/Caches/Homebrew"
@@ -295,31 +314,31 @@ if $CACHES; then
     kb=$({ du -sk "$d" 2>/dev/null || true; } | awk '{print $1+0}')
     if $RUN; then
       rm -rf "$d" 2>/dev/null || true
-      echo "  removed: $d ($(human "$kb"))"
+      echo "  🗑️ removed: $d ($(human "$kb"))"
     else
       PROJ_KB=$((PROJ_KB + kb))
-      echo "  would remove: $d ($(human "$kb"))"
+      echo "  🔍 would remove: $d ($(human "$kb"))"
     fi
   done
   if $RUN; then
     brew cleanup --prune=all -s 2>/dev/null || true
   else
-    echo "  would run: brew cleanup --prune=all -s"
+    echo "  🔍 would run: brew cleanup --prune=all -s"
   fi
 else
-  echo "  skipped (--no-caches)"
+  echo "  ⏭️ skipped (--no-caches)"
 fi
 
 # --- Report-only: biggest app caches ---------------------------------------
 # shellcheck disable=SC2088 # the tilde is a label, not a path
-section "~/Library/Caches (report only — clean by hand if needed)"
+section "📊 ~/Library/Caches (report only — clean by hand if needed)"
 { du -xk -d1 "$HOME/Library/Caches" 2>/dev/null || true; } | sort -rn | head -6 |
   awk '{ printf "  %.1fG\t%s\n", $1/1048576, $2 }'
 
 if $RUN; then
   END_FREE=$(free_kb)
-  printf '\nreclaimed %s — %s free now\n' \
+  printf '\n✅ reclaimed %s — %s free now\n' \
     "$(human $((END_FREE - START_FREE)))" "$(human "$END_FREE")"
 else
-  printf '\nprojected reclaim: ~%s on --run (docker not counted — see system df above)\n' "$(human "$PROJ_KB")"
+  printf '\n💡 projected reclaim: ~%s on --run (docker not counted — see 🐳 above)\n' "$(human "$PROJ_KB")"
 fi
