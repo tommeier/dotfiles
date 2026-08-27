@@ -5,20 +5,23 @@
 # worktrees, the pnpm store, docker leftovers, Xcode DerivedData.
 #
 # Dry-run by default; pass --run to actually delete.
-#   clean-disk                 # report what would be removed
-#   clean-disk --run           # remove it
-#   clean-disk --keep-days 30   # keep more Codex session history (default 14)
-#   clean-disk --stale-days 30  # purge worktrees untouched this long, even dirty (default 14)
-#   clean-disk --run --volumes  # also delete task-pattern + anonymous volumes
+#   clean-disk                        # report what would be removed
+#   clean-disk --run                  # remove it
+#   clean-disk --keep-days 30         # keep more Codex session history (default 14)
+#   clean-disk --sessions-cap-gb 40   # cap ~/.codex/sessions size after age prune (default 20)
+#   clean-disk --stale-days 30        # purge worktrees untouched this long, even dirty (default 14)
+#   clean-disk --run --volumes        # also delete task-pattern + anonymous volumes
 #
-# Never touched: ~/.codex/worktrees (Codex manages it), the xmo_pr_refresh
-# worktree, named docker volumes outside the task patterns, db dumps, any
-# worktree with a file touched in the last 7 days, anything active <24h.
+# Never touched: ~/.codex/worktrees (Codex manages it), session files younger
+# than 3 days, the xmo_pr_refresh worktree, named docker volumes outside the
+# task patterns, db dumps, any worktree with a file touched in the last 7
+# days, anything active <24h.
 
 set -euo pipefail
 
 KEEP_DAYS=14
 STALE_DAYS=14
+SESSIONS_CAP_GB=20
 RUN=false
 VOLUMES=false
 while [[ $# -gt 0 ]]; do
@@ -27,8 +30,9 @@ while [[ $# -gt 0 ]]; do
     --volumes) VOLUMES=true ;;
     --keep-days) KEEP_DAYS="$2"; shift ;;
     --stale-days) STALE_DAYS="$2"; shift ;;
+    --sessions-cap-gb) SESSIONS_CAP_GB="$2"; shift ;;
     -h|--help) sed -n '3,/^$/p' "$0"; exit 0 ;;
-    *) echo "usage: clean-disk [--run] [--volumes] [--keep-days N] [--stale-days N]" >&2; exit 1 ;;
+    *) echo "usage: clean-disk [--run] [--volumes] [--keep-days N] [--stale-days N] [--sessions-cap-gb N]" >&2; exit 1 ;;
   esac
   shift
 done
@@ -67,6 +71,44 @@ prune_files ".tmp" "$HOME/.codex/.tmp" 3
 # gate drains it — if this stays large with few age-gated files, tighten
 # --keep-days rather than assuming it was already pruned.
 [[ -d $HOME/.codex/sessions ]] && echo "sessions total (all ages): $(human "$({ du -sk "$HOME/.codex/sessions" 2>/dev/null || true; } | awk '{print $1+0}')")"
+
+# Size cap: heavy agent use (~16G/day) outruns any sane age gate, so after the
+# age prune delete oldest session files until the directory fits the cap.
+# Files younger than 3 days are never deleted, and nothing outside sessions/
+# (auth.json, config.toml, skills, plugins, sqlite, ...) is ever touched.
+cap_sessions() {
+  local dir="$HOME/.codex/sessions"
+  [[ -d $dir ]] || return 0
+  local cap_kb=$((SESSIONS_CAP_GB * 1048576)) total_kb
+  total_kb=$({ du -sk "$dir" 2>/dev/null || true; } | awk '{print $1+0}')
+  local now aged_cutoff keep_cutoff n=0 freed_kb=0 mtime bytes path
+  now=$(date +%s)
+  aged_cutoff=$((now - KEEP_DAYS * 86400)) # dry-run: age prune already claims these
+  keep_cutoff=$((now - 3 * 86400))         # never delete files younger than 3 days
+  while IFS=' ' read -r mtime bytes path; do
+    if ! $RUN && [[ $mtime -lt $aged_cutoff ]]; then
+      total_kb=$((total_kb - bytes / 1024))
+      continue
+    fi
+    [[ $((total_kb - freed_kb)) -le $cap_kb ]] && break
+    [[ $mtime -ge $keep_cutoff ]] && break # oldest first: the rest are younger
+    if $RUN; then rm -f "$path" 2>/dev/null || continue; fi
+    n=$((n + 1)); freed_kb=$((freed_kb + bytes / 1024))
+  done < <({ find "$dir" -type f -print0 2>/dev/null | xargs -0 stat -f '%m %z %N' 2>/dev/null || true; } | sort -n)
+  if [[ $((total_kb - freed_kb)) -gt $cap_kb && $n -eq 0 ]]; then
+    echo "sessions: $(human "$total_kb") over ${SESSIONS_CAP_GB}G cap — nothing old enough to delete (<3d kept)"
+  elif $RUN && [[ $n -gt 0 ]]; then
+    find "$dir" -mindepth 1 -type d -empty -delete 2>/dev/null || true
+    total_kb=$({ du -sk "$dir" 2>/dev/null || true; } | awk '{print $1+0}')
+    echo "sessions: capped to $(human "$total_kb") (deleted $n files, $(human "$freed_kb"))"
+  elif [[ $n -gt 0 ]]; then
+    PROJ_KB=$((PROJ_KB + freed_kb))
+    echo "sessions: would cap to $(human "$((total_kb - freed_kb))") (delete $n files, $(human "$freed_kb"))"
+  else
+    echo "sessions: $(human "$total_kb") within ${SESSIONS_CAP_GB}G cap"
+  fi
+}
+cap_sessions
 
 # --- Stale AI git worktrees -------------------------------------------------
 # Removes a worktree when it is clean, its HEAD is on a remote, and it has not
