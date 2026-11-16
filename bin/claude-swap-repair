@@ -1,0 +1,225 @@
+#!/usr/bin/env bash
+#
+# claude-swap-repair
+# Check the claude-swap (cswap) slots behind claude-work / claude-personal, and
+# walk through the fix for any slot cswap reports as "re-login needed".
+#
+#   claude-swap-repair               # check every slot, repair the broken ones
+#   claude-swap-repair personal      # one slot, by cswap alias or slot number
+#   claude-swap-repair --quiet work  # silent when healthy (the wrappers use this)
+#   claude-swap-repair --check       # report only; exit 1 if any slot is broken
+#
+# Broken = cswap quarantined the slot's stored refresh token after the server
+# rejected it. cswap's own collect pass is the only login-free repair (it adopts
+# a newer session-profile credential), and it stops working once a slot is
+# quarantined, so past that point a browser login is the only fix. The repair:
+# `claude auth login` as the slot's account, verify the default login really is
+# that account, `cswap add` (bare: updates the matching slot in place, never
+# overwrites another slot), then switch the default login back.
+#
+# Safe to run any time. A healthy slot is left alone. A live session in the
+# slot's profile is never touched: it keeps its own login, and its profile
+# re-seeds from the repaired slot on the first launch after it exits.
+
+set -euo pipefail
+
+CSWAP_DIR="$HOME/.claude-swap-backup"
+REGISTRY="$CSWAP_DIR/sequence.json"
+USAGE="$CSWAP_DIR/cache/usage.json"
+CLAUDE_JSON="$HOME/.claude.json"
+
+QUIET=false
+CHECK=false
+targets=()
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -q|--quiet) QUIET=true ;;
+    --check) CHECK=true ;;
+    -h|--help) sed -n '3,/^$/p' "$0"; exit 0 ;;
+    -*) echo "usage: claude-swap-repair [--quiet] [--check] [ALIAS|SLOT ...]" >&2; exit 2 ;;
+    *) targets+=("$1") ;;
+  esac
+  shift
+done
+
+die() {
+  echo "claude-swap-repair: $*" >&2
+  exit 1
+}
+
+command -v jq >/dev/null || die "jq is required"
+[[ -f "$REGISTRY" ]] || die "no cswap registry at $REGISTRY (run: cswap add)"
+
+# cswap's registry: identity only (email, org, alias), no credentials.
+field() {
+  jq -r --arg n "$1" --arg f "$2" '.accounts[$n][$f] // ""' "$REGISTRY"
+}
+
+slot_for() {
+  jq -r --arg a "$1" '
+    [.accounts | to_entries[] | select(.value.alias == $a or .key == $a) | .key][0] // ""
+  ' "$REGISTRY"
+}
+
+slot_for_identity() {
+  jq -r --arg e "$1" --arg o "$2" '
+    [.accounts | to_entries[]
+      | select(.value.email == $e and (.value.organizationUuid // "") == $o) | .key][0] // ""
+  ' "$REGISTRY"
+}
+
+label() {
+  local alias
+  alias="$(field "$1" alias)"
+  echo "slot $1 (${alias:-no alias}, $(field "$1" email))"
+}
+
+login_email() {
+  jq -r '.oauthAccount.emailAddress // ""' "$CLAUDE_JSON" 2>/dev/null || true
+}
+
+login_org() {
+  jq -r '.oauthAccount.organizationUuid // ""' "$CLAUDE_JSON" 2>/dev/null || true
+}
+
+# Strike count behind "re-login needed", read straight from cswap's usage store:
+# no cswap process, no network. A row left by a slot's previous occupant does
+# not count (cswap matches rows on email and org too).
+strikes() {
+  jq -r --arg n "$1" --arg e "$(field "$1" email)" --arg o "$(field "$1" organizationUuid)" '
+    (.accounts[$n] // {}) as $r
+    | if $r.email == $e and ($r.organizationUuid // "") == $o
+      then ($r.authDeadStrikes // 0) else 0 end
+  ' "$USAGE" 2>/dev/null || echo 0
+}
+
+broken() {
+  local status
+  [[ "$(strikes "$1")" -ge 1 ]] || return 1
+  # Confirm with cswap's own verdict. Its collect pass re-checks a strike against
+  # the stored credential and runs the login-free repair where cswap allows it;
+  # a quarantined slot is never fetched, so this cannot spend its token.
+  status="$(env -u CLAUDE_CONFIG_DIR -u CLAUDE_SECURESTORAGE_CONFIG_DIR cswap list --json 2>/dev/null |
+    jq -r --argjson n "$1" '.accounts[] | select(.number == $n) | .usageStatus' 2>/dev/null)" || status=""
+  [[ -z "$status" || "$status" == "relogin_required" ]]
+}
+
+# PIDs of live Claude instances using the slot's session profile, read the way
+# cswap does: the profile's sessions/<pid>.json records, kept if the pid is alive.
+live_pids() {
+  local email dir f pid pids=""
+  email="$(field "$1" email)"
+  dir="$CSWAP_DIR/sessions/$1-${email//[^A-Za-z0-9._-]/_}"
+  for f in "$dir"/sessions/*.json; do
+    [[ -f "$f" ]] || continue
+    pid="$(jq -r '.pid // empty' "$f" 2>/dev/null)" || continue
+    if [[ "$pid" =~ ^[0-9]+$ ]] && ps -p "$pid" >/dev/null 2>&1; then
+      pids="$pids $pid"
+    fi
+  done
+  echo "${pids# }"
+}
+
+# The default login must be this account in both places cswap add reads:
+# ~/.claude.json's identity and Claude Code's own view of the stored login.
+default_is() {
+  local status
+  [[ -n "$1" && "$(login_email)" == "$1" ]] || return 1
+  [[ -z "$2" || -z "$(login_org)" || "$(login_org)" == "$2" ]] || return 1
+  status="$(env -u ANTHROPIC_API_KEY -u ANTHROPIC_AUTH_TOKEN -u CLAUDE_CODE_OAUTH_TOKEN \
+    claude auth status --json 2>/dev/null)" || return 1
+  jq -e --arg e "$1" --arg o "$2" '
+    .loggedIn == true and .authMethod == "claude.ai" and .email == $e
+    and ($o == "" or (.orgId // "") == "" or .orgId == $o)
+  ' <<<"$status" >/dev/null
+}
+
+repair() {
+  local n="$1" alias email org name pids prev prev_alias accounts answer
+  alias="$(field "$n" alias)"
+  email="$(field "$n" email)"
+  org="$(field "$n" organizationUuid)"
+  name="${alias:-$n}"
+
+  echo "$(label "$n"): re-login needed (cswap's stored refresh token for it is dead)."
+  if [[ -n "${CLAUDE_CONFIG_DIR:-}" || -n "${CLAUDE_SECURESTORAGE_CONFIG_DIR+set}" ]]; then
+    die "this shell is inside a Claude session profile. From a normal terminal run: claude-swap-repair $name"
+  fi
+  [[ -t 0 ]] || die "a browser login is needed. In a terminal run: claude-swap-repair $name"
+
+  prev="$(slot_for_identity "$(login_email)" "$(login_org)")"
+  prev_alias="$(field "${prev:-none}" alias)"
+  prev_alias="${prev_alias:-$prev}"
+  pids="$(live_pids "$n")"
+
+  echo "  This will:"
+  echo "    1. log the default Claude login in as $email (browser)"
+  echo "    2. check that the default login really is $email"
+  echo "    3. save it into slot $n with 'cswap add'"
+  if [[ -n "$prev_alias" && "$prev" != "$n" ]]; then
+    echo "    4. switch the default login back to $prev_alias"
+  fi
+  echo "  Plain 'claude' sessions share the default login: leave them idle until it finishes."
+  if [[ -n "$pids" ]]; then
+    echo "  A live session (PID $pids) uses this slot's profile. It is not touched and keeps"
+    echo "  its own login; the profile picks up the repair on the first launch after it exits."
+  fi
+  read -r -p "  Continue? [y/N] " answer || answer=""
+  [[ "$answer" == [yY]* ]] || die "cancelled; nothing changed."
+
+  echo "==> claude auth login --email $email"
+  claude auth login --claudeai --email "$email" ||
+    die "the login did not finish; nothing else changed. Re-run: claude-swap-repair $name"
+
+  echo "==> checking the default login"
+  if ! default_is "$email" "$org"; then
+    die "the default login is '$(login_email)', not $email, so cswap add was NOT run. Log in as $email: claude-swap-repair $name${prev_alias:+ (or restore the default: cswap switch $prev_alias)}"
+  fi
+
+  echo "==> cswap add"
+  accounts="$(jq '.accounts | length' "$REGISTRY")"
+  cswap add </dev/null ||
+    die "cswap add failed; the default login is still $email.${prev_alias:+ Restore it: cswap switch $prev_alias}"
+  if [[ "$(jq '.accounts | length' "$REGISTRY")" != "$accounts" ||
+    "$(field "$n" email)" != "$email" || "$(strikes "$n")" != 0 ]]; then
+    die "slot $n did not update as expected; check: cswap list --token-status"
+  fi
+
+  if [[ -n "$prev_alias" && "$prev" != "$n" ]]; then
+    echo "==> cswap switch $prev_alias"
+    cswap switch "$prev_alias" >/dev/null ||
+      die "slot $n is repaired, but switching back failed. Run: cswap switch $prev_alias"
+    default_is "$(field "$prev" email)" "$(field "$prev" organizationUuid)" ||
+      die "slot $n is repaired, but the default login is not $prev_alias. Run: cswap switch $prev_alias"
+  fi
+
+  echo "$(label "$n"): repaired. Default login: $(login_email)"
+  if [[ -n "$pids" ]]; then
+    echo "  The running session (PID $pids) keeps its own login until it exits."
+  fi
+}
+
+slots=()
+if [[ ${#targets[@]} -eq 0 ]]; then
+  while read -r n; do slots+=("$n"); done < <(jq -r '.sequence[] | tostring' "$REGISTRY")
+else
+  for t in "${targets[@]}"; do
+    n="$(slot_for "$t")"
+    [[ -n "$n" ]] || die "no cswap account '$t' (see: cswap list)"
+    slots+=("$n")
+  done
+fi
+
+rc=0
+for n in ${slots[@]+"${slots[@]}"}; do
+  if ! broken "$n"; then
+    $QUIET || echo "$(label "$n"): healthy"
+  elif $CHECK; then
+    alias="$(field "$n" alias)"
+    echo "$(label "$n"): re-login needed. Fix: claude-swap-repair ${alias:-$n}"
+    rc=1
+  else
+    repair "$n"
+  fi
+done
+exit "$rc"
